@@ -592,3 +592,4 @@
 {"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794292683947}
 {"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794292683947}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794293342232}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794293471054}
