@@ -147,7 +147,7 @@ function FlightFlow({ wallet, onDone }: { wallet: NairaWallet; onDone: () => voi
         {([['From', from, setFrom], ['To', to, setTo]] as const).map(([label, val, set]) => (
           <label key={label} className="block">
             <span className="eyebrow mb-1.5 block">{label}</span>
-            <select value={val} onChange={(e) => set(e.target.value)} className="min-h-12 w-full rounded-2xl border border-line bg-bg px-3 text-base">
+            <select value={val} onChange={(e) => set(e.target.value)} className="min-h-12 w-full rounded-2xl border border-line bg-surface-strong px-3 text-base">
               {cfg?.airports.map((a) => <option key={a.code} value={a.code}>{a.city} ({a.code})</option>)}
             </select>
           </label>

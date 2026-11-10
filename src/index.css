@@ -2,113 +2,381 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme tokens. The values below are only the first-paint fallback (the Cobalt Lime theme): src/lib/themes.ts sets every
+ * variable from the chosen theme before the app renders, and again whenever the theme changes.
+ */
 :root {
-  --bg: #f7f6fa;
-  --bg-gradient: linear-gradient(180deg, #f9f9fc 0%, #fffcf7 52%, #fbf7f2 100%);
-  --surface: rgba(255, 255, 255, 0.78);
-  --surface-strong: rgba(255, 255, 255, 0.94);
-  --surface-muted: #f0eff5;
-  --ink: #122d45;
-  --ink-2: #334155;
-  --subtle: #6b6580;
-  --border: rgba(18, 45, 69, 0.12);
-  --border-strong: rgba(25, 53, 77, 0.5);
-  --accent: #122d45;
-  --accent-ink: #ffffff;
-  --focus: #85b1ed;
-  --success: #1a8047;
-  --danger: #ba2b4c;
-  --warn: #9a6200;
-  --success-rgb: 26 128 71;
-  --danger-rgb: 186 43 76;
-  --warn-rgb: 154 98 0;
-  color-scheme: light;
+  --bg: #030407;
+  --ink: #ffffff;
+  --ink-2: #e6e6ea;
+  --subtle: #b9bbc4;
+  --surface-muted: #1d1e22;
+  --surface-strong: #2c2d31;
+  --divider: #4a4b50;
+  --card: #1558c9;
+  --card-ink: #ffffff;
+  --card-ink-2: #e6edf9;
+  --card-subtle: #cfdcf3;
+  --card-muted: #2f6cd0;
+  --card-strong: #4880d6;
+  --card-divider: #6b9ae0;
+  --accent: #d4ff24;
+  --accent-ink: #0a0a10;
+  --outline: #0a0a10;
+  --shadow-c: #0a0a10;
+  --focus: #d4ff24;
+  --paper: #ffffff;
+  --halftone: #1f2024;
+  --art-1: #1558c9;
+  --art-2: #1b2208;
+  --art-3: #17181b;
+  --art-4: #d4ff24;
+  --art-5: #1558c9;
+  --art-6: #7ba990;
+  --success-rgb: 70 220 130;
+  --danger-rgb: 255 120 135;
+  --warn-rgb: 245 190 70;
+  --on-success: #0a0a10;
+  --on-danger: #0a0a10;
+  --on-warn: #0a0a10;
+  --card-success-rgb: 120 235 165;
+  --card-danger-rgb: 255 150 160;
+  --card-warn-rgb: 250 205 100;
+  --fill-success-rgb: 31 191 99;
+  --fill-danger-rgb: 240 52 79;
+  --fill-warn-rgb: 242 162 12;
 }
 
-.dark {
-  --bg: #0d1b2f;
-  --bg-gradient: linear-gradient(180deg, #0d1b2f 0%, #0d1b2f 58%, #122d45 100%);
-  --surface: rgba(255, 255, 255, 0.07);
-  --surface-strong: rgba(255, 255, 255, 0.11);
-  --surface-muted: #1a2b42;
-  --ink: #f9faf3;
-  --ink-2: #e3ecf9;
-  --subtle: #94a3b8;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(203, 219, 242, 0.55);
-  --accent: #acc6e9;
-  --accent-ink: #0d1b2f;
-  --focus: #85b1ed;
-  --success: #8dd89f;
-  --danger: #e86d7a;
-  --warn: #e8c46d;
-  --success-rgb: 141 216 159;
-  --danger-rgb: 232 109 122;
-  --warn-rgb: 232 196 109;
-  color-scheme: dark;
+/*
+ * Everything inside a card reads the card's own text and status colours. Variables are re-pointed here, so every
+ * existing text-ink / text-subtle / bg-muted / text-danger class inside a card is readable on the card colour.
+ */
+.on-card,
+.glass,
+.sticker {
+  --ink: var(--card-ink);
+  --ink-2: var(--card-ink-2);
+  --subtle: var(--card-subtle);
+  --surface-muted: var(--card-muted);
+  --surface-strong: var(--card-strong);
+  --divider: var(--card-divider);
+  --success-rgb: var(--card-success-rgb);
+  --danger-rgb: var(--card-danger-rgb);
+  --warn-rgb: var(--card-warn-rgb);
+  color: var(--card-ink);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: var(--bg);
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Archivo Black', 'Arial Black', Impact, sans-serif;
+  font-weight: 400;
+  font-size: calc(1rem * var(--text-scale, 1.15));
+  line-height: 1.35;
   color: var(--ink);
   background: var(--bg);
-  background-image: var(--bg-gradient);
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
 }
 
+/* ---------- heavy text, everywhere ---------- */
+/* One ultra-heavy face. Browsers must not fake extra weight on top of it, and a thin outline in the letters' own colour makes every glyph fatter. */
+* {
+  font-synthesis: none;
+  -webkit-text-stroke: 0.035em currentColor;
+  paint-order: stroke fill;
+}
+button, input, select, textarea, optgroup {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+}
+option { background-color: var(--card); color: var(--card-ink); }
+/* Long text wraps onto a new line instead of being cut off. */
+.truncate {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+:root { --text-scale: 1.15; --text-scale-h: 1.075; --tab-scale: 1; }
+svg, svg * { -webkit-text-stroke: 0; }
+
+#root {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+/* Halftone dots over the artwork. Colour comes from the theme, so it changes with it. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--halftone) 1.4px, transparent 1.8px);
+  background-size: 10px 10px;
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, #000 100%);
+  mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.35) 55%, #000 100%);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.backdrop svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.art-fill-1 { fill: var(--art-1); }
+.art-fill-2 { fill: var(--art-2); }
+.art-fill-3 { fill: var(--art-3); }
+.art-fill-4 { fill: var(--art-4); }
+.art-fill-5 { fill: var(--art-5); }
+.art-fill-6 { fill: var(--art-6); }
+.art-stroke-4 { stroke: var(--art-4); fill: none; }
+.art-stroke-5 { stroke: var(--art-5); fill: none; }
+.art-stroke-ink { stroke: var(--ink); fill: none; }
+.art-outline { stroke: var(--outline); stroke-width: 4; stroke-linejoin: round; }
+
+/* ---------- type ---------- */
 .display {
-  font-family: 'Space Grotesk', sans-serif;
-  letter-spacing: -0.03em;
+  font-family: 'Archivo Black', 'Arial Black', Impact, sans-serif;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+.display.font-semibold,
+.display.font-bold {
+  font-weight: 400;
 }
 .mono {
   font-family: 'JetBrains Mono', Menlo, monospace;
+  font-weight: 800;
+  -webkit-text-stroke: 0.02em currentColor;
+  overflow-wrap: anywhere;
 }
 .num {
   font-variant-numeric: tabular-nums;
 }
 .eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: calc(0.875rem * var(--text-scale, 1));
+  font-weight: 400;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--subtle);
 }
-.glass {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
+
+/* ---------- stickers: flat fill, thick dark outline, hard offset shadow ---------- */
+.glass,
+.sticker {
+  background: var(--card);
+  border: 3px solid var(--outline);
+  box-shadow: 5px 5px 0 var(--shadow-c);
+  backdrop-filter: none;
 }
+.plate {
+  display: inline-block;
+  background: var(--card);
+  color: var(--card-ink);
+  border: 3px solid var(--outline);
+  box-shadow: 4px 4px 0 var(--shadow-c);
+  border-radius: 1rem;
+  padding: 0.35rem 0.9rem 0.45rem;
+  transform: rotate(-1.2deg);
+}
+.pop {
+  box-shadow: 3px 3px 0 var(--shadow-c);
+}
+.scrim {
+  background: color-mix(in srgb, var(--outline) 72%, transparent);
+}
+
+/* Boxes that were thin outlines become thick sticker outlines. */
+.border {
+  border-width: 3px;
+}
+.border.border-line,
+.border.border-line-strong {
+  border-color: var(--outline);
+}
+.border-t { border-top-width: 2px; }
+.border-b { border-bottom-width: 2px; }
+.border-r { border-right-width: 2px; }
+.divide-y > :not([hidden]) ~ :not([hidden]) { border-top-width: 2px; }
+
+/* Buttons press into their hard shadow. */
+button:not(:disabled):active,
+a.pressable:active {
+  transform: translate(2px, 2px);
+}
+button.border:not(.no-pop) {
+  box-shadow: 3px 3px 0 var(--shadow-c);
+  border-radius: 1.75rem;
+}
+button.size-9, button.size-10, button.size-11, button.size-12 {
+  border-radius: 9999px;
+}
+button.border:not(.no-pop):active {
+  box-shadow: 1px 1px 0 var(--shadow-c);
+}
+button.border.bg-accent {
+  border-color: var(--outline);
+}
+
+/* ---------- form controls ---------- */
 input,
 select,
+textarea,
 button {
   font-family: inherit;
 }
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
+  background-color: var(--surface-strong);
+  color: var(--ink);
+  border: 3px solid var(--outline);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--subtle);
+  opacity: 1;
+}
+select option {
+  background-color: var(--card);
+  color: var(--card-ink);
+}
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 .scroll-thin::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+  height: 8px;
+  width: 8px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--outline);
   border-radius: 99px;
 }
+
+/* The "Built with Arc Studio" badge is a theme sticker too. */
+.studio-badge {
+  position: fixed;
+  right: 12px;
+  bottom: 96px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: calc(0.875rem * var(--text-scale, 1));
+  font-weight: 400;
+  font-family: 'Archivo Black', 'Arial Black', Impact, sans-serif;
+  text-decoration: none;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: 3px solid var(--outline);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--shadow-c);
+}
+/* On phones the badge sits in the page flow, above the floating tab bar's reserved space, so it never covers content. */
+@media (max-width: 1023px) {
+  .studio-badge {
+    position: static;
+    width: fit-content;
+    margin: 4px auto 110px;
+  }
+}
+@media (min-width: 1024px) {
+  .studio-badge {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Hero cards (the big balance cards) sit higher on a longer hard shadow. */
+.glass.hero {
+  box-shadow: 8px 8px 0 var(--shadow-c);
+}
+/* Short captions under a page title sit on a small flat label so they read on any artwork. */
+.plate-sub {
+  display: inline-block;
+  background: var(--bg);
+  color: var(--ink);
+  border: 2px solid var(--outline);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+}
+
+/* Solid status fills use the vivid colour on every surface; tinted (/10) fills and status text keep the surface-aware shade. */
+.bg-success { background-color: rgb(var(--fill-success-rgb)); }
+.bg-danger { background-color: rgb(var(--fill-danger-rgb)); }
+.bg-warn { background-color: rgb(var(--fill-warn-rgb)); }
+
+/* Tinted status and muted fills (written as /10, /15 ... in the components) become opaque flat colours, so nothing shows the artwork through it. */
+:root { --base: var(--bg); }
+.on-card, .glass, .sticker { --base: var(--card); }
+.bg-success\/10, .bg-success\/15 { background-color: color-mix(in srgb, rgb(var(--success-rgb)) 24%, var(--base)); }
+.bg-danger\/10, .bg-danger\/15 { background-color: color-mix(in srgb, rgb(var(--danger-rgb)) 24%, var(--base)); }
+.bg-warn\/10, .bg-warn\/15 { background-color: color-mix(in srgb, rgb(var(--warn-rgb)) 24%, var(--base)); }
+.bg-accent\/10 { background-color: color-mix(in srgb, var(--accent) 28%, var(--base)); }
+.bg-muted\/60, .bg-muted\/40 { background-color: var(--surface-muted); }
+.border-danger\/40, .border-warn\/40, .border-accent\/40, .border-success\/40 { border-color: var(--outline); }
+.text-subtle\/50 { color: var(--subtle); }
+
+.divide-x > :not([hidden]) ~ :not([hidden]) { border-left-width: 2px; }
+.glass.tile { border-width: 3px; box-shadow: 3px 3px 0 var(--shadow-c); }
+.animate-pulse.bg-muted { background-color: var(--card); border: 3px solid var(--outline); }
+
+/* Disabled controls stay solid (no see-through) and are marked with hazard stripes. */
+button:disabled[class] {
+  opacity: 1;
+  cursor: not-allowed;
+  filter: saturate(0.5);
+  background-image: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--outline) 22%, transparent) 7px 14px);
+}
+
+/* An unavailable or busy row keeps full-strength text and is marked with hazard stripes instead of being faded. */
+.hatch {
+  background-image: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--outline) 20%, transparent) 7px 14px);
+}
+/* Tab bar labels: five share one pill, so they stay at 12px (this is the one place text is below 14px) and shrink a little more at Extra large. */
+html { --tab-scale: 0.923; }
+html[data-text='xlarge'] { --tab-scale: 0.88; }
+
+/* Quick actions: three across, two across when the text is Large or Extra large. */
+.action-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html[data-text='large'] .action-grid, html[data-text='xlarge'] .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* The Crypto | Naira balance card: side by side, stacked when the text is Large or Extra large so the figures keep their room. */
+.dash-split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dash-split > * + * { border-left: 2px solid var(--divider); }
+html[data-text='large'] .dash-split, html[data-text='xlarge'] .dash-split { grid-template-columns: minmax(0, 1fr); }
+html[data-text='large'] .dash-split > * + *, html[data-text='xlarge'] .dash-split > * + * { border-left: 0; border-top: 2px solid var(--divider); }

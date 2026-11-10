@@ -64,7 +64,7 @@ export function History() {
   const { data } = useCryptoTxs(type || undefined)
   return (
     <div className="space-y-4">
-      <div className="scroll-thin overflow-x-auto"><div className="min-w-[30rem]"><Segmented value={type} onChange={setType} options={TYPES} /></div></div>
+      <Segmented value={type} onChange={setType} options={TYPES} />
       {open && <Detail id={open} onClose={() => setOpen(null)} />}
       <Card className="p-2">
         {!data?.length && (

@@ -16,7 +16,7 @@ function NetSelect({ label, value, onChange, nets }: { label: string; value: str
   return (
     <label className="block flex-1 text-sm">
       <span className="eyebrow mb-1 block">{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-bg px-3 text-sm font-semibold">
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm font-semibold">
         {nets.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
       </select>
     </label>

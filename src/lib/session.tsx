@@ -2,13 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, getToken, setToken, type AppConfig, type PublicUser } from './api'
 
-type Theme = 'light' | 'dark'
 interface Ctx {
   user: PublicUser | null
   loading: boolean
   config: AppConfig | undefined
-  theme: Theme
-  toggleTheme: () => void
   signIn: (token: string, user: PublicUser) => void
   signOut: () => Promise<void>
 }
@@ -18,12 +15,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient()
   const [user, setUser] = useState<PublicUser | null>(null)
   const [booting, setBooting] = useState(Boolean(getToken()))
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('nb_theme') as Theme) || 'dark')
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem('nb_theme', theme)
-  }, [theme])
 
   useEffect(() => {
     if (!getToken()) return
@@ -58,8 +49,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [qc])
 
   const value = useMemo<Ctx>(
-    () => ({ user, loading: booting, config, theme, toggleTheme: () => setTheme((t) => (t === 'light' ? 'dark' : 'light')), signIn, signOut }),
-    [user, booting, config, theme, signIn, signOut],
+    () => ({ user, loading: booting, config, signIn, signOut }),
+    [user, booting, config, signIn, signOut],
   )
   return <SessionCtx.Provider value={value}>{children}</SessionCtx.Provider>
 }

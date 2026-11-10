@@ -105,7 +105,7 @@ function BankForm({ wallet, onDone }: { wallet: NairaWallet; onDone: () => void 
       )}
       <label className="block">
         <span className="eyebrow mb-1.5 block">Bank</span>
-        <select value={bank} onChange={(e) => setBank(e.target.value)} className="min-h-12 w-full rounded-2xl border border-line bg-bg px-3 text-base">
+        <select value={bank} onChange={(e) => setBank(e.target.value)} className="min-h-12 w-full rounded-2xl border border-line bg-surface-strong px-3 text-base">
           <option value="">Select a bank</option>
           {cfg?.banks.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
         </select>

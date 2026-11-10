@@ -103,7 +103,7 @@ export function AgentMonitor() {
                   <span className="text-sm font-semibold">{d.decision}</span>
                   <span className="shrink-0 text-xs text-subtle">{ago(d.at)}</span>
                 </div>
-                <div className="mono truncate text-[11px] text-subtle">{d.kind}{d.order_id ? ` · ${d.order_id}` : ''}{d.score ? ` · score ${d.score}` : ''}</div>
+                <div className="mono truncate text-xs text-subtle">{d.kind}{d.order_id ? ` · ${d.order_id}` : ''}{d.score ? ` · score ${d.score}` : ''}</div>
                 {reasons(d.reasons).length > 0 && <div className="text-xs text-subtle">{reasons(d.reasons).join(' · ')}</div>}
               </div>
             ))}

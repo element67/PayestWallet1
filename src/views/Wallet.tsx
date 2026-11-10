@@ -101,7 +101,7 @@ export function Wallet({ openTransfer = false }: { openTransfer?: boolean }) {
   return (
     <div className="mx-auto max-w-md space-y-5 pb-4">
       <div className="flex items-end justify-between">
-        <div><h1 className="display text-3xl font-semibold">Naira wallet</h1><p className="text-sm text-subtle">Balance, transfers and bills</p></div>
+        <div><h1 className="plate display text-3xl">Naira wallet</h1><p className="plate-sub mt-3 text-sm font-semibold">Balance, transfers and bills</p></div>
         <Sandbox label="Sandbox mode" />
       </div>
 

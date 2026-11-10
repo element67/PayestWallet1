@@ -66,7 +66,7 @@ export function Overview({ data, go }: { data: CryptoOverview; go: (a: CryptoAct
 
       {sum && Number(sum.crypto.ngn) === 0 && <EmptyBalance address={data.addresses.evm} onDeposit={() => go('receive')} />}
 
-      <div className="grid grid-cols-4 gap-y-4">
+      <div className="action-grid grid gap-3">
         {CRYPTO_ACTIONS.map((id) => {
           const a = HOME_ACTIONS.find((x) => x.id === id)
           if (!a) return null

@@ -47,7 +47,7 @@ export function TokensAdmin() {
               <div className="space-y-2 bg-muted/40 px-4 py-3">
                 <button className="min-h-11 text-xs font-semibold underline" onClick={() => call.mutate({ path: `/api/admin/tokens/${t.symbol}`, method: 'PATCH', body: { popular: !t.popular }, ok: t.popular ? 'Removed from Popular' : 'Added to Popular' })}>{t.popular ? 'Remove from Popular' : 'Show in Popular'}</button>
                 {t.networks.map((n) => (
-                  <div key={n.networkId} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-line bg-bg px-3 py-2 text-xs">
+                  <div key={n.networkId} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-line bg-surface-strong px-3 py-2 text-xs">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 font-semibold">{net(n.networkId)} <Badge kind={n.testnet ? 'live' : 'warn'}>{n.testnet ? 'testnet' : 'mainnet'}</Badge><Badge kind={n.verified ? 'good' : 'bad'}>{n.verified ? 'verified' : 'unverified'}</Badge></div>
                       <div className="mono mt-0.5 text-subtle">{n.contract ? short(n.contract, 10, 8) : 'Native asset'} · chain {n.chainId ?? '-'}</div>
@@ -77,9 +77,9 @@ export function TokensAdmin() {
         <p className="text-xs text-subtle">The address must be the exact checksummed contract address. The server checks that the contract exists on that chain with the same symbol and decimals before saving. Leave it empty for a chain's native asset.</p>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm"><span className="eyebrow mb-1 block">Token</span>
-            <select value={dep.symbol} onChange={(e) => setDep({ ...dep, symbol: e.target.value })} className="min-h-[44px] w-full rounded-2xl border border-line bg-bg px-3 text-sm"><option value="">Choose</option>{data.tokens.map((t) => <option key={t.symbol}>{t.symbol}</option>)}</select></label>
+            <select value={dep.symbol} onChange={(e) => setDep({ ...dep, symbol: e.target.value })} className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm"><option value="">Choose</option>{data.tokens.map((t) => <option key={t.symbol}>{t.symbol}</option>)}</select></label>
           <label className="block text-sm"><span className="eyebrow mb-1 block">Network</span>
-            <select value={dep.networkId} onChange={(e) => setDep({ ...dep, networkId: e.target.value })} className="min-h-[44px] w-full rounded-2xl border border-line bg-bg px-3 text-sm"><option value="">Choose</option>{data.networks.map((n) => <option key={n.id} value={n.id}>{n.name}{n.testnet ? '' : ' (mainnet)'}</option>)}</select></label>
+            <select value={dep.networkId} onChange={(e) => setDep({ ...dep, networkId: e.target.value })} className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm"><option value="">Choose</option>{data.networks.map((n) => <option key={n.id} value={n.id}>{n.name}{n.testnet ? '' : ' (mainnet)'}</option>)}</select></label>
         </div>
         <Field label="Contract address" className="mono !text-xs" value={dep.contract} maxLength={42} onChange={(e) => setDep({ ...dep, contract: e.target.value.trim() })} placeholder="0x..." />
         <Button disabled={!dep.symbol || !dep.networkId} loading={call.isPending && call.variables?.path.endsWith('/networks') === true}

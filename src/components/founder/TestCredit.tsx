@@ -38,7 +38,7 @@ export function TestCredit() {
         <p className="text-sm text-subtle">Adds sandbox funds to a user's exchange balance (or Naira wallet) so you can try swaps. It is a confirmed ledger entry, written to the audit log, and never touches a blockchain. Limit {hist ? hist.cap : '…'} NGN equivalent per credit.</p>
         <label className="block text-sm">
           <span className="eyebrow mb-1 block">User</span>
-          <select value={userId} onChange={(e) => setUserId(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-bg px-3 text-sm">
+          <select value={userId} onChange={(e) => setUserId(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm">
             <option value="">Choose a user</option>
             {(users ?? []).map((u) => <option key={u.id} value={u.id}>{u.name} ({u.email})</option>)}
           </select>
@@ -46,7 +46,7 @@ export function TestCredit() {
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm">
             <span className="eyebrow mb-1 block">Asset</span>
-            <select value={asset} onChange={(e) => setAsset(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-bg px-3 text-sm">
+            <select value={asset} onChange={(e) => setAsset(e.target.value)} className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm">
               {symbols.map((s) => <option key={s}>{s}</option>)}
             </select>
           </label>

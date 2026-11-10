@@ -99,7 +99,7 @@ export function OrderTracker({ orderId, onBack }: { orderId: string; onBack: () 
         <ol className="mt-6 space-y-3">
           {steps.map((s, i) => (
             <li key={s.label} className="flex items-start gap-3">
-              <span className={cx('mt-0.5 grid size-6 shrink-0 place-items-center rounded-full', s.done ? 'bg-success text-accent-ink' : i === firstOpen && !ended ? 'bg-muted' : 'bg-muted opacity-50')}>
+              <span className={cx('mt-0.5 grid size-6 shrink-0 place-items-center rounded-full', s.done ? 'bg-success text-accent-ink' : i === firstOpen && !ended ? 'bg-muted' : 'bg-muted')}>
                 {s.done ? <Check size={14} /> : i === firstOpen && !ended ? <Loader2 size={14} className="animate-spin" /> : <Circle size={8} />}
               </span>
               <div className={cx('text-sm', s.done ? 'font-semibold' : i === firstOpen ? 'font-medium' : 'text-subtle')}>
@@ -160,10 +160,10 @@ export function OrderTracker({ orderId, onBack }: { orderId: string; onBack: () 
         <h3 className="display text-base font-semibold">Timeline</h3>
         <ul className="mt-2 space-y-2">
           {(o.events ?? []).map((e, i) => (
-            <li key={i} className="text-sm">
+            <li key={i} className="flex flex-wrap items-baseline gap-x-2 text-sm">
               <span className="mono text-xs text-subtle">{new Date(e.at).toLocaleTimeString()}</span>
-              <span className="ml-2 font-medium">{e.kind}</span>
-              {e.detail && <span className="block text-xs text-subtle">{e.detail}</span>}
+              <span className="min-w-0 font-medium">{e.kind}</span>
+              {e.detail && <span className="basis-full text-xs text-subtle">{e.detail}</span>}
             </li>
           ))}
         </ul>

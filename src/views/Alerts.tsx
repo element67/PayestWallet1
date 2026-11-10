@@ -5,7 +5,8 @@ import { useNotifications } from '@/lib/queries'
 import { ago } from '@/lib/format'
 import { Button, Card, Empty, PageTitle, cx } from '@/components/ui'
 
-export function Alerts() {
+/** `bare` hides the page title, for when it is shown inside Settings. */
+export function Alerts({ bare = false }: { bare?: boolean }) {
   const { data } = useNotifications()
   const qc = useQueryClient()
   const read = useMutation({
@@ -16,11 +17,15 @@ export function Alerts() {
 
   return (
     <>
-      <PageTitle
-        title="Notifications"
-        sub="Payout updates and security alerts."
-        right={data?.some((n) => !n.read) ? <Button variant="ghost" onClick={() => read.mutate()}>Mark all read</Button> : undefined}
-      />
+      {bare ? (
+        data?.some((n) => !n.read) && <div className="mb-4"><Button variant="ghost" onClick={() => read.mutate()}>Mark all read</Button></div>
+      ) : (
+        <PageTitle
+          title="Notifications"
+          sub="Payout updates and security alerts."
+          right={data?.some((n) => !n.read) ? <Button variant="ghost" onClick={() => read.mutate()}>Mark all read</Button> : undefined}
+        />
+      )}
       <Card className="p-2">
         {!data?.length && <Empty title="All quiet" body="Security alerts and payout updates will appear here." />}
         {(data ?? []).map((n) => (

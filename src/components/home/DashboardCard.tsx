@@ -43,7 +43,7 @@ function CurrencyChip({ value, onChange, busy }: { value: 'USD' | 'NGN'; onChang
           {i === 1 && <span className="text-subtle" aria-hidden>|</span>}
           <button
             type="button" aria-pressed={value === c} disabled={busy} onClick={(e) => { stop(e); if (value !== c) onChange(c) }}
-            className={cx('min-h-9 rounded-full px-2.5 text-[11px] font-bold transition', value === c ? 'bg-accent text-accent-ink' : 'text-subtle hover:text-ink')}
+            className={cx('min-h-9 rounded-full px-2.5 text-xs font-bold transition', value === c ? 'bg-accent text-accent-ink' : 'text-subtle hover:text-ink')}
           >{c}</button>
         </span>
       ))}
@@ -79,21 +79,21 @@ export function DashboardCard({ onOpenCrypto, onOpenNaira }: { onOpenCrypto: () 
     onSettled: () => void qc.invalidateQueries({ queryKey: ['balance-summary'] }),
   })
 
-  if (isPending) return <div className="h-36 animate-pulse rounded-3xl bg-muted" aria-busy="true" aria-label="Loading balances" />
+  if (isPending) return <div className="glass h-36 animate-pulse rounded-3xl" aria-busy="true" aria-label="Loading balances" />
   // A failed refresh never leaves an old number on screen.
   if (isError || !data) return <Failed onRetry={() => void refetch()} retrying={isFetching} />
 
   const cur = data.preference.cryptoCurrency
   const fmt = (m: { usd: string; ngn: string }) => (cur === 'USD' ? usd(m.usd) : ngn(m.ngn))
   return (
-    <Card strong className="grid grid-cols-2 divide-x divide-line overflow-hidden !p-0">
+    <Card strong className="dash-split grid overflow-hidden !p-0">
       <Half scope="crypto" label="Crypto" onOpen={onOpenCrypto}>
         {(mask) => (
           <>
-            <div className="display num mt-1 truncate text-[22px] font-semibold leading-tight sm:text-3xl" title={mask(fmt(data.crypto))}>{mask(fmt(data.crypto))}</div>
+            <div className="display num mt-1 truncate text-bal leading-tight sm:text-4xl" title={mask(fmt(data.crypto))}>{mask(fmt(data.crypto))}</div>
             <CurrencyChip value={cur} busy={setCurrency.isPending} onChange={(c) => setCurrency.mutate(c)} />
             <div className="mt-2"><Badge kind="live">{data.crypto.testnet.label}</Badge></div>
-            <p className="mt-1.5 text-[11px] leading-snug text-subtle">
+            <p className="mt-1.5 text-xs leading-snug text-subtle">
               {data.crypto.includesSandbox ? `Includes sandbox exchange balances (${mask(fmt(data.crypto.sandbox))})` : data.crypto.syncing ? 'Verifying balances…' : `Rate ${ngn(data.rate.ngnPerUsd)} per $1`}
             </p>
           </>
@@ -102,9 +102,9 @@ export function DashboardCard({ onOpenCrypto, onOpenNaira }: { onOpenCrypto: () 
       <Half scope="naira" label="Naira" onOpen={onOpenNaira}>
         {(mask) => (
           <>
-            <div className="display num mt-1 truncate text-[22px] font-semibold leading-tight sm:text-3xl" title={mask(ngn(data.naira.balance))}>{mask(ngn(data.naira.balance))}</div>
+            <div className="display num mt-1 truncate text-bal leading-tight sm:text-4xl" title={mask(ngn(data.naira.balance))}>{mask(ngn(data.naira.balance))}</div>
             <div className="mt-2 pt-[36px]"><Badge kind="sandbox">{data.naira.label}</Badge></div>
-            <p className="mt-1.5 text-[11px] leading-snug text-subtle">Available balance</p>
+            <p className="mt-1.5 text-xs leading-snug text-subtle">Available balance</p>
           </>
         )}
       </Half>

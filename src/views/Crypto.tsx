@@ -20,9 +20,9 @@ const isScreen = (s?: string): s is Screen => Boolean(s) && s !== 'transfer' && 
 function Skeleton() {
   return (
     <div className="animate-pulse space-y-4" aria-busy="true" aria-label="Loading wallet">
-      <div className="h-40 rounded-3xl bg-muted" />
-      <div className="grid grid-cols-4 gap-2">{[0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="mx-auto size-14 rounded-full bg-muted" />)}</div>
-      {[0, 1].map((i) => <div key={i} className="h-32 rounded-3xl bg-muted" />)}
+      <div className="glass h-40 rounded-3xl" />
+      <div className="grid grid-cols-4 gap-2">{[0, 1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="mx-auto size-14 rounded-full border-3 border-outline bg-card" />)}</div>
+      {[0, 1].map((i) => <div key={i} className="glass h-32 rounded-3xl" />)}
     </div>
   )
 }
@@ -45,11 +45,11 @@ export function Crypto({ initial, go }: { initial?: Intent['screen']; go: (view:
   return (
     <>
       <div className="mb-5">
-        <button onClick={() => (screen ? close() : go('home'))} className="flex min-h-[44px] items-center gap-2 text-sm font-semibold text-ink-2" aria-label={screen ? 'Back to Crypto' : 'Back to Home'}>
+        <button onClick={() => (screen ? close() : go('home'))} className="border border-outline mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-card px-4 text-xs font-extrabold text-card-ink" aria-label={screen ? 'Back to Crypto' : 'Back to Home'}>
           <ArrowLeft size={16} /> {screen ? 'Crypto' : 'Home'}
         </button>
-        <h1 className="display text-3xl font-semibold">{screen ? TITLE[screen] : 'Crypto'}</h1>
-        {!screen && <p className="text-sm text-subtle">Your own onchain wallet, separate from your Naira wallet.</p>}
+        <h1 className="plate display text-3xl">{screen ? TITLE[screen] : 'Crypto'}</h1>
+        {!screen && <p className="plate-sub mt-3 text-sm font-semibold">Your own onchain wallet, separate from your Naira wallet.</p>}
       </div>
       {!screen && (
         <div className="mb-5 max-w-xs">

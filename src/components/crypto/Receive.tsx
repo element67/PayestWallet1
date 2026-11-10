@@ -42,7 +42,7 @@ function ReceiveRow({ id, icon, title, network, value, preview, warning, expande
               <Badge kind="live">{network}</Badge>
             </span>
             <span className="mono mt-0.5 block truncate text-xs text-ink-2">{preview}</span>
-            <span className="mt-0.5 block text-[11px] leading-snug text-warn">{warning}</span>
+            <span className="mt-0.5 block text-xs leading-snug text-warn">{warning}</span>
           </span>
           <ChevronDown size={16} aria-hidden className={cx('shrink-0 text-subtle transition', expanded && 'rotate-180')} />
         </button>
@@ -62,7 +62,7 @@ function ReceiveRow({ id, icon, title, network, value, preview, warning, expande
           >
             <div className="px-4 pb-5 pt-1 text-center">
               {qr && (
-                <div className="mx-auto w-fit rounded-3xl bg-white p-3">
+                <div className="mx-auto w-fit rounded-3xl border-3 border-outline bg-paper p-3">
                   <QRCodeSVG value={value} size={176} level="M" />
                 </div>
               )}

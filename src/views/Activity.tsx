@@ -23,7 +23,7 @@ export function Activity({ open }: { open: (id: string) => void }) {
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold">
                 {o.side === 'sell' ? 'Sell' : 'Buy'} {crypto(o.cryptoAmount)} {o.asset}
-                {o.instant && <span className="ml-2 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">INSTANT</span>}
+                {o.instant && <span className="ml-2 rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">INSTANT</span>}
               </div>
               <div className="mono truncate text-xs text-subtle">{o.id} · {ago(o.createdAt)}{o.mode === 'sandbox' ? ' · sandbox' : ' · live chain'}</div>
             </div>

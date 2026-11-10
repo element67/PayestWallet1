@@ -9,9 +9,14 @@ import { Wallet } from '@/views/Wallet'
 import { Crypto } from '@/views/Crypto'
 import { Alerts } from '@/views/Alerts'
 import { SettingsView } from '@/views/SettingsView'
+import { MoreView } from '@/views/MoreView'
+import { ProfileView } from '@/views/ProfileView'
+import { Backdrop } from '@/components/Backdrop'
 import { Founder } from '@/views/Founder'
 import { AgentMonitor } from '@/views/AgentMonitor'
 import { SessionProvider, useSession } from '@/lib/session'
+import { ThemeProvider } from '@/lib/theme'
+import { TextSizeProvider } from '@/lib/textSize'
 import type { Intent } from '@/lib/nav'
 
 function Routes() {
@@ -20,7 +25,7 @@ function Routes() {
   const [focusOrder, setFocusOrder] = useState<string | null>(null)
   const [intent, setIntent] = useState<Intent & { n: number }>({ n: 0 })
 
-  if (loading) return <div className="grid min-h-dvh place-items-center"><Loader2 className="animate-spin" /></div>
+  if (loading) return <div className="grid min-h-dvh place-items-center"><span className="glass grid size-20 place-items-center rounded-full"><Loader2 className="animate-spin" size={32} aria-label="Loading" /></span></div>
   if (!user) return <AuthScreen />
 
   const open = (id: string) => {
@@ -31,18 +36,19 @@ function Routes() {
     setIntent((p) => ({ ...i, n: p.n + 1 }))
     setView(v)
   }
-  const nav = (v: View) => go(v)
   const current: View = user.role !== 'founder' && (view === 'founder' || view === 'agent') ? 'home' : view
 
   return (
-    <Shell view={current} setView={nav}>
+    <Shell view={current} go={go}>
       {current === 'home' && <Home go={go} />}
       {current === 'exchange' && <Exchange key={`${focusOrder ?? 'form'}-${intent.n}`} focusOrder={focusOrder} clearFocus={() => setFocusOrder(null)} initialSide={intent.side} />}
       {current === 'crypto' && <Crypto key={intent.n} initial={intent.screen} go={go} />}
       {current === 'wallet' && <Wallet key={intent.n} openTransfer={intent.screen === 'transfer'} />}
       {current === 'activity' && <Activity open={open} />}
       {current === 'alerts' && <Alerts />}
-      {current === 'settings' && <SettingsView />}
+      {current === 'more' && <MoreView go={go} />}
+      {current === 'profile' && <ProfileView />}
+      {current === 'settings' && <SettingsView key={intent.n} initial={intent.settings} />}
       {current === 'founder' && <Founder />}
       {current === 'agent' && <AgentMonitor />}
     </Shell>
@@ -52,7 +58,12 @@ function Routes() {
 export default function App() {
   return (
     <SessionProvider>
-      <Routes />
+      <ThemeProvider>
+        <TextSizeProvider>
+          <Backdrop />
+          <Routes />
+        </TextSizeProvider>
+      </ThemeProvider>
     </SessionProvider>
   )
 }

@@ -82,7 +82,7 @@ export function Tokens() {
                   onClick={() => add.mutate(t.key)}
                   disabled={add.isPending}
                   aria-label={`Add ${t.symbol} on ${t.networkName}`}
-                  className={cx('flex min-h-[44px] shrink-0 items-center gap-1 rounded-2xl border border-line-strong px-4 text-sm font-semibold hover:bg-muted active:scale-95', add.isPending && add.variables === t.key && 'opacity-50')}
+                  className={cx('flex min-h-[44px] shrink-0 items-center gap-1 rounded-2xl border border-line-strong px-4 text-sm font-semibold hover:bg-muted active:scale-95', add.isPending && add.variables === t.key && 'hatch')}
                 >
                   <Plus size={15} /> Add
                 </button>

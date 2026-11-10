@@ -232,12 +232,20 @@ CREATE TABLE IF NOT EXISTS monitor_state (
   chain TEXT PRIMARY KEY, status TEXT NOT NULL, last_block INTEGER, head_block INTEGER, last_poll_at INTEGER,
   poll_ms INTEGER, error TEXT, mode TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS user_settings (
+  user_id TEXT PRIMARY KEY REFERENCES users(id), theme_id TEXT NOT NULL DEFAULT 'cobalt-lime', updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS user_profiles (
+  user_id TEXT PRIMARY KEY REFERENCES users(id), full_name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT, avatar_url TEXT,
+  verification_status TEXT NOT NULL DEFAULT 'unverified', created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
 `)
 
 function addColumn(table: string, column: string, type: string) {
   const cols = db.query(`PRAGMA table_info(${table})`).all() as { name: string }[]
   if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`)
 }
+addColumn('user_settings', 'text_scale', "TEXT NOT NULL DEFAULT 'medium'")
 addColumn('users', 'username', 'TEXT')
 addColumn('users', 'phone', 'TEXT')
 if (!(db.query("PRAGMA table_info(ledger_entries)").all() as { name: string }[]).some((c) => c.name === 'status')) {

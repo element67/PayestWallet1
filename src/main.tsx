@@ -23,8 +23,34 @@ import { config } from './config'
 import App from './App'
 import { installShareSync } from './lib/share'
 import './index.css'
+import { applyTheme, localTheme } from './lib/themes'
+import { applyTextSize, localTextSize } from './lib/textSizes'
 
 const queryClient = new QueryClient()
+
+// The wallet-connect popup reads the same theme tokens as the rest of the app.
+const connectTheme = {
+  '--ck-font-family': '"DM Sans", sans-serif',
+  '--ck-border-radius': '24px',
+  '--ck-overlay-background': 'color-mix(in srgb, var(--outline) 72%, transparent)',
+  '--ck-overlay-backdrop-filter': 'none',
+  '--ck-body-background': 'var(--card)',
+  '--ck-body-background-secondary': 'var(--card-muted)',
+  '--ck-body-background-secondary-hover-background': 'var(--card-strong)',
+  '--ck-body-background-tertiary': 'var(--card-muted)',
+  '--ck-body-color': 'var(--card-ink)',
+  '--ck-body-color-muted': 'var(--card-subtle)',
+  '--ck-body-color-muted-hover': 'var(--card-ink)',
+  '--ck-body-divider': 'var(--card-divider)',
+  '--ck-primary-button-background': 'var(--card-muted)',
+  '--ck-primary-button-hover-background': 'var(--card-strong)',
+  '--ck-secondary-button-background': 'var(--card-muted)',
+  '--ck-secondary-button-hover-background': 'var(--card-strong)',
+  '--ck-focus-color': 'var(--accent)',
+  '--ck-modal-box-shadow': '0 0 0 3px var(--outline), 7px 7px 0 3px var(--shadow-c)',
+  '--ck-primary-button-box-shadow': '0 0 0 2px var(--outline)',
+  '--ck-secondary-button-box-shadow': '0 0 0 2px var(--outline)',
+} as Record<string, string>
 
 // Studio logo SVG
 const StudioLogo = () => (
@@ -33,50 +59,41 @@ const StudioLogo = () => (
   </svg>
 )
 
-// Studio watermark component - links back to Studio
+// Studio watermark component - links back to Studio. Styled by the theme (see .studio-badge in index.css).
 const StudioWatermark = () => (
-  <a
-    href="https://studio.arc.io/"
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      position: 'fixed',
-      bottom: '16px',
-      right: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      padding: '8px 14px',
-      fontSize: '12px',
-      fontWeight: 600,
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      color: '#1B3158',
-      textDecoration: 'none',
-      cursor: 'pointer',
-      background: 'rgba(172, 198, 233, 0.85)',
-      backdropFilter: 'blur(12px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(12px) saturate(180%)',
-      borderRadius: '20px',
-      border: '1px solid rgba(255, 255, 255, 0.4)',
-      zIndex: 9999,
-      boxShadow: '0 4px 20px rgba(27, 49, 88, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-    }}
-  >
+  <a href="https://studio.arc.io/" target="_blank" rel="noopener noreferrer" className="studio-badge">
     <StudioLogo />
     Built with Arc Studio
   </a>
 )
 
+// The saved theme is applied before the first paint, so there is no flash of the wrong colours.
+applyTheme(localTheme())
+applyTextSize(localTextSize())
 installShareSync()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
+        <ConnectKitProvider customTheme={connectTheme}>
           <App />
           <StudioWatermark />
-          <Toaster position="top-center" />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              unstyled: true,
+              classNames: {
+                toast: 'sticker flex w-full items-center gap-3 rounded-2xl p-4 text-sm font-bold',
+                title: 'font-extrabold',
+                description: 'text-xs font-medium',
+                error: '!bg-danger !text-on-danger',
+                success: '',
+                actionButton: 'rounded-full border-2 border-outline bg-accent px-3 py-1 text-accent-ink',
+                cancelButton: 'rounded-full border-2 border-outline bg-muted px-3 py-1 text-ink',
+              },
+            }}
+          />
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

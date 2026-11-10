@@ -21,11 +21,11 @@ export function Home({ go }: { go: (view: View, intent?: Intent) => void }) {
   return (
     <div className="space-y-5">
       <div>
-        <div className="eyebrow">Welcome back</div>
-        <h1 className="display text-3xl font-semibold leading-tight">{user?.name.split(' ')[0]}</h1>
+        <div className="eyebrow plate-sub mb-2 !py-0.5">Welcome back</div>
+        <h1 className="plate display text-4xl leading-tight">{user?.name.split(' ')[0]}</h1>
       </div>
       {isError && (
-        <button onClick={() => void refetch()} className="flex min-h-[44px] w-full items-center gap-2 rounded-2xl border border-danger/40 bg-danger/10 px-4 text-left text-sm text-danger">
+        <button onClick={() => void refetch()} className="border border-outline flex min-h-[44px] w-full items-center gap-2 rounded-2xl bg-danger px-4 text-left text-sm font-extrabold text-on-danger">
           <AlertCircle size={16} /> Could not load your balances. Tap to retry.
         </button>
       )}

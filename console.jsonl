@@ -1,0 +1,594 @@
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794186874903}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794186875531}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794187012739}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794187026193}
+{"level":"debug","message":"[vite] connected.","timestamp":1794233560498}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (new export)","timestamp":1794233907946}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794233907948}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233907948}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (\"cx\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794233909523}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794233909523}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233909524}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/views/Activity.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/views/Alerts.tsx","timestamp":1794233912209}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] hot updated: /src/views/AgentMonitor.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] hot updated: /src/components/OrderTracker.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] hot updated: /src/components/ExchangeCredits.tsx","timestamp":1794233912210}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BuyScreen.tsx","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794233912211}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/P2PCard.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PinPad.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794233912212}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794233912213}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/SwapScreen.tsx","timestamp":1794233912213}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794233912213}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794233912213}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794233912213}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/RatesPanel.tsx","timestamp":1794233912214}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ShopSheet.tsx","timestamp":1794233912214}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794233912214}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/BillSheet.tsx","timestamp":1794233912214}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/SetPin.tsx","timestamp":1794233912214}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ActivitySheet.tsx","timestamp":1794233912215}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794233912215}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794233912215}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/UsersPanel.tsx","timestamp":1794233912215}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LimitsPanel.tsx","timestamp":1794233912215}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/OrdersPanel.tsx","timestamp":1794233912215}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794233912216}
+{"level":"debug","message":"[vite] invalidate /src/components/naira/Receipt.tsx: Could not Fast Refresh (\"receiptText\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794233912216}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/Receipt.tsx","timestamp":1794233912216}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/AlertsPanel.tsx","timestamp":1794233912216}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/NairaAdmin.tsx","timestamp":1794233912217}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794233912217}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LiquidityForm.tsx","timestamp":1794233912217}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/OpResult.tsx","timestamp":1794233912217}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/EmptyBalance.tsx","timestamp":1794233912218}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794233912218}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794233912218}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/WalletPolicy.tsx","timestamp":1794233912218}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233914433}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794233914433}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233914434}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233914434}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794233914435}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794233914436}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794233914437}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794233914437}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794233914437}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233914437}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794233914437}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794233914438}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233914438}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794233914438}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794233914438}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233917252}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794233917252}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794233917252}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233917252}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794233917252}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233918736}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794233918737}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794233918737}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794233918737}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794233943978}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233943978}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794233954582}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233954582}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794233963212}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233963212}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233965198}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233965198}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233966327}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233966328}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794233967474}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794233967474}
+{"level":"debug","message":"[vite] connected.","timestamp":1794236364471}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794236385164}
+{"level":"debug","message":"[vite] connected.","timestamp":1794236389585}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794236397548}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236397548}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794236397550}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236397550}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794236398170}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236398171}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794236398171}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236398172}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794236398998}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794236398999}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236399000}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794236401645}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794236401645}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794236401646}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794236401646}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794236401648}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794236401648}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794236401648}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794236401648}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794236402028}
+{"level":"error","message":"[vite] Failed to reload /src/components/crypto/NetworkStatus.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794236402028}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794236402028}
+{"level":"error","message":"[vite] Failed to reload /src/components/crypto/NetworkStatus.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794236402028}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236402777}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794236402778}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794236402778}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794236402778}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794236402779}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/NetworkStatus.tsx","timestamp":1794236402779}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236402780}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794236402780}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794236402780}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794236402780}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794236402780}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/NetworkStatus.tsx","timestamp":1794236402780}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794236403346}
+{"level":"error","message":"[vite] Failed to reload /src/components/crypto/NetworkStatus.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794236403346}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794236403346}
+{"level":"error","message":"[vite] Failed to reload /src/components/crypto/NetworkStatus.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794236403347}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/NetworkStatus.tsx","timestamp":1794236403536}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236403537}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/NetworkStatus.tsx","timestamp":1794236403537}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794236403537}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263065936}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263373533}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263389975}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263389976}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263389976}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263389977}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263389977}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263389977}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263390720}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263390720}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263390720}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263390721}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263390721}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263390721}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263391652}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263391652}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263391652}
+{"level":"debug","message":"[vite] invalidate /src/lib/session.tsx: Could not Fast Refresh (\"useSession\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263391656}
+{"level":"debug","message":"[vite] hot updated: /src/lib/session.tsx","timestamp":1794263391656}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263391656}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794263393649}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1794263393649}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794263393649}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794263393649}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794263393650}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794263393650}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794263393650}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794263393651}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263393651}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263393651}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794263393652}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794263393652}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263393654}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263393655}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794263393655}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794263393655}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263393969}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263393970}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263393970}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263393970}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263393971}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263393971}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263393971}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263393971}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263393971}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263393981}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263393981}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263393982}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263393983}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (\"cx\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263418606}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794263418607}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263418613}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (\"cx\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263418626}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794263418626}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263418626}
+{"level":"debug","message":"(previous line repeated 2× more)","timestamp":1794263421114}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794263421114}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794263421116}
+{"level":"debug","message":"[vite] hot updated: /src/views/Activity.tsx","timestamp":1794263421117}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794263421118}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794263421118}
+{"level":"debug","message":"[vite] hot updated: /src/views/Alerts.tsx","timestamp":1794263421119}
+{"level":"debug","message":"[vite] hot updated: /src/views/AgentMonitor.tsx","timestamp":1794263421120}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263421124}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794263421125}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794263421127}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/SetPin.tsx","timestamp":1794263421127}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794263421128}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/SwapScreen.tsx","timestamp":1794263421129}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794263421129}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263421129}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263421130}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BuyScreen.tsx","timestamp":1794263421131}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263421131}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794263421132}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LimitsPanel.tsx","timestamp":1794263421132}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/RatesPanel.tsx","timestamp":1794263421133}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794263421133}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794263421134}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/UsersPanel.tsx","timestamp":1794263421134}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/OrdersPanel.tsx","timestamp":1794263421135}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/AlertsPanel.tsx","timestamp":1794263421135}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LiquidityForm.tsx","timestamp":1794263421135}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/NairaAdmin.tsx","timestamp":1794263421137}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421138}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794263421138}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PinPad.tsx","timestamp":1794263421138}
+{"level":"debug","message":"[vite] hot updated: /src/components/ExchangeCredits.tsx","timestamp":1794263421139}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263421140}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263421140}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/P2PCard.tsx","timestamp":1794263421140}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794263421140}
+{"level":"debug","message":"[vite] hot updated: /src/components/OrderTracker.tsx","timestamp":1794263421142}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794263421143}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ActivitySheet.tsx","timestamp":1794263421144}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421145}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794263421145}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263421145}
+{"level":"debug","message":"[vite] invalidate /src/components/naira/Receipt.tsx: Could not Fast Refresh (\"receiptText\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421146}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/Receipt.tsx","timestamp":1794263421147}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/OpResult.tsx","timestamp":1794263421147}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ShopSheet.tsx","timestamp":1794263421147}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/BillSheet.tsx","timestamp":1794263421148}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/EmptyBalance.tsx","timestamp":1794263421149}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263421149}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/WalletPolicy.tsx","timestamp":1794263421150}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794263421150}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794263421151}
+{"level":"debug","message":"(previous line repeated 2× more)","timestamp":1794263421155}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794263421155}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794263421155}
+{"level":"debug","message":"[vite] hot updated: /src/views/Activity.tsx","timestamp":1794263421156}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794263421156}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794263421157}
+{"level":"debug","message":"[vite] hot updated: /src/views/Alerts.tsx","timestamp":1794263421159}
+{"level":"debug","message":"[vite] hot updated: /src/views/AgentMonitor.tsx","timestamp":1794263421159}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263421160}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794263421160}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794263421160}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/SetPin.tsx","timestamp":1794263421160}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794263421161}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/SwapScreen.tsx","timestamp":1794263421161}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794263421161}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263421161}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263421165}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BuyScreen.tsx","timestamp":1794263421165}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263421165}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794263421165}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LimitsPanel.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/RatesPanel.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/UsersPanel.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/OrdersPanel.tsx","timestamp":1794263421166}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/AlertsPanel.tsx","timestamp":1794263421167}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LiquidityForm.tsx","timestamp":1794263421167}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/NairaAdmin.tsx","timestamp":1794263421167}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PinPad.tsx","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/ExchangeCredits.tsx","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263421178}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/P2PCard.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/components/OrderTracker.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ActivitySheet.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794263421179}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] invalidate /src/components/naira/Receipt.tsx: Could not Fast Refresh (\"receiptText\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/Receipt.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/OpResult.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ShopSheet.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/BillSheet.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/EmptyBalance.tsx","timestamp":1794263421180}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263421181}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/WalletPolicy.tsx","timestamp":1794263421181}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794263421181}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794263421181}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263421988}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794263421989}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263421990}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263421991}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263421993}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263421993}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263421993}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263421994}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263421994}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263421994}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263421995}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263421995}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263421996}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263421997}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794263421998}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263422000}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794263422001}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263422001}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263422002}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263422003}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794263422003}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794263422003}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794263422004}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794263422004}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794263422005}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794263422006}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794263422006}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794263422007}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794263422007}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794263422007}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263479444}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263479526}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263755388}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794263755392}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264139104}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264139113}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794264273344}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264273345}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794264273347}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264273347}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794264274628}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264274628}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794264274630}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264274630}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794264275138}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264275138}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794264275139}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264275139}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794264275909}
+{"level":"error","message":"[vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794264275909}
+{"level":"error","message":"[vite] TypeError: Importing a module script failed.","timestamp":1794264275910}
+{"level":"error","message":"[vite] Failed to reload /src/components/founder/TokensAdmin.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1794264275910}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794264275910}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264275910}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794264277659}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264277659}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794264278328}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264278328}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794264279184}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264279185}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794264279900}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/AppearancePicker.tsx","timestamp":1794264279900}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264279900}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794264293946}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264293947}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794264294037}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264294037}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794264300648}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264300648}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794264300652}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794264300652}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264464861}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264464865}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264670433}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264670453}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264785675}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794264785679}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265004796}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265004878}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265027872}
+{"level":"error","message":"Error: useTheme must be used inside ThemeProvider","timestamp":1794265076446,"source":"https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx?t=1794265073443:81:72","stack":"useTheme@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx:81:26\nBackdrop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/components/Backdrop.tsx:234:27\nrenderWithHooks@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:18474:35\nmountIndeterminateComponent@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:21852:36\ncallCallback2@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10558:27\ndispatchEvent@[native code]\ninvokeGuardedCallbackDev@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10583:37\ninvokeGuardedCallback@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10617:44\nbeginWork$1@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26696:36\nperformUnitOfWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26129:31\nworkLoopSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26068:30\nrenderRootSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26047:27\nperformConcurrentWorkOnRoot@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:25606:97\nworkLoop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:462:50\nflushWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:441:30\nperformWorkUntilDeadline@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:649:50"}
+{"level":"error","message":"Error: useTheme must be used inside ThemeProvider","timestamp":1794265076461,"source":"https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx?t=1794265073443:81:72","stack":"useTheme@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx:81:26\nBackdrop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/components/Backdrop.tsx:234:27\nrenderWithHooks@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:18474:35\nmountIndeterminateComponent@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:21852:36\ncallCallback2@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10558:27\ndispatchEvent@[native code]\ninvokeGuardedCallbackDev@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10583:37\ninvokeGuardedCallback@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:10617:44\nbeginWork$1@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26696:36\nperformUnitOfWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26129:31\nworkLoopSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26068:30\nrenderRootSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26047:27\nrecoverFromConcurrentError@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:25664:42\nperformConcurrentWorkOnRoot@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:25612:56\nworkLoop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:462:50\nflushWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:441:30\nperformWorkUntilDeadline@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:649:50"}
+{"level":"error","message":"The above error occurred in the <Backdrop> component:\n\nBackdrop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/components/Backdrop.tsx:234:27\nThemeProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx:34:5\nSessionProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/session.tsx:30:5\nApp\nLe@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js:18781:42\nWeb3ContextProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js:54919:56\nConnectKitProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js:58408:44\nQueryClientProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-RMG7DFXY.js:39:36\nHydrate@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-6GWMOOAP.js:392:81\nWagmiProvider@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-6GWMOOAP.js:414:42\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1794265076466}
+{"level":"error","message":"Error: useTheme must be used inside ThemeProvider","timestamp":1794265076466,"source":"https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=3579117c:26344:26","stack":"useTheme@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/lib/theme.tsx:81:26\nBackdrop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/src/components/Backdrop.tsx:234:27\nrenderWithHooks@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:18474:35\nmountIndeterminateComponent@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:21852:36\nbeginWork$1@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26684:31\nperformUnitOfWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26129:31\nworkLoopSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26068:30\nrenderRootSync@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:26047:27\nrecoverFromConcurrentError@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:25664:42\nperformConcurrentWorkOnRoot@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:25612:56\nworkLoop@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:462:50\nflushWork@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:441:30\nperformWorkUntilDeadline@https://ii0bov8alb5ph8q9i2t8w.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js:649:50"}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265191939}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265191941}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265407739}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265407744}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265578792}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265578820}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265743598}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265743608}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265993105}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794265993617}
+{"level":"debug","message":"[vite] connected.","timestamp":1794265997763}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794266280511}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794266280914}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794266462183}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794266462185}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (\"cx\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794291992669}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794291992670}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794291992670}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794291994586}
+{"level":"debug","message":"[vite] invalidate /src/components/Shell.tsx: Could not Fast Refresh (\"moreItemsFor\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794291994586}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794291994586}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794291994586}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/MoreView.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/Activity.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/ProfileView.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/Alerts.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794291994587}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794291994588}
+{"level":"debug","message":"[vite] hot updated: /src/views/AgentMonitor.tsx","timestamp":1794291994588}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794291994588}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794291994588}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794291994588}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794291994588}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/Pieces.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/P2PCard.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BuyScreen.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/SetPin.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/SwapScreen.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794291994589}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/AppearancePicker.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/TextSizePicker.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/OrderTracker.tsx","timestamp":1794291994590}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PinPad.tsx","timestamp":1794291994591}
+{"level":"debug","message":"[vite] hot updated: /src/components/ExchangeCredits.tsx","timestamp":1794291994591}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794291994591}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ActivitySheet.tsx","timestamp":1794291994591}
+{"level":"debug","message":"[vite] invalidate /src/lib/privacy.tsx: Could not Fast Refresh (\"usePrivacy\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794291994591}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794291994591}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/BillSheet.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] invalidate /src/components/naira/Receipt.tsx: Could not Fast Refresh (\"receiptText\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/Receipt.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/RatesPanel.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ShopSheet.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794291994592}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LimitsPanel.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/OrdersPanel.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/EmptyBalance.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/NairaAdmin.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/AlertsPanel.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/OpResult.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LiquidityForm.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/UsersPanel.tsx","timestamp":1794291994593}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794291994594}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794291994594}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/WalletPolicy.tsx","timestamp":1794291994594}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/views/MoreView.tsx","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794291995851}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794291995852}
+{"level":"debug","message":"[vite] invalidate /src/components/Shell.tsx: Could not Fast Refresh (\"moreItemsFor\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292043185}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794292043185}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292043185}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794292239730}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794292346874}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292366863}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794292366863}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292366863}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794292367817}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292367817}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794292368529}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292368529}
+{"level":"debug","message":"(previous line repeated 2× more)","timestamp":1794292369217}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794292369217}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794292369217}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794292452031}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794292642525}
+{"level":"debug","message":"[vite] invalidate /src/components/ui.tsx: Could not Fast Refresh (\"cx\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292680843}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui.tsx","timestamp":1794292680843}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292680843}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794292681807}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292681807}
+{"level":"debug","message":"(previous line repeated 1× more)","timestamp":1794292682916}
+{"level":"debug","message":"[vite] invalidate /src/components/Shell.tsx: Could not Fast Refresh (\"moreItemsFor\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/components/Shell.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/components/AuthScreen.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/SettingsView.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/MoreView.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Crypto.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Activity.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/ProfileView.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Alerts.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Founder.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Exchange.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/AgentMonitor.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] invalidate /src/components/home/Actions.tsx: Could not Fast Refresh (\"HOME_ACTIONS\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/Actions.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/AssetsList.tsx","timestamp":1794292682916}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/History.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/Pieces.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/P2PCard.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BuyScreen.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/SetPin.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/SwapScreen.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Send.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FundSheet.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/AppearancePicker.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Receive.tsx","timestamp":1794292682917}
+{"level":"debug","message":"[vite] hot updated: /src/components/settings/TextSizePicker.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/home/DashboardCard.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/BridgeScreen.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/OrderTracker.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PinPad.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/ExchangeCredits.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/TokenPicker.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ActivitySheet.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/lib/privacy.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/BillSheet.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] invalidate /src/components/naira/Receipt.tsx: Could not Fast Refresh (\"receiptText\" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/Receipt.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/RatesPanel.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/FlightSheet.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/ShopSheet.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/TransferSheet.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Tokens.tsx","timestamp":1794292682918}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LimitsPanel.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/OrdersPanel.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TokensAdmin.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/TestCredit.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/EmptyBalance.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/NairaAdmin.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/AlertsPanel.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/OpResult.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/LiquidityForm.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/UsersPanel.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/LiveDeposit.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/components/founder/WalletPolicy.tsx","timestamp":1794292682919}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/views/MoreView.tsx","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/views/Home.tsx","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/components/crypto/Overview.tsx","timestamp":1794292683946}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1794292683947}
+{"level":"debug","message":"[vite] hot updated: /src/views/Wallet.tsx","timestamp":1794292683947}
+{"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794292683947}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794293342232}

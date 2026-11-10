@@ -43,7 +43,7 @@ export function AlertsPanel() {
               <span className="text-xs text-subtle">{ago(l.at)}</span>
             </div>
             <div className="truncate text-xs text-subtle">{l.actor ?? 'system'} · {l.target}</div>
-            {l.after && <div className="mono truncate text-[11px] text-subtle" title={l.after}>{l.after.slice(0, 120)}</div>}
+            {l.after && <div className="mono truncate text-xs text-subtle" title={l.after}>{l.after.slice(0, 120)}</div>}
           </div>
         ))}
       </Card>

@@ -6,8 +6,8 @@ export interface ActionDef { id: string; label: string; icon: ReactNode; tone?: 
 
 export function ActionButton({ label, icon, onClick, primary }: { label: string; icon: ReactNode; onClick: () => void; primary?: boolean }) {
   return (
-    <button onClick={onClick} className="group flex min-h-[44px] flex-col items-center gap-1.5 text-xs font-semibold" aria-label={label}>
-      <span className={cx('grid size-14 place-items-center rounded-full transition group-active:scale-95', primary ? 'bg-accent text-accent-ink' : 'border border-line-strong text-ink group-hover:bg-muted')}>{icon}</span>
+    <button onClick={onClick} className="glass tile no-pop group flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-3xl px-1 py-2 text-xs font-extrabold" aria-label={label}>
+      <span className={cx('grid size-12 place-items-center rounded-full border-2 border-outline transition group-active:scale-95', primary ? 'bg-accent text-accent-ink' : 'bg-surface-strong text-ink')}>{icon}</span>
       {label}
     </button>
   )
@@ -29,7 +29,7 @@ export type HomeActionId = (typeof HOME_ACTIONS)[number]['id']
 /** 4 columns by 2 rows. Transfer is for Naira; the rest are crypto. */
 export function ActionGrid({ onPick }: { onPick: (id: HomeActionId) => void }) {
   return (
-    <div className="grid grid-cols-4 gap-y-4">
+    <div className="action-grid grid gap-3">
       {HOME_ACTIONS.map((a) => <ActionButton key={a.id} label={a.label} icon={a.icon} primary={'primary' in a && a.primary} onClick={() => onPick(a.id)} />)}
     </div>
   )

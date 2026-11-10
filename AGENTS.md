@@ -53,3 +53,14 @@ Crypto-to-Naira exchange (sandbox). Bun API + SQLite in `server/`, React app in 
 bun install
 bun run dev
 ```
+
+## Design system notes
+- All colours are theme tokens (CSS variables) set by `src/lib/themes.ts` from three colours per theme. Never write a colour in a screen or component; use the Tailwind token classes (`bg-card`, `text-ink`, `bg-accent`, `border-outline`, ...).
+- Anything inside a card (`.glass`, `.sticker`, `.on-card`) reads the card's own text colours. Status colours: `text-success/danger/warn` are the readable shade for the surface; solid `bg-success/danger/warn` fills use the vivid colour with `text-on-*`.
+- Background artwork: `src/components/Backdrop.tsx` (three compositions shared across the themes).
+- Theme API and profile API: `server/settings.ts`. After changing `tailwind.config.js`, restart the dev server.
+
+## Type scale notes
+- Font sizes are defined once in `tailwind.config.js` (rem x `--text-scale`; headlines use `--text-scale-h`). Use the Tailwind size names (`text-xs` is 14px at Small, `text-sm` is 16px). Never write a pixel font size in a component.
+- `src/lib/textSizes.ts` holds the four sizes; `src/lib/textSize.tsx` loads, applies and saves the choice (`/api/settings/text-size`).
+- `.truncate` wraps instead of cutting text off. Layout that must change with the size keys off `html[data-text=...]` in `src/index.css` (`.action-grid`, `.dash-split`).

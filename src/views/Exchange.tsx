@@ -131,14 +131,14 @@ function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => v
               onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
               placeholder="0.00"
               aria-label="Amount"
-              className="display num mt-1 w-full bg-transparent text-5xl font-semibold text-ink placeholder:text-subtle/50 focus:outline-none"
+              className="display num mt-1 w-full bg-transparent text-5xl font-semibold text-ink placeholder:text-subtle focus:outline-none"
             />
           </div>
 
           <div className="mt-3 rounded-3xl border border-line p-4">
             <span className="eyebrow">{side === 'sell' ? 'You receive (NGN)' : `You receive (${symbol})`}</span>
             <div className="display num mt-1 min-h-12 text-4xl font-semibold">
-              {quote ? (side === 'sell' ? ngn(quote.netNgn) : `${crypto(quote.cryptoAmount)} ${symbol}`) : <span className="text-subtle/50">{quoteErr ? '-' : '0.00'}</span>}
+              {quote ? (side === 'sell' ? ngn(quote.netNgn) : `${crypto(quote.cryptoAmount)} ${symbol}`) : <span className="text-subtle">{quoteErr ? '-' : '0.00'}</span>}
             </div>
             {quoteErr && <p className="mt-1 text-sm text-danger">{quoteErr}</p>}
           </div>

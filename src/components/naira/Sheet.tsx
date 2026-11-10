@@ -20,21 +20,21 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-40 flex items-end justify-center lg:items-center">
-          <motion.div className="absolute inset-0 bg-black/60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+          <motion.div className="scrim absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl border border-line bg-bg shadow-2xl lg:rounded-3xl"
+            className="sticker relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl lg:rounded-3xl"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 320 }}
           >
-            <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-line-strong lg:hidden" />
+            <div className="mx-auto mt-2 h-2 w-14 rounded-full border-2 border-outline bg-accent lg:hidden" />
             <div className="flex items-center justify-between px-5 pb-2 pt-3">
-              <h2 className="display text-xl font-semibold">{title}</h2>
-              <button aria-label="Close" onClick={onClose} className="grid size-11 place-items-center rounded-xl hover:bg-muted"><X size={18} /></button>
+              <h2 className="display text-2xl">{title}</h2>
+              <button aria-label="Close" onClick={onClose} className="border border-outline grid size-11 place-items-center rounded-full bg-accent text-accent-ink"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto px-5 pb-6">{children}</div>
           </motion.div>

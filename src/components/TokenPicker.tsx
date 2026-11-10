@@ -31,7 +31,7 @@ function Row({ t, mode, reason, selected, onPick }: { t: TokenInfo; mode: Balanc
     <li>
       <button
         onClick={onPick} disabled={Boolean(reason)} aria-pressed={selected}
-        className={cx('flex min-h-[60px] w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition', reason ? 'opacity-50' : 'hover:bg-muted active:bg-muted', selected && 'bg-accent/10')}
+        className={cx('flex min-h-[60px] w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition', reason ? 'hatch cursor-not-allowed' : 'hover:bg-muted active:bg-muted', selected && 'bg-accent/10')}
       >
         <TokenIcon symbol={t.symbol} logo={t.logo} size={36} />
         <span className="min-w-0 flex-1">
@@ -73,7 +73,7 @@ export function TokenPicker({ open, onClose, onSelect, selected, title = 'Choose
         <input
           value={q} onChange={(e) => setQ(e.target.value)} type="search" inputMode="search" autoComplete="off" spellCheck={false} maxLength={60}
           placeholder="Search name, symbol, network or contract" aria-label="Search tokens"
-          className="min-h-[44px] w-full rounded-2xl border border-line bg-bg pl-10 pr-3 text-sm placeholder:text-subtle focus:border-accent focus:outline-none"
+          className="min-h-[44px] w-full rounded-2xl border border-line bg-surface-strong pl-10 pr-3 text-sm placeholder:text-subtle focus:border-accent focus:outline-none"
         />
       </div>
       {isLoading && <div className="space-y-2" aria-busy="true">{[0, 1, 2, 3].map((i) => <div key={i} className="h-14 animate-pulse rounded-2xl bg-muted" />)}</div>}

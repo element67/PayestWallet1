@@ -30,7 +30,7 @@ export function Founder() {
       <PageTitle title="Founder dashboard" sub="Volume, liquidity, rates, limits and risk in one place. Every change is written to the audit log." />
       <div className="scroll-thin mb-5 flex gap-2 overflow-x-auto pb-1">
         {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={cx('min-h-10 shrink-0 rounded-xl px-4 text-sm font-semibold', tab === t ? 'bg-accent text-accent-ink' : 'border border-line text-ink-2 hover:bg-muted')}>{t}</button>
+          <button key={t} onClick={() => setTab(t)} className={cx('border border-outline min-h-11 shrink-0 rounded-full px-4 text-sm font-extrabold', tab === t ? 'bg-accent text-accent-ink' : 'bg-card text-card-ink')}>{t}</button>
         ))}
       </div>
       {tab === 'Overview' && <OverviewPanel />}
@@ -89,8 +89,8 @@ function OverviewPanel() {
               {o.daily.length === 0 && <span className="text-sm text-subtle">No orders yet.</span>}
               {o.daily.map((d) => (
                 <div key={d.d} className="flex flex-1 flex-col items-center gap-1">
-                  <div className="w-full rounded-t-lg bg-accent" style={{ height: `${(d.c / max) * 100}%`, minHeight: 4 }} title={`${d.c} orders`} />
-                  <span className="text-[10px] text-subtle">{d.d.slice(5)}</span>
+                  <div className="w-full rounded-t-lg border-2 border-outline bg-accent" style={{ height: `${(d.c / max) * 100}%`, minHeight: 4 }} title={`${d.c} orders`} />
+                  <span className="text-xs text-subtle">{d.d.slice(5)}</span>
                 </div>
               ))}
             </div>
