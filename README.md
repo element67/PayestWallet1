@@ -66,7 +66,8 @@ Prerequisites: Bun.
 ```bash
 bun install
 bun run dev        # Next.js app on :5173 (it serves the API under /api) plus the background worker
-bun run build      # production build of the web app
+bun run build      # production build of the web app (run `bun run typecheck` separately)
+bun run start      # serve the production build on :5173 (run `bun run worker` beside it)
 bun scripts/db-migrate.ts   # create or update the database tables
 bun run worker     # background worker only: job queue, chain monitors, transaction agent (one runs at a time)
 bun run server     # standalone API plus worker on :3001, used by the scripts/*-test.ts checks

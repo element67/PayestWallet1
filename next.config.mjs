@@ -13,6 +13,9 @@ const UNUSED_WALLET_SDKS = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Type checking is its own step (`bun run typecheck`, part of `bun run check`). Running it again inside the build needs more memory than small machines have.
+  typescript: { ignoreBuildErrors: true },
+  experimental: { webpackMemoryOptimizations: true, optimizePackageImports: ['@web3icons/react', 'lucide-react', 'wagmi', 'viem', 'connectkit', 'framer-motion'] },
   poweredByHeader: false,
   // This project, not a lockfile found in a parent folder, is the root.
   outputFileTracingRoot: process.cwd(),
@@ -20,8 +23,6 @@ const nextConfig = {
   allowedDevOrigins: ['*.preview.studio.arc.io', '*.studio.arc.io', ...(process.env.ALLOWED_DEV_ORIGINS ?? '').split(',').map((h) => h.trim()).filter(Boolean)],
   // Server-side packages that must load as plain Node modules rather than being bundled.
   serverExternalPackages: ['postgres', 'pino-pretty', '@circle-fin/app-kit', '@circle-fin/adapter-viem-v2', '@circle-fin/bridge-kit'],
-  // Keeps the dev server light: these packages export thousands of modules from one barrel file.
-  experimental: { optimizePackageImports: ['@web3icons/react', 'lucide-react', 'wagmi', 'viem', 'connectkit', 'framer-motion'] },
   webpack: (config, { dev }) => {
     // Arc Studio rewrites traces.jsonl and console.jsonl in the project root, and the database and contract build
     // output change while the app runs. Watching them would recompile the app in a loop.

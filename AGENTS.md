@@ -24,7 +24,7 @@ Crypto-to-Naira exchange (sandbox). Bun API + SQLite in `server/`, React app in 
 
 ## Tech Stack
 
-- Frontend: React 18, Vite, TypeScript, Tailwind CSS
+- Frontend: Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS
 - Web3: wagmi v2, viem v2, ConnectKit
 - Contracts: Solidity 0.8.28 + Foundry. Sources in `contracts/`, unit tests in `contracts/test/*.t.sol`. Build with `bun run contracts:build` (`forge build`), test with `bun run contracts:test` (`forge test`).
 - Wallet: injected (MetaMask, etc.)
@@ -74,4 +74,5 @@ Owner and treasury payout: 0x4674A1b673b4A9e682888d10a52509b6b88123C2 (user-supp
 - Bridge: Circle CCTP via @circle-fin/app-kit, USDC only, Arc/Ethereum Sepolia/Base Sepolia, forwarding service (no destination gas). App-wallet transfers run server-side after a PIN (bridge_ops table); browser-wallet transfers run client-side.
 - Vault watch addresses (public) are founder settings: vault_address_arc (EVM), vault_address_solana, vault_address_bitcoin. Solana/Bitcoin deposits are not auto-detected yet.
 - Architecture (Next.js stage 4 done): the API runs inside Next.js (src/app/api/[...path]/route.ts imports server/app.ts). Background work (queue, chain monitors, agent, bridge sweep) runs in a separate Bun process, worker/index.ts, which takes a Postgres advisory lock so only one runs. server/index.ts is the standalone API plus worker for scripts/tests. The token catalog is held in memory and re-read every 30s in each process.
+- Stage 5 done: each customer screen is a real route under src/app/(app)/ (/, /exchange, /crypto, /wallet, /activity, /alerts, /more, /profile, /settings), inside one shared client frame (src/AppFrame.tsx). Screen options travel in the address (/crypto?screen=send, /exchange?side=buy, /exchange?order=ID, /settings?settings=appearance). The admin area is separate at /admin. Vite files were removed. `next build` skips its own type check (run `bun run typecheck`).
 

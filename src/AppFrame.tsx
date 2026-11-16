@@ -1,28 +1,32 @@
+'use client'
+
 /*
- *  ███████╗████████╗██╗   ██╗██████╗ ██╗ ██████╗
- *  ██╔════╝╚══██╔══╝██║   ██║██╔══██╗██║██╔═══██╗
- *  ███████╗   ██║   ██║   ██║██║  ██║██║██║   ██║
- *  ╚════██║   ██║   ██║   ██║██║  ██║██║██║   ██║
- *  ███████║   ██║   ╚██████╔╝██████╔╝██║╚██████╔╝
- *  ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝ ╚═════╝
- *
  *  Built with Arc Studio
  *  https://studio.arc.io
+ *
+ * The frame shared by every customer page: wallet, query and theme providers, the sign-in gate and the navigation shell.
+ * Pages render inside it as children. It is loaded in the browser only (see src/app/(app)/layout.tsx), so every browser
+ * API used below is safe at import time.
  */
 
 import './tracing'
 import './console-capture'
 
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode, type ReactNode } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectKitProvider } from 'connectkit'
 import { Toaster } from 'sonner'
 import { config } from './config'
-import App from './App'
+import { AppSkeleton } from './components/AppSkeleton'
+import { AuthScreen } from './components/AuthScreen'
+import { Backdrop } from './components/Backdrop'
+import { Shell } from './components/Shell'
+import { NavProvider, useNav } from './lib/navigation'
+import { SessionProvider, useSession } from './lib/session'
+import { ThemeProvider } from './lib/theme'
+import { TextSizeProvider } from './lib/textSize'
 import { installShareSync } from './lib/share'
-import './index.css'
 import { applyTheme, localTheme } from './lib/themes'
 import { applyTextSize, localTextSize } from './lib/textSizes'
 
@@ -67,36 +71,58 @@ const StudioWatermark = () => (
   </a>
 )
 
-// The saved theme is applied before the first paint, so there is no flash of the wrong colours.
+// The saved theme is applied before the first paint of the app, so there is no flash of the wrong colours.
 applyTheme(localTheme())
 applyTextSize(localTextSize())
 installShareSync()
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider customTheme={connectTheme}>
-          <App />
-          <StudioWatermark />
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              unstyled: true,
-              classNames: {
-                toast: 'sticker flex w-full items-center gap-3 rounded-2xl p-4 text-sm font-bold',
-                title: 'font-extrabold',
-                description: 'text-xs font-medium',
-                error: '!bg-danger !text-on-danger',
-                success: '',
-                actionButton: 'rounded-full border-2 border-outline bg-accent px-3 py-1 text-accent-ink',
-                cancelButton: 'rounded-full border-2 border-outline bg-muted px-3 py-1 text-ink',
-              },
-            }}
-          />
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  </StrictMode>,
-)
+/** Sign-in gate and navigation shell around whichever page is open. */
+function Frame({ children }: { children: ReactNode }) {
+  const { user, loading } = useSession()
+  const { view, go } = useNav()
+  if (loading) return <AppSkeleton />
+  if (!user) return <AuthScreen />
+  return <Shell view={view} go={go}>{children}</Shell>
+}
 
+export default function AppFrame({ children }: { children: ReactNode }) {
+  return (
+    <StrictMode>
+      {/* #root carries the stacking rules in index.css that keep the backdrop art behind the screens and the halftone dots behind the cards. */}
+      <div id="root">
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <ConnectKitProvider customTheme={connectTheme}>
+            <SessionProvider>
+              <ThemeProvider>
+                <TextSizeProvider>
+                  <NavProvider>
+                    <Backdrop />
+                    <Frame>{children}</Frame>
+                  </NavProvider>
+                </TextSizeProvider>
+              </ThemeProvider>
+            </SessionProvider>
+            <StudioWatermark />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                unstyled: true,
+                classNames: {
+                  toast: 'sticker flex w-full items-center gap-3 rounded-2xl p-4 text-sm font-bold',
+                  title: 'font-extrabold',
+                  description: 'text-xs font-medium',
+                  error: '!bg-danger !text-on-danger',
+                  success: '',
+                  actionButton: 'rounded-full border-2 border-outline bg-accent px-3 py-1 text-accent-ink',
+                  cancelButton: 'rounded-full border-2 border-outline bg-muted px-3 py-1 text-ink',
+                },
+              }}
+            />
+          </ConnectKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+      </div>
+    </StrictMode>
+  )
+}
