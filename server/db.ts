@@ -42,6 +42,9 @@ if (DB_SCHEMA) {
 await applyMigrations(sql)
 
 const store = new AsyncLocalStorage<TransactionSql>()
+/** Settings read cache (see setting()). Declared early because run() clears it. */
+const SETTINGS_TTL_MS = 3_000
+let settingsCache: { at: number; map: Map<string, string> } | null = null
 type Param = string | number | bigint | boolean | null | undefined
 
 const cache = new Map<string, string>()
@@ -81,6 +84,7 @@ export async function get<T = Record<string, unknown>>(text: string, ...p: Param
 }
 export async function run(text: string, ...p: Param[]): Promise<{ changes: number }> {
   const r = await exec(text, p)
+  if (/\bsettings\b/i.test(text)) settingsCache = null
   return { changes: r.count }
 }
 
@@ -99,15 +103,25 @@ export async function closeDb() {
   g.__nbSql = undefined
 }
 
-for (const [k, v] of Object.entries(DEFAULT_SETTINGS)) {
-  await run('INSERT OR IGNORE INTO settings(key, value) VALUES (?, ?)', k, v)
+// One statement, not one round trip per setting (each round trip to a hosted database costs real time at every boot).
+{
+  const defaults = Object.entries(DEFAULT_SETTINGS)
+  await run(`INSERT OR IGNORE INTO settings(key, value) VALUES ${defaults.map(() => '(?, ?)').join(', ')}`, ...defaults.flat())
 }
 
 export const now = () => Date.now()
 export const uid = (prefix: string) => `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}`
 
+/** All settings in one query, kept for a few seconds. Any write to the settings table in this process clears it. */
+
 export async function setting(key: string): Promise<string> {
-  return (await get<{ value: string }>('SELECT value FROM settings WHERE key=?', key))?.value ?? DEFAULT_SETTINGS[key] ?? ''
+  // Inside a transaction, read the database directly so the transaction sees its own writes.
+  if (store.getStore()) return (await get<{ value: string }>('SELECT value FROM settings WHERE key=?', key))?.value ?? DEFAULT_SETTINGS[key] ?? ''
+  if (!settingsCache || Date.now() - settingsCache.at > SETTINGS_TTL_MS) {
+    const rows = await all<{ key: string; value: string }>('SELECT key, value FROM settings')
+    settingsCache = { at: Date.now(), map: new Map(rows.map((r) => [r.key, r.value])) }
+  }
+  return settingsCache.map.get(key) ?? DEFAULT_SETTINGS[key] ?? ''
 }
 export const settingNum = async (key: string) => Number(await setting(key))
 export const settingBig = async (key: string) => BigInt((await setting(key)) || '0')
