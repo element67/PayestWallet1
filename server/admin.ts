@@ -30,8 +30,11 @@ const SETTING_MAP = {
   orderExpiryMin: { key: 'order_expiry_min', schema: z.number().int().min(5).max(240) },
   instantPayoutsEnabled: { key: 'instant_payouts_enabled', schema: z.boolean() },
   platformPaused: { key: 'platform_paused', schema: z.boolean() },
+  holdsEnabled: { key: 'holds_enabled', schema: z.boolean() },
+  holdHoursTier2: { key: 'hold_hours_tier2', schema: z.number().int().min(1).max(168) },
+  holdHoursDefault: { key: 'hold_hours_default', schema: z.number().int().min(1).max(168) },
 } as const
-const NGN_SETTINGS = { instantLimitNgn: 'instant_payout_limit_kobo', dailyLimitTier1Ngn: 'daily_limit_tier1_kobo', dailyLimitTier2Ngn: 'daily_limit_tier2_kobo', dailyWithdrawLimitNgn: 'daily_withdraw_limit_kobo' } as const
+const NGN_SETTINGS = { instantLimitNgn: 'instant_payout_limit_kobo', dailyLimitTier1Ngn: 'daily_limit_tier1_kobo', dailyLimitTier2Ngn: 'daily_limit_tier2_kobo', dailyWithdrawLimitNgn: 'daily_withdraw_limit_kobo', holdThresholdNgn: 'hold_threshold_kobo' } as const
 
 async function readSettings() {
   const out: Record<string, unknown> = {}

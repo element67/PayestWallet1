@@ -11,7 +11,7 @@ export interface NairaWallet {
 }
 export interface Txn {
   id: string; reference: string; type: string; direction: 'credit' | 'debit'; amount: string; fee: string; total: string
-  status: 'pending' | 'processing' | 'pending_review' | 'success' | 'failed' | 'reversed'
+  status: 'pending' | 'processing' | 'held' | 'pending_review' | 'success' | 'failed' | 'reversed'
   title: string; counterparty: string | null; note: string | null; meta: Record<string, unknown>; failureReason: string | null
   reversed: boolean; underReview: boolean; createdAt: number; completedAt: number | null; sandbox: boolean
   bill?: { category: string; status: string; providerRef: string | null } | null
@@ -47,5 +47,5 @@ export const TYPE_LABEL: Record<string, string> = {
 }
 export const TXN_STATUS: Record<string, { label: string; kind: 'good' | 'bad' | 'warn' | 'info' }> = {
   success: { label: 'Successful', kind: 'good' }, failed: { label: 'Failed', kind: 'bad' }, reversed: { label: 'Reversed', kind: 'warn' },
-  processing: { label: 'Processing', kind: 'info' }, pending: { label: 'Pending', kind: 'info' }, pending_review: { label: 'Under review', kind: 'warn' },
+  processing: { label: 'Processing', kind: 'info' }, held: { label: 'On hold', kind: 'warn' }, pending: { label: 'Pending', kind: 'info' }, pending_review: { label: 'Under review', kind: 'warn' },
 }

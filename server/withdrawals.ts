@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { dailyVolumeKobo, getAsset } from './assets'
 import { HttpError } from './auth'
 import { alert, all, audit, get, notify, now, run, setting, uid, tx } from './db'
+import { announceHold, assessHold, cryptoKey, cryptoLabel, markPaid, registerHold } from './holds'
 import { body, route } from './http'
 import { post } from './ledger'
 import { assertOperational, verifyPin } from './naira/wallet'
@@ -30,7 +31,7 @@ async function view(w: WithdrawalRow) {
 }
 
 const dailyWithdrawnKobo = async (userId: string) =>
-  (await all<{ value_kobo: string }>("SELECT value_kobo FROM withdrawals WHERE user_id=? AND created_at>? AND status<>'failed'", userId, now() - 86_400_000))
+  (await all<{ value_kobo: string }>("SELECT value_kobo FROM withdrawals WHERE user_id=? AND created_at>? AND status NOT IN ('failed','cancelled')", userId, now() - 86_400_000))
     .reduce((s, r) => s + BigInt(r.value_kobo), 0n)
 
 route('GET', '/api/withdrawals', 'user', async (c) => ({
@@ -64,6 +65,7 @@ route('POST', '/api/withdrawals', 'user', async (c) => {
   const dest = b.destAddress
   const id = uid('wd')
   const txHash = `sim:0x${randomHex(32)}`
+  let heldUntil: number | null = null
   await tx(async () => {
     // Limits are checked under the write lock, in the same transaction as the debit, so parallel requests cannot both fit under them.
     const limit = BigInt(await setting('daily_withdraw_limit_kobo'))
@@ -76,22 +78,51 @@ route('POST', '/api/withdrawals', 'user', async (c) => {
       throw new HttpError(403, `Daily limit reached for KYC tier ${c.user.kyc_tier} (NGN ${fromUnits(tierCap, 2)})`)
     }
     await post({ owner: c.user.id, asset: b.asset, delta: -units, reason: 'withdrawal', idem: `wd:${id}:debit` })
+    // First-time destination above the threshold: the funds stay debited (locked) and the send waits out the hold.
+    const hold = await assessHold({ userId: c.user.id, kycTier: c.user.kyc_tier, kind: 'withdrawal', refId: id, cpKey: cryptoKey(dest), cpLabel: cryptoLabel(b.asset, dest), cpKind: 'crypto', amountKobo: valueKobo })
+    heldUntil = hold.held ? hold.releaseAt : null
     await run(
       `INSERT INTO withdrawals(id,user_id,kind,asset,amount,value_kobo,dest,bank_account_id,status,idem_key,reference,tx_hash,created_at,updated_at)
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       id, c.user.id, 'crypto', b.asset, units.toString(), valueKobo.toString(), dest, null,
-      'completed', b.idempotencyKey, null, txHash, now(), now(),
+      hold.held ? 'held' : 'completed', b.idempotencyKey, null, hold.held ? null : txHash, now(), now(),
     )
-    await run(
-      `INSERT INTO chain_txs(id,chain,tx_hash,log_index,asset,from_addr,to_addr,amount,confirmations,status,verdict,simulated,first_seen_at,updated_at,settled_at)
-       VALUES (?,?,?,0,?,?,?,?,1,'finalized','genuine',1,?,?,?)`,
-      uid('ctx'), 'sandbox', txHash, b.asset, 'vault', dest, units.toString(), now(), now(), now(),
-    )
+    if (!hold.held) {
+      await recordSimulatedSend(txHash, b.asset, dest, units)
+      await markPaid(c.user.id, cryptoKey(dest))
+    }
   })
   await audit(c.user.id, 'withdrawal.create', id, undefined, { asset: b.asset, valueKobo: valueKobo.toString() })
-  await notify(c.user.id, 'payout', 'Withdrawal started', `${b.amount} ${b.asset} sent (simulated).`)
+  if (heldUntil !== null) await announceHold(c.user.id, cryptoLabel(b.asset, dest), valueKobo, heldUntil)
+  else await notify(c.user.id, 'payout', 'Withdrawal started', `${b.amount} ${b.asset} sent (simulated).`)
   return { withdrawal: await view(await get<WithdrawalRow>('SELECT * FROM withdrawals WHERE id=?', id) as WithdrawalRow) }
 }, [10, 60_000])
+
+async function recordSimulatedSend(txHash: string, asset: string, dest: string, units: bigint) {
+  await run(
+    `INSERT INTO chain_txs(id,chain,tx_hash,log_index,asset,from_addr,to_addr,amount,confirmations,status,verdict,simulated,first_seen_at,updated_at,settled_at)
+     VALUES (?,?,?,0,?,?,?,?,1,'finalized','genuine',1,?,?,?)`,
+    uid('ctx'), 'sandbox', txHash, asset, 'vault', dest, units.toString(), now(), now(), now(),
+  )
+}
+
+registerHold('withdrawal', {
+  onRelease: async (h) => {
+    const w = await get<WithdrawalRow>('SELECT * FROM withdrawals WHERE id=?', h.ref_id)
+    if (!w || w.status !== 'held') return
+    const txHash = `sim:0x${randomHex(32)}`
+    await run("UPDATE withdrawals SET status='completed', tx_hash=?, updated_at=? WHERE id=?", txHash, now(), w.id)
+    await recordSimulatedSend(txHash, w.asset, w.dest ?? '', BigInt(w.amount))
+    await markPaid(h.user_id, h.cp_key)
+    await notify(h.user_id, 'payout', 'Held withdrawal sent', `Your ${w.asset} withdrawal to ${h.cp_label} was sent (simulated).`)
+  },
+  onCancel: async (h) => {
+    const w = await get<WithdrawalRow>('SELECT * FROM withdrawals WHERE id=?', h.ref_id)
+    if (!w || w.status !== 'held') return
+    await post({ owner: w.user_id, asset: w.asset, delta: BigInt(w.amount), reason: 'held withdrawal cancelled', idem: `wd:${w.id}:cancel` })
+    await run("UPDATE withdrawals SET status='cancelled', updated_at=? WHERE id=?", now(), w.id)
+  },
+})
 
 /** Called by the payment webhook handler for references starting with SBX-WD-. */
 export async function handleWithdrawalEvent(ev: PaymentEvent): Promise<string> {

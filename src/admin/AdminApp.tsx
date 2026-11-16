@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
-import { ArrowLeftRight, Bell, Bot, Coins, FlaskConical, LayoutDashboard, LogOut, Scale, Settings2, ShieldCheck, Tags, Users, Wallet, Gauge, Home } from 'lucide-react'
+import { ArrowLeftRight, Bell, Bot, Coins, FlaskConical, LayoutDashboard, LogOut, Scale, Settings2, ShieldCheck, Tags, Users, Wallet, Gauge, Home, Hourglass } from 'lucide-react'
 import { api, type PublicUser } from '@/lib/api'
 import { useSession } from '@/lib/session'
 import { AppSkeleton } from '@/components/AppSkeleton'
@@ -19,6 +19,7 @@ import { TestCredit } from '@/components/founder/TestCredit'
 import { TokensAdmin } from '@/components/founder/TokensAdmin'
 import { UsersPanel } from '@/components/founder/UsersPanel'
 import { AgentMonitor } from '@/views/AgentMonitor'
+import { Holds } from './panels/Holds'
 import { Ledger } from './panels/Ledger'
 import { Onchain } from './panels/Onchain'
 import { Overview } from './panels/Overview'
@@ -33,6 +34,7 @@ const SECTIONS: Section[] = [
   { slug: 'system', label: 'Queue and chains', title: 'Queue and chain monitors', sub: 'Background jobs, blockchain readers and platform status.', icon: Gauge, group: 'Monitor', render: () => <System /> },
   { slug: 'agent', label: 'AI agent', title: 'AI transaction agent', sub: 'What the agent is watching and deciding.', icon: Bot, group: 'Monitor', render: () => <AgentMonitor /> },
   { slug: 'onchain', label: 'Exchange and bridge', title: 'Exchange and bridge activity', sub: 'Swaps, pools and USDC bridge transfers from app wallets.', icon: Coins, group: 'Monitor', render: () => <Onchain /> },
+  { slug: 'holds', label: 'Held payouts', title: 'Held payouts', sub: 'Large payouts to a first-time destination, waiting out their cooling period.', icon: Hourglass, group: 'Manage', render: () => <Holds /> },
   { slug: 'orders', label: 'Orders', title: 'Orders', sub: 'Every buy, sell and P2P order, with review actions.', icon: ArrowLeftRight, group: 'Manage', render: () => <OrdersPanel /> },
   { slug: 'users', label: 'Users', title: 'Users', sub: 'Customers, KYC tiers and account status.', icon: Users, group: 'Manage', render: () => <UsersPanel /> },
   { slug: 'wallets', label: 'Naira wallets', title: 'Naira wallets', sub: 'Balances, transfers, bills, P2P deposits and wallet security.', icon: Wallet, group: 'Manage', render: () => <NairaAdmin /> },

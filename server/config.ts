@@ -72,6 +72,10 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   daily_spend_limit_kobo: '500000000', // NGN 5,000,000 per user, rolling 24h, all Naira debits
   review_threshold_kobo: '300000000', // bank transfers at or above this wait for founder review
   large_flag_kobo: '100000000', // NGN 1,000,000: flagged for the fraud queue
+  holds_enabled: 'true', // first-time counterparty hold on/off
+  hold_threshold_kobo: '20000000', // NGN 200,000: payouts at or above this to a new destination wait out the hold
+  hold_hours_tier2: '1', // hold length for KYC tier 2 accounts
+  hold_hours_default: '24', // hold length for everyone else
   pin_lock_minutes: '30',
   velocity_block_count: '15', // payments in 10 minutes before new ones are refused
   velocity_flag_count: '8', // payments in 10 minutes before the account is flagged

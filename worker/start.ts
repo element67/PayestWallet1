@@ -3,6 +3,7 @@
  * reconcile loop. It serves no HTTP. The Next.js app and the standalone server both start it through worker/index.ts or
  * server/index.ts; only one process at a time should run it (worker/index.ts takes a database lock to guarantee that).
  */
+import { startHoldSweeper } from '../server/holds'
 import { seedAssets } from '../server/assets'
 import { reconcile } from '../server/agent'
 import { run, now } from '../server/db'
@@ -48,6 +49,7 @@ export async function startWorker() {
   })
 
   every('bridge-sweep', 60_000, sweepStaleBridgeOps)
+  startHoldSweeper()
 
   // Non-Arc monitors run through the sandbox simulator (see chain/sim.ts).
   await run(

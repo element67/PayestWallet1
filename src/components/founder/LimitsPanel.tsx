@@ -8,6 +8,7 @@ import { WalletPolicy } from './WalletPolicy'
 interface Settings {
   feeBps: number; quoteTtlSec: number; riskBlockScore: number; riskReviewScore: number; confirmationsRequired: number; orderExpiryMin: number
   instantPayoutsEnabled: boolean; platformPaused: boolean; instantLimitNgn: string; dailyLimitTier1Ngn: string; dailyLimitTier2Ngn: string; dailyWithdrawLimitNgn: string; vaultAddressArc: string; vaultAddressSolana: string; vaultAddressBitcoin: string
+  holdsEnabled: boolean; holdHoursTier2: number; holdHoursDefault: number; holdThresholdNgn: string
 }
 
 function Form({ initial }: { initial: Settings }) {
@@ -31,6 +32,14 @@ function Form({ initial }: { initial: Settings }) {
         <Field label="Platform fee (basis points)" hint={`${(s.feeBps / 100).toFixed(2)}% on every exchange`} inputMode="numeric" value={s.feeBps} onChange={num('feeBps')} />
         <Field label="Quote lifetime (seconds)" inputMode="numeric" value={s.quoteTtlSec} onChange={num('quoteTtlSec')} />
         <Field label="Order expiry (minutes)" inputMode="numeric" value={s.orderExpiryMin} onChange={num('orderExpiryMin')} />
+      </Card>
+      <Card className="space-y-3 p-5">
+        <h2 className="display text-base font-semibold">First-time destination hold</h2>
+        <p className="text-sm text-subtle">Payouts at or above the amount, to a crypto address or bank account the customer has not paid before, wait out the hold. Customers can cancel with their PIN. You can release or cancel under Held payouts.</p>
+        <Field label="Hold payouts at or above (NGN)" hint="Crypto is compared at its Naira value" inputMode="decimal" value={s.holdThresholdNgn} onChange={str('holdThresholdNgn')} />
+        <Field label="Hold length, KYC tier 2 (hours)" inputMode="numeric" value={s.holdHoursTier2} onChange={num('holdHoursTier2')} />
+        <Field label="Hold length, everyone else (hours)" inputMode="numeric" value={s.holdHoursDefault} onChange={num('holdHoursDefault')} />
+        <label className="flex min-h-11 items-center gap-2 text-sm font-medium"><input type="checkbox" className="size-4" checked={s.holdsEnabled} onChange={(e) => setS({ ...s, holdsEnabled: e.target.checked })} /> Hold first-time destinations</label>
       </Card>
       <Card className="space-y-3 p-5">
         <h2 className="display text-lg font-semibold">Limits</h2>

@@ -36,7 +36,7 @@ export function PaymentFlow({ review, confirmLabel = 'Confirm and enter PIN', ru
     try {
       const { txn } = await run(pin, idem)
       void qc.invalidateQueries({ queryKey: ['naira'] })
-      setStage(['success', 'failed', 'reversed', 'pending_review'].includes(txn.status) ? { kind: 'receipt', txn } : { kind: 'processing', id: txn.id })
+      setStage(['success', 'failed', 'reversed', 'pending_review', 'held'].includes(txn.status) ? { kind: 'receipt', txn } : { kind: 'processing', id: txn.id })
     } catch (e) {
       if (e instanceof ApiError && e.data.code === 'PIN_REQUIRED') setNeedPin(true)
       setError(parseError(e))
@@ -74,7 +74,7 @@ export function PaymentFlow({ review, confirmLabel = 'Confirm and enter PIN', ru
 function Processing({ id, onResult }: { id: string; onResult: (t: Txn) => void }) {
   const { data } = useTxn(id)
   const qc = useQueryClient()
-  if (data && ['success', 'failed', 'reversed', 'pending_review'].includes(data.status)) {
+  if (data && ['success', 'failed', 'reversed', 'pending_review', 'held'].includes(data.status)) {
     queueMicrotask(() => {
       void qc.invalidateQueries({ queryKey: ['naira'] })
       onResult(data)

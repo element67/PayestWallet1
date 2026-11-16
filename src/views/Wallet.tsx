@@ -1,3 +1,4 @@
+import { HeldPayouts } from '@/components/HeldPayouts'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -104,6 +105,8 @@ export function Wallet({ openTransfer = false }: { openTransfer?: boolean }) {
         <div><h1 className="plate display text-3xl">Naira wallet</h1><p className="plate-sub mt-3 text-sm font-semibold">Balance, transfers and bills</p></div>
         <Sandbox label="Sandbox mode" />
       </div>
+
+      <HeldPayouts />
 
       {frozen && (
         <div className="flex gap-3 rounded-2xl border border-danger/40 bg-danger/10 p-4 text-sm" role="alert">

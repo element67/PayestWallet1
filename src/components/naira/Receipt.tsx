@@ -62,7 +62,7 @@ export function Receipt({ txn, onDone }: { txn: Txn; onDone?: () => void }) {
         <div className="display num text-4xl font-semibold">{ngn(txn.amount)}</div>
         <div className="flex items-center gap-2"><Badge kind={st.kind}>{st.label}</Badge><Sandbox /></div>
         <p className="text-pretty text-sm text-subtle">
-          {ok ? txn.title : bad ? (txn.failureReason ?? 'This payment did not go through.') : txn.underReview ? 'This transfer is above the automatic limit and is waiting for review. Your funds are reserved.' : txn.status === 'reversed' ? 'This payment was reversed and the money returned to your wallet.' : 'Processing. This usually takes a few seconds.'}
+          {ok ? txn.title : bad ? (txn.failureReason ?? 'This payment did not go through.') : txn.status === 'held' ? 'This is a first-time bank account, so the transfer is held for your safety. Your funds are reserved and you can cancel it with your PIN from the Wallet or Activity screen.' : txn.underReview ? 'This transfer is above the automatic limit and is waiting for review. Your funds are reserved.' : txn.status === 'reversed' ? 'This payment was reversed and the money returned to your wallet.' : 'Processing. This usually takes a few seconds.'}
         </p>
         {bad && txn.reversed && <p className="text-sm font-medium text-success">Your money was returned to your wallet.</p>}
       </div>

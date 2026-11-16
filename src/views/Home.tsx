@@ -3,6 +3,7 @@ import { ActionGrid, type HomeActionId } from '@/components/home/Actions'
 import { AssetsList } from '@/components/home/AssetsList'
 import { DashboardCard } from '@/components/home/DashboardCard'
 import { P2PCard } from '@/components/home/P2PCard'
+import { HeldPayouts } from '@/components/HeldPayouts'
 import type { Intent } from '@/lib/nav'
 import { useHome } from '@/lib/home'
 import { useSession } from '@/lib/session'
@@ -24,6 +25,7 @@ export function Home({ go }: { go: (view: View, intent?: Intent) => void }) {
         <div className="eyebrow plate-sub mb-2 !py-0.5">Welcome back</div>
         <h1 className="plate display text-4xl leading-tight">{user?.name.split(' ')[0]}</h1>
       </div>
+      <HeldPayouts />
       {isError && (
         <button onClick={() => void refetch()} className="border border-outline flex min-h-[44px] w-full items-center gap-2 rounded-2xl bg-danger px-4 text-left text-sm font-extrabold text-on-danger">
           <AlertCircle size={16} /> Could not load your balances. Tap to retry.

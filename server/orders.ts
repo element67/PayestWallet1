@@ -6,6 +6,7 @@ import { HttpError, type User } from './auth'
 import { dailyVolumeKobo, getAsset, instantLimitKobo } from './assets'
 import { alert, audit, get, now, notify, orderEvent, run, setting, settingNum, uid, all, tx } from './db'
 import { InsufficientFunds, SYS, balanceOf, bookFee, move } from './ledger'
+import { announceHold, assessHold, bankKey, bankLabel, cryptoKey, cryptoLabel, markPaid, registerHold } from './holds'
 import { assertOperational } from './naira/wallet'
 import { fromUnits } from './money'
 import { provider, type PaymentEvent } from './providers'
@@ -176,8 +177,24 @@ export async function executeNgnPayout(orderId: string, instant: boolean): Promi
     await alert('warning', 'liquidity', 'Naira liquidity too low for payout', `Order ${o.id} needs NGN ${fromUnits(net, 2)}`, o.user_id, o.id)
     throw new HttpError(503, 'Insufficient Naira liquidity')
   }
+  let heldInfo: { until: number; label: string } | null = null
+  let paidKey: string | null = null
   const dispatched = await tx(async () => {
     if (o.payout_type === 'bank') {
+      // First-time bank account above the threshold: the payout waits out the hold. The sold crypto is already with us; nothing is paid yet.
+      const ba = o.bank_account_id ? await bankDetails(o.bank_account_id) : null
+      if (ba) {
+        const tier = (await get<{ kyc_tier: number }>('SELECT kyc_tier FROM users WHERE id=?', o.user_id))?.kyc_tier ?? 1
+        const label = bankLabel(ba.bank_name, ba.accountNumber.slice(-4))
+        const key = bankKey(ba.bank_name, ba.accountNumber)
+        const hold = await assessHold({ userId: o.user_id, kycTier: tier, kind: 'bank_payout', refId: o.id, cpKey: key, cpLabel: label, cpKind: 'bank', amountKobo: net })
+        if (hold.held) {
+          await setStatus(o.id, 'payout_held', 'payout.held', `Bank payout to ${label} is held for a first-time destination`)
+          heldInfo = { until: hold.releaseAt, label }
+          return false
+        }
+        paidKey = key
+      }
       const ltx = await move({ from: 'house', to: SYS.bank, asset: 'NGN', amount: net, reason: 'naira payout to bank', idem: `payout:${o.id}:house`, orderId: o.id })
       // The ledger refused a second movement for this order, so the payout was already dispatched: never call the provider twice.
       if (ltx === null) return false
@@ -192,7 +209,13 @@ export async function executeNgnPayout(orderId: string, instant: boolean): Promi
     }
     return true
   })
+  if (heldInfo) {
+    const h = heldInfo as { until: number; label: string }
+    await announceHold(o.user_id, h.label, net, h.until)
+    return 'skipped'
+  }
   if (!dispatched) return 'skipped'
+  if (paidKey) await markPaid(o.user_id, paidKey)
   await notify(o.user_id, 'payout', instant ? 'Instant payout sent' : 'Payout sent', `NGN ${fromUnits(net, 2)} for your ${o.asset} sale.`)
   await maybeComplete(o.id)
   return 'paid'
@@ -223,11 +246,27 @@ export async function executeRelease(orderId: string) {
     }
     return
   }
+  let heldUntil: number | null = null
   await tx(async () => {
+    // First-time outside address above the threshold: the Naira is already paid, the crypto waits out the hold.
+    if (o.dest_address) {
+      const tier = (await get<{ kyc_tier: number }>('SELECT kyc_tier FROM users WHERE id=?', o.user_id))?.kyc_tier ?? 1
+      const hold = await assessHold({ userId: o.user_id, kycTier: tier, kind: 'buy_release', refId: o.id, cpKey: cryptoKey(o.dest_address), cpLabel: cryptoLabel(o.asset, o.dest_address), cpKind: 'crypto', amountKobo: BigInt(o.gross_kobo) })
+      if (hold.held) {
+        await setStatus(o.id, 'release_held', 'release.held', `Delivery to ${cryptoLabel(o.asset, o.dest_address)} is held for a first-time address`)
+        heldUntil = hold.releaseAt
+        return
+      }
+      await markPaid(o.user_id, cryptoKey(o.dest_address))
+    }
     const hash = await releaseCrypto(o)
     await setStatus(o.id, 'completed', 'release.completed', hash ? `Simulated send ${hash}` : 'Credited to platform wallet', { completed_at: now(), tx_hash: hash })
     await bookFee({ asset: 'NGN', amount: BigInt(o.fee_kobo), idem: `fee:${o.id}`, orderId: o.id })
   })
+  if (heldUntil !== null) {
+    await announceHold(o.user_id, cryptoLabel(o.asset, o.dest_address ?? ''), BigInt(o.gross_kobo), heldUntil)
+    return
+  }
   await notify(o.user_id, 'order', 'Crypto delivered', `${fromUnits(BigInt(o.crypto_amount), (await getAsset(o.asset))?.decimals ?? 6)} ${o.asset} delivered (sandbox).`)
 }
 
@@ -321,6 +360,42 @@ export async function expireStaleOrders() {
   )
   for (const s of stale) await failOrder(s.id, 'expired', 'Order expired before payment was received')
 }
+
+registerHold('bank_payout', {
+  onRelease: async (h) => {
+    const o = await getOrder(h.ref_id)
+    if (!o || o.status !== 'payout_held') return
+    await setStatus(o.id, 'deposit_verified', 'payout.released', 'Hold ended: paying out')
+    await enqueue(`order.payout:${o.id}:released`, 'order.payout', { orderId: o.id, instant: false })
+  },
+  // Cancelling a held bank payout never sends the money anywhere new: it is paid to the customer's own Naira wallet instead.
+  onCancel: async (h) => {
+    const o = await getOrder(h.ref_id)
+    if (!o || o.status !== 'payout_held') return
+    await run("UPDATE orders SET payout_type='wallet', bank_account_id=NULL WHERE id=?", o.id)
+    await setStatus(o.id, 'deposit_verified', 'payout.redirected', 'Held bank payout cancelled: paying to the Naira wallet instead')
+    await enqueue(`order.payout:${o.id}:wallet`, 'order.payout', { orderId: o.id, instant: false })
+  },
+})
+
+registerHold('buy_release', {
+  onRelease: async (h) => {
+    const o = await getOrder(h.ref_id)
+    if (!o || o.status !== 'release_held') return
+    await setStatus(o.id, 'payment_verified', 'release.hold_ended', 'Hold ended: delivering')
+    await enqueue(`order.release:${o.id}:released`, 'order.release', { orderId: o.id })
+  },
+  onCancel: async (h, reason) => {
+    const o = await getOrder(h.ref_id)
+    if (!o || o.status !== 'release_held') return
+    try {
+      await move({ from: 'house', to: o.user_id, asset: 'NGN', amount: BigInt(o.gross_kobo), reason: 'held delivery cancelled: refund', idem: `refund:${o.id}`, orderId: o.id })
+    } catch {
+      await alert('critical', 'refund_manual', 'Refund needs a person', `${o.id}: a held delivery was cancelled but the refund could not be booked.`, o.user_id, o.id)
+    }
+    await setStatus(o.id, 'cancelled', 'order.cancelled', reason || 'Held delivery cancelled', { failure_reason: reason, completed_at: now() })
+  },
+})
 
 export const bankDetails = async (accountId: string) => {
   const r = await get<{ account_enc: string; bank_name: string; account_name: string }>('SELECT * FROM bank_accounts WHERE id=?', accountId)

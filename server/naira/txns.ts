@@ -2,7 +2,7 @@
 import { all, get, now, run, uid } from '../db'
 import { fromUnits } from '../money'
 
-export type TxnStatus = 'pending' | 'processing' | 'pending_review' | 'success' | 'failed' | 'reversed'
+export type TxnStatus = 'pending' | 'processing' | 'held' | 'pending_review' | 'success' | 'failed' | 'reversed'
 
 export interface TxnRow {
   id: string

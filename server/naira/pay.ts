@@ -6,6 +6,8 @@
  */
 import { HttpError, type User } from '../auth'
 import { alert, all, audit, get, notify, now, run, tx } from '../db'
+import { announceHold, assessHold, bankKey, bankLabel, markPaid, registerHold } from '../holds'
+import { decrypt } from '../security'
 import { InsufficientFunds, SYS, move } from '../ledger'
 import { fromUnits } from '../money'
 import { enqueue, registerJob } from '../queue'
@@ -58,21 +60,32 @@ export async function startPayment(req: PayRequest) {
 
   // The limit check and the reservation run together under the write lock, so parallel requests cannot both slip under the limit.
   let risk!: Awaited<ReturnType<typeof assessMovement>>
+  let heldUntil: number | null = null
   try {
     const txn = await tx(async () => {
       await assertWithinDailyLimit(user.id, total)
       risk = await assessMovement(user.id, req.amount, req.type)
+      // First-time bank destination above the threshold: the funds are reserved below, but the provider is not called until the hold ends.
+      let cp: { key: string; label: string } | null = null
+      if (req.type === 'bank_transfer' && req.meta.accountEnc && req.meta.bankName) {
+        cp = { key: bankKey(String(req.meta.bankName), decrypt(String(req.meta.accountEnc))), label: bankLabel(String(req.meta.bankName), String(req.meta.last4 ?? '')) }
+      }
+      const hold = cp ? await assessHold({ userId: user.id, kycTier: user.kyc_tier, kind: 'naira_bank', refId: req.idem, cpKey: cp.key, cpLabel: cp.label, cpKind: 'bank', amountKobo: req.amount }) : { held: false as const }
+      heldUntil = hold.held ? hold.releaseAt : null
       const t = await createTxn({
-        userId: user.id, type: req.type, direction: 'debit', amount: req.amount, fee: req.fee, status: risk.review ? 'pending_review' : 'processing',
+        userId: user.id, type: req.type, direction: 'debit', amount: req.amount, fee: req.fee, status: hold.held ? 'held' : risk.review ? 'pending_review' : 'processing',
         title: req.title, counterparty: req.counterparty, note: req.note, idemKey: req.idem, reviewRequired: risk.review,
-        meta: { ...req.meta, riskFlags: risk.flags },
+        meta: { ...req.meta, riskFlags: risk.flags, ...(cp ? { cpKey: cp.key } : {}), ...(hold.held ? { holdUntil: hold.releaseAt } : {}) },
       })
+      if (hold.held) await run('UPDATE payout_holds SET ref_id=? WHERE id=?', t.id, hold.id)
       const ltx = await move({ from: user.id, to: SYS.holding, asset: 'NGN', amount: total, reason: `reserve: ${req.title}`, idem: `txn:${t.id}:reserve` })
       await patchTxn(t.id, { ledgerTxnId: ltx })
       await req.onCreate?.(t)
       return t
     })
-    if (risk.review) {
+    if (heldUntil !== null) {
+      await announceHold(user.id, req.counterparty ?? 'a new bank account', req.amount, heldUntil)
+    } else if (risk.review) {
       await alert('warning', 'naira_review', 'Transfer waiting for review', `${txn.reference}: NGN ${fromUnits(req.amount, 2)} by ${user.email}`, user.id)
       await notify(user.id, 'order', 'Transfer under review', `${txn.reference} is above the automatic limit and is waiting for review. Your funds are reserved.`)
     } else {
@@ -106,6 +119,8 @@ export async function settle(txnId: string) {
       await move({ from: SYS.holding, to: destinationAccount(t.type), asset: 'NGN', amount, reason: `settled: ${t.title}`, idem: `txn:${t.id}:settle` })
       if (fee > 0n) await move({ from: SYS.holding, to: SYS.fees, asset: 'NGN', amount: fee, reason: `fee: ${t.title}`, idem: `txn:${t.id}:fee` })
       await patchTxn(t.id, { status: 'success', meta: { ...(result.meta ?? {}), providerRef: result.providerRef } })
+      const cpKey = (JSON.parse(t.meta) as Record<string, unknown>).cpKey
+      if (typeof cpKey === 'string') await markPaid(t.user_id, cpKey)
       await run("UPDATE bills_orders SET status='success', provider_ref=?, token=?, updated_at=? WHERE transaction_id=?", result.providerRef ?? null, (result.meta?.token as string | undefined) ?? null, now(), t.id)
     })
     await notify(t.user_id, 'payout', `${t.title} successful`, `Reference ${t.reference}. NGN ${fromUnits(amount, 2)}.`)
@@ -150,5 +165,24 @@ export async function decideReview(txnId: string, approve: boolean, actorId: str
     await reverseReservation(t, 'The transfer was declined during review.')
   }
 }
+
+registerHold('naira_bank', {
+  onRelease: async (h) => {
+    const t = await getTxn(h.ref_id)
+    if (!t || t.status !== 'held') return
+    if (t.review_required) {
+      await patchTxn(t.id, { status: 'pending_review' })
+      await alert('warning', 'naira_review', 'Transfer waiting for review', `${t.reference}: held transfer is above the review limit.`, t.user_id)
+    } else {
+      await patchTxn(t.id, { status: 'processing' })
+      await enqueue(`naira.settle:${t.id}`, 'naira.settle', { txnId: t.id }, 500)
+    }
+  },
+  onCancel: async (h, reason) => {
+    const t = await getTxn(h.ref_id)
+    if (!t || t.status !== 'held') return
+    await reverseReservation(t, reason || 'The held transfer was cancelled.')
+  },
+})
 
 export const hasTxn = async (id: string) => Boolean(await get('SELECT 1 FROM transactions WHERE id=?', id))

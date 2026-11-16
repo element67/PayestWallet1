@@ -38,6 +38,8 @@ export const STATUS_LABEL: Record<string, string> = {
   payment_verified: 'Payment verified',
   awaiting_liquidity: 'Waiting for vault liquidity',
   flagged: 'Held for review',
+  payout_held: 'Payout held for your safety',
+  release_held: 'Delivery held for your safety',
   reversed: 'Reversed',
   failed: 'Failed',
   expired: 'Expired',

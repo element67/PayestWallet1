@@ -1,3 +1,4 @@
+import { HeldPayouts } from '@/components/HeldPayouts'
 import { useState } from 'react'
 import { useOrders } from '@/lib/queries'
 import { ago, crypto, ngn } from '@/lib/format'
@@ -11,6 +12,7 @@ export function Activity({ open }: { open: (id: string) => void }) {
   return (
     <>
       <PageTitle title="Activity" sub="Every exchange, with live status. Tap one to see its full timeline." />
+      <HeldPayouts />
       <div className="mb-4 max-w-xs">
         <Segmented value={filter} onChange={setFilter} options={[{ value: 'all', label: 'All' }, { value: 'sell', label: 'Sells' }, { value: 'buy', label: 'Buys' }]} />
       </div>
