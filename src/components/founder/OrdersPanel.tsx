@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api, type Order } from '@/lib/api'
 import { ago, crypto, ngn } from '@/lib/format'
-import { Badge, Button, Card, Empty, StatusBadge, TokenIcon } from '../ui'
+import { Badge, Button, Card, Empty, ListSkeleton, StatusBadge, TokenIcon } from '../ui'
 
 const FILTERS = ['', 'completed', 'awaiting_finality', 'flagged', 'failed', 'reversed'] as const
 
@@ -14,6 +14,7 @@ export function OrdersPanel() {
     queryKey: ['admin-orders', status],
     queryFn: () => api<{ orders: Order[] }>(`/api/admin/orders${status ? `?status=${status}` : ''}`).then((r) => r.orders),
     refetchInterval: 3000,
+    placeholderData: keepPreviousData,
   })
   const review = useMutation({
     mutationFn: (v: { id: string; action: 'approve' | 'reject' }) => api(`/api/admin/orders/${v.id}/review`, { method: 'POST', body: { action: v.action } }),
@@ -22,12 +23,13 @@ export function OrdersPanel() {
   })
   return (
     <div>
-      <div className="scroll-thin mb-4 flex gap-2 overflow-x-auto">
+      <div className="mb-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button key={f} onClick={() => setStatus(f)} className={`min-h-9 shrink-0 rounded-xl px-3 text-xs font-semibold ${status === f ? 'bg-accent text-accent-ink' : 'border border-line hover:bg-muted'}`}>{f || 'All'}</button>
         ))}
       </div>
       <Card className="p-2">
+        {!data && <ListSkeleton bare rows={4} label="Loading transactions" />}
         {data?.length === 0 && <Empty title="No transactions match" />}
         {(data ?? []).map((o) => (
           <div key={o.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 hover:bg-muted">

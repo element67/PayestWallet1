@@ -10,7 +10,10 @@
  * Built with Arc Studio — https://studio.arc.io
  */
 
-const DEV = import.meta.env.DEV;
+import { isPrivatePath, isTrustedParent, redactSensitive, REDACTED } from './lib/traceSafety';
+
+const DEV = process.env.NODE_ENV !== 'production';
+const EXTRA_PARENTS: string = process.env.NEXT_PUBLIC_TRACE_PARENT_ORIGINS ?? '';
 
 // ---------------------------------------------------------------------------
 // Types (inlined — sandbox can't use app module aliases)
@@ -145,22 +148,20 @@ function emitWithGroups(event: RpcTraceEvent | HttpTraceEvent): void {
   emit(groups.length > 0 ? { ...event, groups } : event);
 }
 
+/**
+ * Telemetry goes only to a parent window verified against the allowlist (Arc Studio, plus NEXT_PUBLIC_TRACE_PARENT_ORIGINS).
+ * There is no wildcard fallback: when the parent cannot be verified, nothing is posted.
+ */
 const _parentOrigin: string | null = (() => {
+  const candidates: (string | undefined)[] = [];
   try {
     // ancestorOrigins is available in Chromium and Safari
-    if (window.location.ancestorOrigins?.length) {
-      return window.location.ancestorOrigins[0];
-    }
+    candidates.push(window.location.ancestorOrigins?.[0]);
   } catch { /* sandboxed iframe may throw */ }
-
   try {
-    if (document.referrer) {
-      return new URL(document.referrer).origin;
-    }
+    if (document.referrer) candidates.push(new URL(document.referrer).origin);
   } catch { /* malformed referrer */ }
-
-  // Dev server only: the preview proxy's frame-ancestors already pins the parent to Studio.
-  return '*';
+  return candidates.find((o) => isTrustedParent(o, EXTRA_PARENTS)) ?? null;
 })();
 
 function emit(event: TraceEvent): void {
@@ -216,7 +217,7 @@ function parseChainId(raw: unknown): number {
 let _enabled = false;
 
 if (DEV) window.addEventListener('message', (e: MessageEvent<MessageData>) => {
-  if (e.source !== window.parent) {
+  if (e.source !== window.parent || !isTrustedParent(e.origin, EXTRA_PARENTS)) {
     return;
   }
 
@@ -361,7 +362,7 @@ if (DEV) try {
       // (<id>.preview.localhost:5173) contains the "localhost:5173" NOISE substring,
       // so matching the absolute URL would drop every same-origin request in dev.
       if (!_enabled || isNoise(rawUrl)) return _fetch.call(globalThis, input, init);
-      if (init?.body) reqBody = tryJson(truncate(typeof init.body === 'string' ? init.body : stringify(init.body)));
+      if (init?.body) reqBody = isPrivatePath(rawUrl) ? REDACTED : redactSensitive(tryJson(truncate(typeof init.body === 'string' ? init.body : stringify(init.body))));
     } catch {
       return _fetch.call(globalThis, input, init);
     }
@@ -385,7 +386,7 @@ if (DEV) try {
 
     const dur = Date.now() - ts;
     let resBody: unknown;
-    try { resBody = tryJson(truncate(await res.clone().text())); } catch { /* ignore */ }
+    try { resBody = isPrivatePath(url) ? REDACTED : redactSensitive(tryJson(truncate(await res.clone().text()))); } catch { /* ignore */ }
 
     try {
       if (method === 'POST' && hasRpc(reqBody)) {

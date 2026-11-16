@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun run scripts/dev.ts",
+    "worker": "bun worker/index.ts",
     "server": "bun server/index.ts",
     "server:watch": "bun --watch server/index.ts",
     "deploy:self": "bun run ./scripts/self-deploy.ts",
@@ -14,7 +15,11 @@
     "typecheck": "tsc --noEmit",
     "check": "bash scripts/check.sh",
     "contracts:build": "forge build",
-    "contracts:test": "forge test"
+    "contracts:test": "forge test",
+    "test": "bun test",
+    "test:contracts": "forge test",
+    "build": "next build",
+    "start": "next start -p 5173"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.19.2",
@@ -37,9 +42,11 @@
     "connectkit": "^1.9.2",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
+    "next": "^15",
+    "postgres": "^4.1.1",
     "qrcode.react": "^4.2.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19",
+    "react-dom": "^19",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.6.0",
     "viem": "2.57.5",
@@ -52,15 +59,15 @@
   "devDependencies": {
     "@types/bun": "^1.4.4",
     "@types/node": "^24.0.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "oxlint": "1.91.0",
     "oxlint-tsgolint": "7.0.2005",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "typescript": "~7.0.2",
+    "typescript": "~5.9.3",
     "vite": "^6.0.5",
     "vite-plugin-node-polyfills": "^0.22.0"
   }

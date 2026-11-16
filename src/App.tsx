@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { AppSkeleton } from '@/components/AppSkeleton'
 import { AuthScreen } from '@/components/AuthScreen'
 import { Shell, type View } from '@/components/Shell'
 import { Home } from '@/views/Home'
@@ -12,8 +12,6 @@ import { SettingsView } from '@/views/SettingsView'
 import { MoreView } from '@/views/MoreView'
 import { ProfileView } from '@/views/ProfileView'
 import { Backdrop } from '@/components/Backdrop'
-import { Founder } from '@/views/Founder'
-import { AgentMonitor } from '@/views/AgentMonitor'
 import { SessionProvider, useSession } from '@/lib/session'
 import { ThemeProvider } from '@/lib/theme'
 import { TextSizeProvider } from '@/lib/textSize'
@@ -25,7 +23,7 @@ function Routes() {
   const [focusOrder, setFocusOrder] = useState<string | null>(null)
   const [intent, setIntent] = useState<Intent & { n: number }>({ n: 0 })
 
-  if (loading) return <div className="grid min-h-dvh place-items-center"><span className="glass grid size-20 place-items-center rounded-full"><Loader2 className="animate-spin" size={32} aria-label="Loading" /></span></div>
+  if (loading) return <AppSkeleton />
   if (!user) return <AuthScreen />
 
   const open = (id: string) => {
@@ -36,7 +34,7 @@ function Routes() {
     setIntent((p) => ({ ...i, n: p.n + 1 }))
     setView(v)
   }
-  const current: View = user.role !== 'founder' && (view === 'founder' || view === 'agent') ? 'home' : view
+  const current: View = view
 
   return (
     <Shell view={current} go={go}>
@@ -49,8 +47,6 @@ function Routes() {
       {current === 'more' && <MoreView go={go} />}
       {current === 'profile' && <ProfileView />}
       {current === 'settings' && <SettingsView key={intent.n} initial={intent.settings} />}
-      {current === 'founder' && <Founder />}
-      {current === 'agent' && <AgentMonitor />}
     </Shell>
   )
 }

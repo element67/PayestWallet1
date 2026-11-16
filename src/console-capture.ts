@@ -42,27 +42,25 @@ const LEVELS: ConsoleLevel[] = ['log', 'info', 'warn', 'error', 'debug'];
 // Parent origin resolution (mirrors tracing.ts)
 // ---------------------------------------------------------------------------
 
-const DEV = import.meta.env.DEV;
+import { isTrustedParent, redactText } from './lib/traceSafety';
 
+const DEV = process.env.NODE_ENV !== 'production';
+const EXTRA_PARENTS: string = process.env.NEXT_PUBLIC_TRACE_PARENT_ORIGINS ?? '';
+
+// No wildcard fallback: logs are posted only to a parent verified against the allowlist.
 const _parentOrigin: string | null = (() => {
+  const candidates: (string | undefined)[] = [];
   try {
-    if (window.location.ancestorOrigins?.length) {
-      return window.location.ancestorOrigins[0];
-    }
+    candidates.push(window.location.ancestorOrigins?.[0]);
   } catch {
     /* sandboxed iframe may throw */
   }
-
   try {
-    if (document.referrer) {
-      return new URL(document.referrer).origin;
-    }
+    if (document.referrer) candidates.push(new URL(document.referrer).origin);
   } catch {
     /* malformed referrer */
   }
-
-  // Dev server only: the preview proxy's frame-ancestors already pins the parent to Studio.
-  return '*';
+  return candidates.find((o) => isTrustedParent(o, EXTRA_PARENTS)) ?? null;
 })();
 
 // ---------------------------------------------------------------------------
@@ -111,7 +109,8 @@ function formatArg(arg: unknown): string {
   return safeStringify(arg);
 }
 
-function truncate(s: string, maxChars: number = MAX_MESSAGE_CHARS): string {
+function truncate(raw: string, maxChars: number = MAX_MESSAGE_CHARS): string {
+  const s = redactText(raw);
   return s.length > maxChars ? `${s.slice(0, maxChars)}… [truncated]` : s;
 }
 

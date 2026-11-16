@@ -5,17 +5,18 @@ import { all, get, now, run, setting, uid } from '../db'
 import { toUnits } from '../money'
 import { AIRPORTS, SHOP_SEED, getCategory, getOffer, packagesFor, searchFlights, type Category } from './catalog'
 import { registerFulfiller, startPayment } from './pay'
+import { availableSeats, reserveSeats, reserveStock } from './inventory'
 import { billProvider } from './providers'
 
 for (const p of SHOP_SEED) {
-  run('INSERT OR IGNORE INTO shop_products(id,category,name,description,price_kobo,kind) VALUES (?,?,?,?,?,?)', p.id, p.category, p.name, p.description, String(p.price), p.kind)
+  await run('INSERT OR IGNORE INTO shop_products(id,category,name,description,price_kobo,kind) VALUES (?,?,?,?,?,?)', p.id, p.category, p.name, p.description, String(p.price), p.kind)
 }
 
-const billFee = () => BigInt(setting('bill_fee_kobo'))
+const billFee = async () => BigInt(await setting('bill_fee_kobo'))
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 
-function insertOrder(txnId: string, userId: string, o: { category: string; provider: string; product?: string; customerRef?: string; customerName?: string; amount: bigint; fee: bigint; payload: Record<string, unknown> }) {
-  run(
+async function insertOrder(txnId: string, userId: string, o: { category: string; provider: string; product?: string; customerRef?: string; customerName?: string; amount: bigint; fee: bigint; payload: Record<string, unknown> }) {
+  await run(
     `INSERT INTO bills_orders(id,user_id,transaction_id,category,provider,product,customer_ref,customer_name,amount_kobo,fee_kobo,status,payload,created_at,updated_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,'processing',?,?,?)`,
     uid('bill'), userId, txnId, o.category, o.provider, o.product ?? null, o.customerRef ?? null, o.customerName ?? null, o.amount.toString(), o.fee.toString(), JSON.stringify(o.payload), now(), now(),
@@ -40,7 +41,7 @@ export function verifyCustomer(categoryId: string, b: { provider: string; custom
   return { verified: true, customerName: r.name, detail: r.detail ?? null, sandbox: true, provider: billProvider.label }
 }
 
-export function startBill(user: User, categoryId: string, b: { provider: string; customerRef: string; variant?: string; packageId?: string; amount?: bigint; pin: unknown; idem: string }) {
+export async function startBill(user: User, categoryId: string, b: { provider: string; customerRef: string; variant?: string; packageId?: string; amount?: bigint; pin: unknown; idem: string }) {
   const cat = getCategory(categoryId)
   if (!cat) throw new HttpError(404, 'Unknown service')
   checkBillInput(cat, b)
@@ -60,18 +61,18 @@ export function startBill(user: User, categoryId: string, b: { provider: string;
     }
   }
   const providerLabel = cat.providers.find((p) => p.id === b.provider)?.label ?? b.provider
-  const fee = billFee()
-  return startPayment({
+  const fee = await billFee()
+  return await startPayment({
     user, pin: b.pin, idem: b.idem, type: 'bill', title: `${cat.label}: ${providerLabel}`, amount, fee,
     counterparty: v.customerName ? `${v.customerName} · ${b.customerRef}` : b.customerRef,
     meta: { category: cat.id, categoryLabel: cat.label, provider: b.provider, providerLabel, customerRef: b.customerRef, customerName: v.customerName, address: v.detail, variant: b.variant, product, packageId: b.packageId },
-    onCreate: (t) => insertOrder(t.id, user.id, { category: cat.id, provider: b.provider, product, customerRef: b.customerRef, customerName: v.customerName ?? undefined, amount, fee, payload: { variant: b.variant, packageId: b.packageId } }),
+    onCreate: async (t) => await insertOrder(t.id, user.id, { category: cat.id, provider: b.provider, product, customerRef: b.customerRef, customerName: v.customerName ?? undefined, amount, fee, payload: { variant: b.variant, packageId: b.packageId } }),
   })
 }
 
-registerFulfiller('bill', (t, m) => {
+registerFulfiller('bill', async (t, m) => {
   const r = billProvider.purchase(t.reference, String(m.category), String(m.provider), String(m.customerRef), BigInt(t.amount_kobo), m.variant ? String(m.variant) : undefined)
-  run(
+  await run(
     'INSERT OR IGNORE INTO provider_callbacks(provider, event_id, kind, payload, received_at, processed_at, result) VALUES (?,?,?,?,?,?,?)',
     billProvider.id, `${r.providerRef ?? t.reference}:${t.id}`, r.ok ? 'bill.completed' : 'bill.failed', JSON.stringify({ reference: t.reference, category: m.category }), now(), now(), r.ok ? 'ok' : (r.reason ?? 'failed'),
   )
@@ -91,7 +92,7 @@ export function flightSearch(b: { from: string; to: string; date: string; return
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d < today || d > max) throw new HttpError(400, 'Choose dates from today up to 11 months ahead')
   }
   if (b.returnDate && b.returnDate < b.date) throw new HttpError(400, 'The return date cannot be before departure')
-  const price = (o: ReturnType<typeof searchFlights>[number]) => ({ ...o, priceEach: o.priceKobo / 100, total: (o.priceKobo * b.passengers) / 100 })
+  const price = async (o: ReturnType<typeof searchFlights>[number]) => ({ ...o, seats: await availableSeats(o), priceEach: o.priceKobo / 100, total: (o.priceKobo * b.passengers) / 100 })
   return {
     outbound: searchFlights(b.from, b.to, b.date).map(price),
     inbound: b.returnDate ? searchFlights(b.to, b.from, b.returnDate).map(price) : [],
@@ -101,21 +102,32 @@ export function flightSearch(b: { from: string; to: string; date: string; return
   }
 }
 
-export function startFlight(user: User, b: { offerId: string; returnOfferId?: string; passengers: { firstName: string; lastName: string }[]; contactPhone: string; pin: unknown; idem: string }) {
+export async function startFlight(user: User, b: { offerId: string; returnOfferId?: string; passengers: { firstName: string; lastName: string }[]; contactPhone: string; pin: unknown; idem: string }) {
   const out = getOffer(b.offerId)
   const back = b.returnOfferId ? getOffer(b.returnOfferId) : undefined
   if (!out || (b.returnOfferId && !back)) throw new HttpError(400, 'That fare is no longer available. Search again.')
   if (out.date < new Date().toISOString().slice(0, 10)) throw new HttpError(400, 'That flight has already departed')
   const n = b.passengers.length
   if (n < 1 || n > 6) throw new HttpError(400, 'Between 1 and 6 passengers')
-  if (out.seats < n) throw new HttpError(400, 'Not enough seats on that flight')
+  if (await availableSeats(out) < n) throw new HttpError(400, 'Not enough seats on that flight')
+  if (back) {
+    // The return leg must be the reverse route, on or after the outbound date, with seats left.
+    if (back.id === out.id || back.from !== out.to || back.to !== out.from) throw new HttpError(400, 'The return flight must be the reverse route')
+    if (back.date < out.date) throw new HttpError(400, 'The return flight cannot be before the outbound flight')
+    if (await availableSeats(back) < n) throw new HttpError(400, 'Not enough seats on the return flight')
+  }
   const amount = BigInt(out.priceKobo + (back?.priceKobo ?? 0)) * BigInt(n)
-  const fee = billFee()
+  const fee = await billFee()
   const route = `${out.from} to ${out.to}${back ? ' and back' : ''}`
-  return startPayment({
+  return await startPayment({
     user, pin: b.pin, idem: b.idem, type: 'flight', title: `Flight ${route}`, amount, fee, counterparty: `${out.airline} ${out.flightNo}`,
     meta: { category: 'flight', route, outbound: out, inbound: back ?? null, passengers: b.passengers, contactPhone: b.contactPhone, simulated: true },
-    onCreate: (t) => insertOrder(t.id, user.id, { category: 'flight', provider: out.airline, product: route, customerRef: b.contactPhone, customerName: `${b.passengers[0].firstName} ${b.passengers[0].lastName}`, amount, fee, payload: { offerId: b.offerId, returnOfferId: b.returnOfferId, passengers: b.passengers } }),
+    onCreate: async (t) => {
+      // Seats are taken in the same transaction as the payment reservation and returned if the payment is reversed.
+      await reserveSeats(t.id, out, n)
+      if (back) await reserveSeats(t.id, back, n)
+      await insertOrder(t.id, user.id, { category: 'flight', provider: out.airline, product: route, customerRef: b.contactPhone, customerName: `${b.passengers[0].firstName} ${b.passengers[0].lastName}`, amount, fee, payload: { offerId: b.offerId, returnOfferId: b.returnOfferId, passengers: b.passengers } })
+    },
   })
 }
 
@@ -128,31 +140,37 @@ registerFulfiller('flight', (t, m) => {
 
 /* ---------------- shopping ---------------- */
 
-export function listProducts(category?: string) {
-  const rows = all<{ id: string; category: string; name: string; description: string; price_kobo: string; kind: string }>(
+export async function listProducts(category?: string) {
+  const rows = await all<{ id: string; category: string; name: string; description: string; price_kobo: string; kind: string }>(
     category ? 'SELECT * FROM shop_products WHERE active=1 AND category=? ORDER BY price_kobo' : 'SELECT * FROM shop_products WHERE active=1 ORDER BY category, price_kobo', ...(category ? [category] : []),
   )
   return {
-    categories: [...new Set(all<{ category: string }>('SELECT category FROM shop_products WHERE active=1 ORDER BY category').map((r) => r.category))],
+    categories: [...new Set((await all<{ category: string }>('SELECT category FROM shop_products WHERE active=1 ORDER BY category')).map((r) => r.category))],
     products: rows.map((r) => ({ id: r.id, category: r.category, name: r.name, description: r.description, price: Number(r.price_kobo) / 100, kind: r.kind })),
     simulated: true,
   }
 }
 
-export function startCheckout(user: User, b: { items: { productId: string; qty: number }[]; delivery?: { name: string; phone: string; address: string; city: string }; pin: unknown; idem: string }) {
-  const lines = b.items.map((i) => {
-    const p = get<{ id: string; name: string; price_kobo: string; kind: string; stock: number }>('SELECT * FROM shop_products WHERE id=? AND active=1', i.productId)
+export async function startCheckout(user: User, b: { items: { productId: string; qty: number }[]; delivery?: { name: string; phone: string; address: string; city: string }; pin: unknown; idem: string }) {
+  const lines = await Promise.all(b.items.map(async (i) => {
+    const p = await get<{ id: string; name: string; price_kobo: string; kind: string; stock: number }>('SELECT * FROM shop_products WHERE id=? AND active=1', i.productId)
     if (!p) throw new HttpError(400, 'An item in your cart is no longer available')
     if (p.stock < i.qty) throw new HttpError(400, `Only ${p.stock} of ${p.name} left`)
     return { productId: p.id, name: p.name, kind: p.kind, qty: i.qty, unitKobo: BigInt(p.price_kobo) }
-  })
+  }))
   if (lines.some((l) => l.kind === 'physical') && !b.delivery) throw new HttpError(400, 'Add a delivery address for physical items')
   const amount = lines.reduce((s, l) => s + l.unitKobo * BigInt(l.qty), 0n) // always priced by the server
-  const fee = billFee()
-  return startPayment({
+  const fee = await billFee()
+  return await startPayment({
     user, pin: b.pin, idem: b.idem, type: 'shopping', title: `Shopping order (${lines.reduce((s, l) => s + l.qty, 0)} items)`, amount, fee,
     meta: { category: 'shopping', lines: lines.map((l) => ({ ...l, unitKobo: undefined, unit: Number(l.unitKobo) / 100 })), delivery: b.delivery ?? null, simulated: true },
-    onCreate: (t) => insertOrder(t.id, user.id, { category: 'shopping', provider: 'Sandbox store', product: lines.map((l) => `${l.qty}× ${l.name}`).join(', '), amount, fee, payload: { items: b.items } }),
+    onCreate: async (t) => {
+      // Stock is taken per product in the same transaction as the payment reservation (the same product on two lines is summed).
+      const qtyBy = new Map<string, { name: string; qty: number }>()
+      for (const l of lines) qtyBy.set(l.productId, { name: l.name, qty: (qtyBy.get(l.productId)?.qty ?? 0) + l.qty })
+      for (const [id, v] of qtyBy) await reserveStock(t.id, id, v.name, v.qty)
+      await insertOrder(t.id, user.id, { category: 'shopping', provider: 'Sandbox store', product: lines.map((l) => `${l.qty}× ${l.name}`).join(', '), amount, fee, payload: { items: b.items } })
+    },
   })
 }
 

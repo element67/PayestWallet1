@@ -11,6 +11,8 @@ import { all, get, now, run, setting } from '../db'
 import { ingest, markDropped, type Observation } from '../agent'
 import { setStatus } from '../orders'
 import { vaultAddressArc } from '../vault'
+import { every } from '../timers'
+import { confirmationsFor, lookup, registerMiss } from './receipts'
 
 const transferEvent = getAbiItem({ abi: erc20Abi, name: 'Transfer' })
 const CHAIN = 'arc-testnet'
@@ -21,10 +23,10 @@ let lastBlock: bigint | null = null
 let lastVault: string | null = null
 const blockTimeCache = new Map<bigint, number>()
 
-function saveState(patch: { status: string; head?: bigint; pollMs?: number; error?: string | null }) {
-  run(
+async function saveState(patch: { status: string; head?: bigint; pollMs?: number; error?: string | null }) {
+  await run(
     `INSERT INTO monitor_state(chain,status,last_block,head_block,last_poll_at,poll_ms,error,mode) VALUES (?,?,?,?,?,?,?, 'live')
-     ON CONFLICT(chain) DO UPDATE SET status=excluded.status,last_block=excluded.last_block,head_block=COALESCE(excluded.head_block,head_block),last_poll_at=excluded.last_poll_at,poll_ms=COALESCE(excluded.poll_ms,poll_ms),error=excluded.error`,
+     ON CONFLICT(chain) DO UPDATE SET status=excluded.status,last_block=excluded.last_block,head_block=COALESCE(excluded.head_block,monitor_state.head_block),last_poll_at=excluded.last_poll_at,poll_ms=COALESCE(excluded.poll_ms,monitor_state.poll_ms),error=excluded.error`,
     CHAIN, patch.status, lastBlock === null ? null : Number(lastBlock), patch.head === undefined ? null : Number(patch.head), now(), patch.pollMs ?? null, patch.error ?? null,
   )
 }
@@ -57,36 +59,43 @@ async function scanBlocks(vault: `0x${string}`, head: bigint) {
       from: log.args.from as string,
       to: log.args.to as string,
       amount: log.args.value as bigint,
+      logIndex: Number(log.logIndex ?? 0),
       blockNumber: Number(log.blockNumber),
       status: 'confirmed',
-      confirmations: Number(head - log.blockNumber + 1n),
+      confirmations: confirmationsFor(head, log.blockNumber),
       simulated: false,
       visibleAtMs: await blockTimeMs(log.blockNumber).catch(() => null),
     }
-    ingest(obs)
+    await ingest(obs)
   }
   lastBlock = to
 }
 
 /** Pending-transaction path: decode transfer(to, amount) calldata from the node's view of the tx. */
 async function trackHints(vault: `0x${string}`) {
-  const hints = all<{ id: string; tx_hash: string; broadcast_at: number | null; from_address: string | null }>(
+  const hints = await all<{ id: string; tx_hash: string; broadcast_at: number | null; from_address: string | null }>(
     "SELECT id, tx_hash, broadcast_at, from_address FROM orders WHERE mode='live' AND status IN ('deposit_reported','detected') AND tx_hash IS NOT NULL",
   )
   for (const h of hints) {
     if (!isHash(h.tx_hash)) continue
-    const tx = await arcClient().getTransaction({ hash: h.tx_hash as Hash }).catch(() => null)
-    if (!tx) {
-      if (now() - (h.broadcast_at ?? now()) > 90_000) markDropped(CHAIN, h.tx_hash, 'dropped')
+    const found = await lookup(() => arcClient().getTransaction({ hash: h.tx_hash as Hash }))
+    // A transport error says nothing about the transaction: wait for the next poll.
+    if (found.kind === 'error') continue
+    if (found.kind === 'missing') {
+      if (now() - (h.broadcast_at ?? now()) > 90_000) await markDropped(CHAIN, h.tx_hash, 'dropped')
       continue
     }
+    const tx = found.value
     if (tx.blockNumber === null) {
       try {
         const d = decodeFunctionData({ abi: erc20Abi, data: tx.input })
         if (d.functionName === 'transfer' && (d.args[0] as string).toLowerCase() === vault) {
-          ingest({
+          // The reported hash only attaches to the order when it really was sent by the order's own source address.
+          // Anything else is recorded and alerted on without touching the order, so nobody can lock another user's order.
+          const senderOk = !h.from_address || tx.from.toLowerCase() === h.from_address.toLowerCase()
+          await ingest({
             chain: CHAIN, txHash: tx.hash, tokenAddress: tx.to ?? null, from: tx.from, to: vault, amount: d.args[1] as bigint,
-            blockNumber: null, status: 'pending', confirmations: 0, simulated: false, visibleAtMs: h.broadcast_at, orderHint: h.id,
+            blockNumber: null, status: 'pending', confirmations: 0, simulated: false, visibleAtMs: h.broadcast_at, ...(senderOk ? { orderHint: h.id } : {}),
           })
         }
       } catch {
@@ -94,41 +103,52 @@ async function trackHints(vault: `0x${string}`) {
       }
       continue
     }
-    const receipt = await arcClient().getTransactionReceipt({ hash: tx.hash }).catch(() => null)
-    if (receipt?.status === 'reverted') markDropped(CHAIN, tx.hash, 'failed')
+    const receipt = await lookup(() => arcClient().getTransactionReceipt({ hash: tx.hash }))
+    if (receipt.kind === 'found' && receipt.value.status === 'reverted') await markDropped(CHAIN, tx.hash, 'failed')
   }
 }
 
+/** In-memory: the last chain head at which a transaction's receipt was missing, so one block counts once. */
+const lastMissHead = new Map<string, bigint>()
+
 /** Refresh confirmation counts of open transactions and catch reorged-out ones. */
 async function refreshOpen(head: bigint) {
-  const open = all<{ tx_hash: string; block_number: number | null; confirmations: number; amount: string; token_address: string; from_addr: string; to_addr: string }>(
+  const open = await all<{ id: string; tx_hash: string; log_index: number; block_number: number | null; confirmations: number; amount: string; token_address: string; from_addr: string; to_addr: string; missing_count: number }>(
     "SELECT * FROM chain_txs WHERE chain=? AND status='confirmed' AND simulated=0", CHAIN,
   )
   for (const t of open) {
     if (t.block_number === null) continue
-    const receipt = await arcClient().getTransactionReceipt({ hash: t.tx_hash as Hash }).catch(() => null)
-    if (!receipt) {
-      markDropped(CHAIN, t.tx_hash, 'dropped')
+    const got = await lookup(() => arcClient().getTransactionReceipt({ hash: t.tx_hash as Hash }))
+    // Timeouts, rate limits and proxy errors must never reverse an order: skip until the next poll.
+    if (got.kind === 'error') continue
+    if (got.kind === 'missing') {
+      const r = registerMiss({ misses: t.missing_count, lastHead: lastMissHead.get(t.id) ?? null }, head)
+      lastMissHead.set(t.id, r.lastHead)
+      if (r.misses !== t.missing_count) await run('UPDATE chain_txs SET missing_count=? WHERE id=?', r.misses, t.id)
+      if (r.drop) await markDropped(CHAIN, t.tx_hash, 'dropped')
       continue
     }
+    const receipt = got.value
+    if (t.missing_count > 0) await run('UPDATE chain_txs SET missing_count=0 WHERE id=?', t.id)
+    lastMissHead.delete(t.id)
     if (receipt.status === 'reverted') {
-      markDropped(CHAIN, t.tx_hash, 'failed')
+      await markDropped(CHAIN, t.tx_hash, 'failed')
       continue
     }
-    ingest({
-      chain: CHAIN, txHash: t.tx_hash, tokenAddress: t.token_address, from: t.from_addr, to: t.to_addr, amount: BigInt(t.amount),
-      blockNumber: Number(receipt.blockNumber), status: 'confirmed', confirmations: Number(head - receipt.blockNumber + 1n), simulated: false, visibleAtMs: null,
+    await ingest({
+      chain: CHAIN, txHash: t.tx_hash, logIndex: t.log_index, tokenAddress: t.token_address, from: t.from_addr, to: t.to_addr, amount: BigInt(t.amount),
+      blockNumber: Number(receipt.blockNumber), status: 'confirmed', confirmations: confirmationsFor(head, receipt.blockNumber), simulated: false, visibleAtMs: null,
     })
   }
 }
 
 /** A user reports a hash right after broadcasting. */
-export function reportBroadcast(orderId: string, txHash: string) {
+export async function reportBroadcast(orderId: string, txHash: string) {
   const hash = txHash.toLowerCase()
-  const dup = get('SELECT 1 FROM orders WHERE tx_hash=? AND id<>?', hash, orderId)
+  const dup = await get('SELECT 1 FROM orders WHERE tx_hash=? AND id<>?', hash, orderId)
   if (dup) return false
-  run('UPDATE orders SET tx_hash=?, broadcast_at=? WHERE id=? AND tx_hash IS NULL', hash, now(), orderId)
-  setStatus(orderId, 'deposit_reported', 'deposit.broadcast', `Transaction ${hash} reported by user. Watching the network.`)
+  await run('UPDATE orders SET tx_hash=?, broadcast_at=? WHERE id=? AND tx_hash IS NULL', hash, now(), orderId)
+  await setStatus(orderId, 'deposit_reported', 'deposit.broadcast', `Transaction ${hash} reported by user. Watching the network.`)
   return true
 }
 
@@ -138,18 +158,18 @@ async function poll() {
   running = true
   const started = now()
   try {
-    const vault = vaultAddressArc()
+    const vault = await vaultAddressArc()
     if (!vault) {
-      saveState({ status: 'idle', error: 'No vault address configured' })
+      await saveState({ status: 'idle', error: 'No vault address configured' })
       return
     }
     const head = await arcClient().getBlockNumber()
     await scanBlocks(vault as `0x${string}`, head)
     await trackHints(vault as `0x${string}`)
     await refreshOpen(head)
-    saveState({ status: 'live', head, pollMs: now() - started, error: null })
+    await saveState({ status: 'live', head, pollMs: now() - started, error: null })
   } catch (e) {
-    saveState({ status: 'degraded', error: scrub(e) })
+    await saveState({ status: 'degraded', error: scrub(e) })
   } finally {
     running = false
   }
@@ -157,7 +177,7 @@ async function poll() {
 
 export function startArcMonitor() {
   void poll()
-  setInterval(() => void poll(), 1000)
+  every('arc-monitor', 1000, poll)
   void setting
 }
 

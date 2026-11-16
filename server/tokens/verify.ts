@@ -20,6 +20,19 @@ function clientFor(networkId: string): PublicClient {
   return c
 }
 
+/** Canonical testnet wrapper symbols that may stand in for a registry symbol. Everything else must match exactly. */
+const SYMBOL_ALIASES: Record<string, readonly string[]> = {
+  USDC: ['usdc.e', 'usdbc'],
+  WETH: ['weth9'],
+}
+
+/** Exact (case-insensitive) symbol match, or an explicitly allowed wrapper alias. A symbol that merely contains the expected one, like FAKE_USDC, is rejected. */
+export function symbolMatches(onchain: string, expected: string): boolean {
+  const a = String(onchain).trim().toLowerCase()
+  const b = expected.trim().toLowerCase()
+  return a === b || (SYMBOL_ALIASES[expected.toUpperCase()] ?? []).includes(a)
+}
+
 export interface VerifyResult { ok: boolean; note: string; transient?: boolean }
 
 export async function verifyOnChain(networkId: string, contract: string, symbol: string, decimals: number): Promise<VerifyResult> {
@@ -33,9 +46,7 @@ export async function verifyOnChain(networkId: string, contract: string, symbol:
       c.readContract({ address, abi: erc20Abi, functionName: 'decimals' }),
     ])
     if (Number(dec) !== decimals) return { ok: false, note: `Decimals on-chain are ${dec}, not ${decimals}` }
-    const a = sym.toLowerCase()
-    const b = symbol.toLowerCase()
-    if (a !== b && !a.includes(b)) return { ok: false, note: `On-chain symbol is "${sym}", not "${symbol}"` }
+    if (!symbolMatches(sym, symbol)) return { ok: false, note: `On-chain symbol is "${sym}", not "${symbol}"` }
     return { ok: true, note: `Verified on-chain: code present, symbol ${sym}, ${dec} decimals` }
   } catch (e) {
     return { ok: false, transient: true, note: `Could not reach the chain to verify (${scrub(e).slice(0, 80)}). It will be retried.` }
@@ -43,8 +54,8 @@ export async function verifyOnChain(networkId: string, contract: string, symbol:
 }
 
 /** Checks every unverified contract in the background. Testnet seed rows are switched on once they pass; nothing else changes. */
-export async function verifyPending(onChange: () => void) {
-  const rows = all<{ id: number; symbol: string; network_id: string; contract: string; decimals: number; is_testnet: number; source: string }>(
+export async function verifyPending(onChange: () => void | Promise<void>) {
+  const rows = await all<{ id: number; symbol: string; network_id: string; contract: string; decimals: number; is_testnet: number; source: string }>(
     "SELECT id, symbol, network_id, contract, decimals, is_testnet, source FROM token_networks WHERE verified=0 AND contract IS NOT NULL AND source IN ('seed','admin')",
   )
   let changed = false
@@ -56,14 +67,14 @@ export async function verifyPending(onChange: () => void) {
       const res = await verifyOnChain(r.network_id, r.contract, r.symbol, r.decimals)
       if (res.ok) {
         // Only untouched seed rows are switched on automatically, and only on testnets (sandbox mode).
-        run('UPDATE token_networks SET verified=1, verified_at=?, verify_note=?, is_active=CASE WHEN source=? AND is_testnet=1 THEN 1 ELSE is_active END WHERE id=?', now(), res.note, 'seed', r.id)
+        await run('UPDATE token_networks SET verified=1, verified_at=?, verify_note=?, is_active=CASE WHEN source=? AND is_testnet=1 THEN 1 ELSE is_active END WHERE id=?', now(), res.note, 'seed', r.id)
         changed = true
-        onChange()
+        await onChange()
       } else {
-        run('UPDATE token_networks SET verify_note=? WHERE id=?', res.note, r.id)
+        await run('UPDATE token_networks SET verify_note=? WHERE id=?', res.note, r.id)
         if (res.transient) break
       }
     }
   }))
-  if (changed) onChange()
+  if (changed) await onChange()
 }

@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useCrypto } from '@/lib/crypto'
 import type { Intent } from '@/lib/nav'
-import { BridgeScreen } from '@/components/crypto/BridgeScreen'
+import { OnchainBridge } from '@/components/crypto/OnchainBridge'
 import { BuyScreen } from '@/components/crypto/BuyScreen'
 import { History } from '@/components/crypto/History'
 import { Overview, type CryptoAction } from '@/components/crypto/Overview'
 import { Receive } from '@/components/crypto/Receive'
 import { Send } from '@/components/crypto/Send'
-import { SwapScreen } from '@/components/crypto/SwapScreen'
+import { SwapHub } from '@/components/crypto/SwapHub'
 import { FundSheet } from '@/components/naira/FundSheet'
 import { Segmented } from '@/components/ui'
 import type { View } from '@/components/Shell'
@@ -64,8 +64,8 @@ export function Crypto({ initial, go }: { initial?: Intent['screen']; go: (view:
           {!screen && tab === 'history' && <History />}
           {screen === 'send' && <Send data={data} />}
           {screen === 'receive' && <Receive data={data} />}
-          {screen === 'swap' && <SwapScreen onDone={close} />}
-          {screen === 'bridge' && <BridgeScreen onDone={close} />}
+          {screen === 'swap' && <SwapHub onDone={close} />}
+          {screen === 'bridge' && <OnchainBridge onDone={close} />}
           {screen === 'buy' && <BuyScreen onDone={close} />}
         </>
       )}

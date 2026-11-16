@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
-import { Button, Card, Field } from '../ui'
+import { Button, Card, Field, PanelSkeleton } from '../ui'
 import { WalletPolicy } from './WalletPolicy'
 
 interface Settings {
   feeBps: number; quoteTtlSec: number; riskBlockScore: number; riskReviewScore: number; confirmationsRequired: number; orderExpiryMin: number
-  instantPayoutsEnabled: boolean; platformPaused: boolean; instantLimitNgn: string; dailyLimitTier1Ngn: string; dailyLimitTier2Ngn: string; dailyWithdrawLimitNgn: string; vaultAddressArc: string
+  instantPayoutsEnabled: boolean; platformPaused: boolean; instantLimitNgn: string; dailyLimitTier1Ngn: string; dailyLimitTier2Ngn: string; dailyWithdrawLimitNgn: string; vaultAddressArc: string; vaultAddressSolana: string; vaultAddressBitcoin: string
 }
 
 function Form({ initial }: { initial: Settings }) {
@@ -50,6 +50,8 @@ function Form({ initial }: { initial: Settings }) {
       <Card className="space-y-3 p-5">
         <h2 className="display text-lg font-semibold">Arc Testnet vault</h2>
         <Field label="Vault address (watch only)" className="mono !text-xs" value={s.vaultAddressArc} onChange={(e) => setS({ ...s, vaultAddressArc: e.target.value.trim() })} placeholder="0x..." hint="The agent watches USDC transfers to this address. Use an address you control. No private key is ever entered here." />
+        <Field label="Solana vault address (watch only)" className="mono !text-xs" value={s.vaultAddressSolana ?? ''} onChange={(e) => setS({ ...s, vaultAddressSolana: e.target.value.trim() })} placeholder="Solana public address" hint="Public address only, never a private key. Solana deposits are not detected automatically yet, so orders on Solana stay in sandbox mode." />
+        <Field label="Bitcoin vault address (watch only)" className="mono !text-xs" value={s.vaultAddressBitcoin ?? ''} onChange={(e) => setS({ ...s, vaultAddressBitcoin: e.target.value.trim() })} placeholder="bc1... or tb1..." hint="Public address only, never a private key. Bitcoin deposits are not detected automatically yet. This app runs on Bitcoin testnet, so use a testnet address (tb1...) for testing." />
       </Card>
       <Button className="lg:col-span-2" onClick={() => save.mutate()} loading={save.isPending}>Save all settings</Button>
     </div>
@@ -58,7 +60,7 @@ function Form({ initial }: { initial: Settings }) {
 
 export function LimitsPanel() {
   const { data } = useQuery({ queryKey: ['admin-settings'], queryFn: () => api<{ settings: Settings }>('/api/admin/settings').then((r) => r.settings) })
-  if (!data) return <p className="text-subtle">Loading...</p>
+  if (!data) return <PanelSkeleton label="Loading limits and fees" />
   return (
     <div className="space-y-5">
       <Form initial={data} />

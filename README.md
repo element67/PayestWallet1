@@ -17,7 +17,7 @@ The home screen is one split dashboard card (crypto on the left, Naira on the ri
 The whole app uses one bold, flat "sticker" style: thick dark outlines, hard offset shadows, rounded pill buttons, big heavy headlines and a graphic background of abstract shapes (blobs, rings, torn paper edges, tape strips) with a faint halftone dot texture. Phone screens come first; the bottom tab bar is a floating pill.
 
 - **Themes:** ten colour themes (Cobalt Lime is the default). A theme is just three colours (background, card, button); text colours, outlines, status colours and the background artwork are all derived from them, and text is always chosen for contrast. No screen or component carries a colour of its own. Pick one under More, Settings, Display, Appearance, or with the sun icon in the top bar. It changes everywhere at once and is saved to your account, so it follows you to any device. A local copy makes the right colours show instantly before the server answers.
-- **Profile:** More, Profile shows your initials avatar, name, email, phone, member since and verification status, with an Edit profile form. The email there is a contact email: the email you sign in with does not change. Names and Nigerian mobile numbers stay in step with the Naira wallet.
+- **Profile:** More, Profile shows your initials avatar, name, email, phone, member since and verification status, with an Edit profile form. Changing the email there also changes the email you sign in with, so it asks for your current password and refuses an email another account already uses (preview accounts with no password cannot change it). Names and Nigerian mobile numbers stay in step with the Naira wallet.
 - **Settings:** Display, Notifications, Security (PIN, signed-in devices), Linked accounts (payout bank accounts) and Help and support. Everything that used to be on the old Settings page is still there.
 - **API (signed-in user only, own data only):** `GET/PUT /api/settings/appearance` (only the ten known theme ids are accepted) and `GET/PUT /api/profile` (name, email and phone are validated). A missing settings or profile record is created automatically. Tables: `user_settings`, `user_profiles`.
 - Tests: `bun scripts/design-test.ts` (needs the API running).
@@ -53,11 +53,11 @@ Operator seed recovery: `bun scripts/wallet-recovery.ts <userId> --i-understand`
 - Customers: sell or buy crypto with an exact quote, track each exchange live, keep a Naira wallet, withdraw Naira to a saved bank account or crypto to their own address (daily limit applies), save bank accounts, see alerts, switch light and dark mode.
 - Founder: see volume, fees and liquidity, publish exchange rates, set fees and limits, manage users, review held transactions, resolve alerts, read the audit log.
 - AI monitor: live agent status, networks watched, detection and settlement times, recent decisions, fake tokens caught.
-- Development preview: with `DEV_PREVIEW=true` you can enter as a customer or founder without logging in. It uses sandbox money and is disabled when the flag is off.
+- Sign-in: everyone signs in with an email (or username) and password. A founder account is created on first start from `FOUNDER_EMAIL` and `FOUNDER_PASSWORD`.
 
 ## Tech stack
 
-React 18, Vite, TypeScript, Tailwind CSS, wagmi and viem for wallets. Bun server with SQLite for the API, job queue, blockchain monitor and transaction agent.
+Next.js 15 (App Router) with React 19, TypeScript, Tailwind CSS, wagmi and viem for wallets. A Bun server runs the API, job queue, blockchain monitors and transaction agent. Data lives in Postgres (Supabase).
 
 ## Development
 
@@ -65,13 +65,19 @@ Prerequisites: Bun.
 
 ```bash
 bun install
-bun run dev        # web app on :5173, also starts the API on :3001 if it is not running
-bun run server     # API only
+bun run dev        # Next.js app on :5173 (it serves the API under /api) plus the background worker
+bun run build      # production build of the web app
+bun scripts/db-migrate.ts   # create or update the database tables
+bun run worker     # background worker only: job queue, chain monitors, transaction agent (one runs at a time)
+bun run server     # standalone API plus worker on :3001, used by the scripts/*-test.ts checks
 bun run check      # lint and typecheck
+bun scripts/flows-test.ts   # drives receive, send, exchange, P2P, swap, bridge and transfers through the API (needs an API with DEV_PREVIEW=true, ideally on a throwaway schema: DB_SCHEMA=e2e DEV_PREVIEW=true PORT=3002 bun server/index.ts, then API=http://127.0.0.1:3002)
+bun test           # security regression tests (in-memory database, no network)
+forge test         # contract tests (Create2Factory)
 bun scripts/smoke.ts   # end-to-end sandbox flows against the running API
 ```
 
-The API stores data in `data/fintech.db` (ignored by git).
+The API stores data in Postgres. To bring an older local SQLite file (`data/fintech.db`) across, run `bun scripts/migrate-sqlite-to-supabase.ts --dry-run` and then without `--dry-run`. It never changes the SQLite file and stops if any balance differs.
 
 ### Environment variables
 
@@ -82,14 +88,38 @@ The API stores data in `data/fintech.db` (ignored by git).
 | `PAYMENT_MODE` | Optional. Only `SANDBOX` is supported; any other value stops the server. |
 | `WALLET_MASTER_KEY` | 64 hex characters. Wraps every wallet seed phrase. Required. Back it up separately; losing it makes wallets unrecoverable. |
 | `RPC_URL_Ethereum_Sepolia`, `RPC_URL_Base_Sepolia` | Optional. Your own RPC provider URL for that network. The registry's public RPC can rate-limit. |
-| `DEV_PREVIEW` | `true` enables sign-in without credentials (sandbox only). |
-| `PORT` | API port, default 3001. |
+| `FOUNDER_PASSWORD` | Password (10+ characters) for the founder account created on first start. The account's username is `founder`. It is never overwritten once the account exists. |
+| `DEV_PREVIEW` | Optional, off by default. `true` enables a login-free test endpoint used only by the `scripts/*-test.ts` checks. Leave it off. |
+| `PORT` | Port of the standalone server (`bun run server`), default 3001. |
+| `TRUST_PROXY` | `true` only when a reverse proxy you control overwrites `X-Forwarded-For`. Otherwise the header is ignored, so callers cannot fake their IP for rate limits and audit logs. |
+| `TRUSTED_PROXY_HOPS` | Optional. How many proxies sit in front of the server (default 1). Only used when `TRUST_PROXY=true`. |
+| `ALLOWED_HOSTS` | Optional. Comma-separated host names the dev server accepts. Unset allows any host (needed for the Arc Studio preview). |
+| `DATABASE_URL` | Required. Postgres connection string (Supabase: Project settings, Database, direct or session connection). Server side only, never put it in a `NEXT_PUBLIC_` variable. |
+| `DATABASE_SSL` | Optional. `false` turns off SSL for a local Postgres. Remote databases use SSL by default. |
+| `ACHSWAP_FACTORY`, `ACHSWAP_ROUTER`, `ACHSWAP_WRAPPED` | Addresses of the AchSwap V2 factory, router and wrapped USDC on Arc Testnet, used for read-only onchain quotes (`POST /api/dex/quote`). |
+| `NAIRASWAP_ARC_ROUTER`, `NAIRASWAP_ARC_FACTORY`, `NAIRASWAP_ARC_TREASURY` | Addresses of your own exchange contracts on Arc Testnet (router, factory, fee treasury). |
+| `NAIRASWAP_ETH_ROUTER`, `NAIRASWAP_ETH_FACTORY`, `NAIRASWAP_ETH_TREASURY` | The same three contracts on Ethereum Sepolia. |
+| `NAIRASWAP_BASE_ROUTER`, `NAIRASWAP_BASE_FACTORY`, `NAIRASWAP_BASE_TREASURY` | The same three contracts on Base Sepolia. |
+| `ALLOWED_DEV_ORIGINS` | Optional. Extra hosts allowed to load the Next.js dev server (the Arc Studio preview hosts are built in). |
+| `NEXT_PUBLIC_TRACE_PARENT_ORIGINS` | Optional. Extra origins allowed to receive trace telemetry when the app runs inside a frame. |
 | `FOUNDER_EMAIL` | Account registered with this email becomes the founder. |
 | `REAL_MONEY_ENABLED` | Reserved. Has no effect until live providers exist. |
 | `RPC_PROXY_BASE_URL`, `RPC_PROXY_TOKEN`, `RPC_PROXY_CHAINS` | Optional outside Arc Studio. Provisioned by Arc Studio for Arc Testnet RPC. Without them the public Arc Testnet RPC is used. |
 
 ### First run
 
-1. Open the app and choose "Enter as founder" (development preview) or register with `FOUNDER_EMAIL`.
+1. Set `FOUNDER_EMAIL` and `FOUNDER_PASSWORD`, start the app, and sign in with that email (or the username `founder`).
 2. Under Founder, Limits and fees, set the Arc Testnet vault address (an address you control, watch only).
 3. Under Rates, publish your own rates. Seeded rates are placeholders.
+
+## Onchain exchange
+
+The Swap screen has three modes: exchange balances (founder rates), an onchain swap, and liquidity pools. The onchain modes use the NairaSwap contracts in `contracts/` (factory, pair pools with LP tokens, router, fee treasury) on Arc Testnet, Ethereum Sepolia and Base Sepolia. You can sign with the app wallet (transaction PIN) or with a connected browser wallet. A 0.30% fee is charged on each trade: 0.25% stays with liquidity providers and 0.05% goes to the treasury. Run `forge test` for the contract tests.
+
+## Bridge
+
+The Bridge screen sends USDC between Arc Testnet, Ethereum Sepolia and Base Sepolia over Circle's cross-chain protocol (CCTP), always to your own wallet address. Sign with the app wallet (transaction PIN) or a connected browser wallet. A small Circle forwarding fee is taken from the amount. A transfer that stops part-way can be resumed from the same screen. Testnet only.
+
+## Admin dashboard
+
+Founders have a separate admin area at `/admin`, with its own sign-in, layout and navigation. It is closed to anyone who is not a founder. It monitors users, orders, the Naira wallets, ledger health, alerts and the audit log, the job queue and chain monitors, the AI transaction agent, and the exchange and bridge activity. Rates, limits, tokens and test credit are managed there too. The founder account is created from `FOUNDER_EMAIL` and `FOUNDER_PASSWORD`.

@@ -22,6 +22,10 @@ if (!usdc) throw new Error('USDC fact for Arc Testnet is missing')
 
 export const CONFIG = {
   port: Number(process.env.PORT ?? 3001),
+  /** Trust the X-Forwarded-For header only when explicitly told a trusted reverse proxy overwrites it. */
+  trustProxy: process.env.TRUST_PROXY === 'true',
+  /** How many proxies sit in front of the server. The client is the hop that many from the right of X-Forwarded-For. */
+  trustedProxyHops: Math.max(1, Math.floor(Number(process.env.TRUSTED_PROXY_HOPS ?? 1)) || 1),
   /** Development preview: sign in without credentials. Sandbox money only. */
   devPreview: process.env.DEV_PREVIEW === 'true',
   /**
@@ -78,6 +82,8 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   confirmations_required: '2',
   order_expiry_min: '30',
   vault_address_arc: '',
+  vault_address_solana: '', // watch-only wallets; Solana and Bitcoin deposits are not auto-detected yet
+  vault_address_bitcoin: '',
   instant_payouts_enabled: 'true',
   platform_paused: 'false',
 }

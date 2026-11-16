@@ -1,6 +1,6 @@
 /** Asset registry, seed data and quote pricing. Rates are founder-configured, integer kobo per whole unit. */
 import { CONFIG } from './config'
-import { all, db, get, now, run, setting, settingBig, settingNum, uid } from './db'
+import { all, get, now, run, setting, settingBig, settingNum, uid } from './db'
 import { MoneyError, ceilDiv, fromUnits, toUnits } from './money'
 import { post } from './ledger'
 
@@ -25,7 +25,7 @@ export interface Asset {
 const NGN = (n: number) => String(BigInt(n) * 100n)
 
 /** Seed assets. Rates are PLACEHOLDERS (not market data): the founder must set real rates. */
-export function seedAssets() {
+export async function seedAssets() {
   const t = now()
   const rows: Array<[string, string, string, string, string | null, number, string, number, number, number, number]> = [
     ['USDC', 'USD Coin', 'arc-testnet', 'erc20', CONFIG.arc.usdcAddress, CONFIG.arc.usdcDecimals, 'live', 1520, 1480, 1_000, 5_000_000],
@@ -34,7 +34,7 @@ export function seedAssets() {
     ['SOL', 'Solana', 'solana-devnet', 'native', null, 9, 'simulated', 230_000, 226_000, 1_000, 10_000_000],
   ]
   for (const [symbol, name, chain, kind, contract, decimals, monitoring, buy, sell, min, max] of rows) {
-    run(
+    await run(
       `INSERT OR IGNORE INTO assets(symbol,name,chain,kind,contract,decimals,enabled,monitoring,buy_rate_kobo,sell_rate_kobo,min_ngn_kobo,max_ngn_kobo,updated_at)
        VALUES (?,?,?,?,?,?,1,?,?,?,?,?,?)`,
       symbol, name, chain, kind, contract, decimals, monitoring, NGN(buy), NGN(sell), NGN(min), NGN(max), t,
@@ -42,11 +42,11 @@ export function seedAssets() {
   }
   // Sandbox platform liquidity (clearly simulated).
   const liq: Record<string, bigint> = { NGN: 5_000_000_000n, USDC: 20_000_000_000n, USDT: 20_000_000_000n, BTC: 200_000_000n, SOL: 500_000_000_000n }
-  for (const [asset, amt] of Object.entries(liq)) post({ owner: 'house', asset, delta: amt, reason: 'sandbox liquidity seed', idem: `seed:house:${asset}` })
+  for (const [asset, amt] of Object.entries(liq)) await post({ owner: 'house', asset, delta: amt, reason: 'sandbox liquidity seed', idem: `seed:house:${asset}` })
 }
 
-export const listAssets = () => all<Asset>('SELECT * FROM assets ORDER BY symbol')
-export const getAsset = (symbol: string) => get<Asset>('SELECT * FROM assets WHERE symbol=?', symbol)
+export const listAssets = async () => await all<Asset>('SELECT * FROM assets ORDER BY symbol')
+export const getAsset = async (symbol: string) => await get<Asset>('SELECT * FROM assets WHERE symbol=?', symbol)
 
 export interface Pricing {
   side: 'sell' | 'buy'
@@ -66,22 +66,22 @@ export interface Pricing {
  * buy  (NGN -> crypto): user pays gross NGN, fee is taken from it, crypto = (gross - fee) / buy rate.
  */
 /** Founder-configured gas fee (NGN) for a chain, in kobo. Missing or invalid values count as zero. */
-export function gasFeeKobo(chain: string): bigint {
+export async function gasFeeKobo(chain: string): Promise<bigint> {
   try {
-    const v = (JSON.parse(setting('gas_fee_ngn') || '{}') as Record<string, string>)[chain]
+    const v = (JSON.parse(await setting('gas_fee_ngn') || '{}') as Record<string, string>)[chain]
     return v ? toUnits(v, 2) : 0n
   } catch {
     return 0n
   }
 }
 
-export function price(side: 'sell' | 'buy', symbol: string, amount: string): Pricing {
-  const asset = getAsset(symbol)
+export async function price(side: 'sell' | 'buy', symbol: string, amount: string): Promise<Pricing> {
+  const asset = await getAsset(symbol)
   if (!asset || !asset.enabled) throw new MoneyError('Asset is not available')
-  if (setting('platform_paused') === 'true') throw new MoneyError('Trading is temporarily paused')
-  const feeBps = settingNum('fee_bps')
+  if (await setting('platform_paused') === 'true') throw new MoneyError('Trading is temporarily paused')
+  const feeBps = await settingNum('fee_bps')
   const unit = 10n ** BigInt(asset.decimals)
-  const gasKobo = gasFeeKobo(asset.chain)
+  const gasKobo = await gasFeeKobo(asset.chain)
   let cryptoUnits: bigint, grossKobo: bigint, feeKobo: bigint, netKobo: bigint, rateKobo: bigint
   if (side === 'sell') {
     rateKobo = BigInt(asset.sell_rate_kobo)
@@ -103,10 +103,10 @@ export function price(side: 'sell' | 'buy', symbol: string, amount: string): Pri
   return { side, asset, cryptoUnits, grossKobo, feeKobo, netKobo, rateKobo, feeBps, gasKobo }
 }
 
-export function createQuote(userId: string, p: Pricing) {
+export async function createQuote(userId: string, p: Pricing) {
   const id = uid('q')
-  const expires = now() + settingNum('quote_ttl_sec') * 1000
-  run(
+  const expires = now() + await settingNum('quote_ttl_sec') * 1000
+  await run(
     `INSERT INTO quotes(id,user_id,side,asset,crypto_amount,gross_kobo,fee_kobo,net_kobo,rate_kobo,rate_version,fee_bps,expires_at,created_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     id, userId, p.side, p.asset.symbol, p.cryptoUnits.toString(), p.grossKobo.toString(), p.feeKobo.toString(), p.netKobo.toString(),
@@ -115,13 +115,19 @@ export function createQuote(userId: string, p: Pricing) {
   return { id, expiresAt: expires }
 }
 
-export function dailyVolumeKobo(userId: string): bigint {
-  const rows = all<{ gross_kobo: string }>(
-    "SELECT gross_kobo FROM orders WHERE user_id=? AND created_at>? AND status NOT IN ('expired','cancelled','failed','rejected')",
-    userId, now() - 86_400_000,
+/**
+ * One shared 24h volume for the KYC tier limit: exchange orders, crypto swaps and withdrawals all count,
+ * so splitting activity across endpoints cannot multiply a user's limit.
+ */
+export async function dailyVolumeKobo(userId: string): Promise<bigint> {
+  const since = now() - 86_400_000
+  const sum = (rows: { v: string }[]) => rows.reduce((s, r) => s + BigInt(r.v), 0n)
+  return (
+    sum(await all<{ v: string }>("SELECT gross_kobo AS v FROM orders WHERE user_id=? AND created_at>? AND status NOT IN ('expired','cancelled','failed','rejected')", userId, since)) +
+    sum(await all<{ v: string }>("SELECT value_kobo AS v FROM crypto_ops WHERE user_id=? AND kind='swap' AND status!='failed' AND created_at>?", userId, since)) +
+    sum(await all<{ v: string }>("SELECT value_kobo AS v FROM withdrawals WHERE user_id=? AND status<>'failed' AND created_at>?", userId, since))
   )
-  return rows.reduce((s, r) => s + BigInt(r.gross_kobo), 0n)
 }
 
-export const instantLimitKobo = () => settingBig('instant_payout_limit_kobo')
-export const countAssetsDb = () => db.query('SELECT COUNT(*) c FROM assets').get() as { c: number }
+export const instantLimitKobo = async () => await settingBig('instant_payout_limit_kobo')
+export const countAssetsDb = async () => (await get<{ c: number }>('SELECT COUNT(*) c FROM assets')) ?? { c: 0 }

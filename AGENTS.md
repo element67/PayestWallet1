@@ -64,3 +64,14 @@ bun run dev
 - Font sizes are defined once in `tailwind.config.js` (rem x `--text-scale`; headlines use `--text-scale-h`). Use the Tailwind size names (`text-xs` is 14px at Small, `text-sm` is 16px). Never write a pixel font size in a component.
 - `src/lib/textSizes.ts` holds the four sizes; `src/lib/textSize.tsx` loads, applies and saves the choice (`/api/settings/text-size`).
 - `.truncate` wraps instead of cutting text off. Layout that must change with the size keys off `html[data-text=...]` in `src/index.css` (`.action-grid`, `.dash-split`).
+
+## NairaSwap deployments (testnet)
+Owner and treasury payout: 0x4674A1b673b4A9e682888d10a52509b6b88123C2 (user-supplied public address). Spec: contracts/NairaSwap-design.md.
+- Arc Testnet: Treasury 0x9bf220b8d503b9f4b7c9a6e5e840e2c450e28913, Factory 0xa653656e3b725b1f46350e50abafa5f2a9934782, Router 0xfd47ab3e9b8bf87220f8dda5a76712dc7e9d753d (verified onchain: owner, feeTo, factory, payout).
+- Ethereum Sepolia: Treasury 0x4acec8a3401fcb43a5cf7278e4c8142797631654, Factory 0xC8ADB16fBB1BAF2ce843BE7AC54c5479BB7B2cb4, Router 0x5a0C0Ea1F1Ba99e9dD3d64943006f7aF07B786a2 (verified onchain). The shared platform deploy failed 4 times on the Factory (ESTIMATION_ERROR), so the Factory and Router were deployed with a disposable funded key using forge create; ownership is the constructor owner (your address), so that key has no authority.
+- Base Sepolia: Treasury 0x783d51839ba2ca0653cc666380e72002227517f2, Factory 0xc8103ba788f4344df46d4c15ad77733f526c973d, Router 0xd34c33d910676424e0c854b7600faa40e99b3f96 (verified onchain).
+- AchSwap (third party, read-only quotes): see ACHSWAP_* in .env.
+- Bridge: Circle CCTP via @circle-fin/app-kit, USDC only, Arc/Ethereum Sepolia/Base Sepolia, forwarding service (no destination gas). App-wallet transfers run server-side after a PIN (bridge_ops table); browser-wallet transfers run client-side.
+- Vault watch addresses (public) are founder settings: vault_address_arc (EVM), vault_address_solana, vault_address_bitcoin. Solana/Bitcoin deposits are not auto-detected yet.
+- Architecture (Next.js stage 4 done): the API runs inside Next.js (src/app/api/[...path]/route.ts imports server/app.ts). Background work (queue, chain monitors, agent, bridge sweep) runs in a separate Bun process, worker/index.ts, which takes a Postgres advisory lock so only one runs. server/index.ts is the standalone API plus worker for scripts/tests. The token catalog is held in memory and re-read every 30s in each process.
+

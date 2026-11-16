@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { ago, ngn, parseError } from '@/lib/format'
 import { TXN_STATUS, newKey } from '@/lib/naira'
-import { Badge, Button, Card, Empty, Field, Row, Segmented, cx } from '../ui'
+import { Badge, Button, Card, Empty, Field, ListSkeleton, Row, Segmented, cx } from '../ui'
 import { Sheet } from '../naira/Sheet'
 
 type Panel = 'users' | 'transactions' | 'p2p' | 'bills' | 'settings' | 'security'
@@ -113,7 +113,7 @@ function Users() {
 function Transactions() {
   const qc = useQueryClient()
   const [status, setStatus] = useState('')
-  const { data } = useQuery({ queryKey: ['a-naira-txns', status], queryFn: () => api<{ transactions: ATxn[] }>(`/api/admin/naira/transactions${status ? `?status=${status}` : ''}`).then((r) => r.transactions), refetchInterval: 5000 })
+  const { data } = useQuery({ queryKey: ['a-naira-txns', status], queryFn: () => api<{ transactions: ATxn[] }>(`/api/admin/naira/transactions${status ? `?status=${status}` : ''}`).then((r) => r.transactions), refetchInterval: 5000, placeholderData: keepPreviousData })
   const [open, setOpen] = useState<ATxn | null>(null)
   const [note, setNote] = useState('')
   const detail = useQuery({
@@ -128,12 +128,13 @@ function Transactions() {
   const canRefund = open && (open.status === 'processing' || (open.status === 'success' && open.direction === 'debit' && !open.reversed))
   return (
     <>
-      <div className="scroll-thin flex gap-2 overflow-x-auto pb-1">
+      <div className="flex flex-wrap gap-2">
         {['', 'pending_review', 'processing', 'failed', 'success', 'reversed'].map((s) => (
           <button key={s} onClick={() => setStatus(s)} className={cx('min-h-11 shrink-0 rounded-full border px-4 text-sm font-semibold', status === s ? 'border-accent bg-accent text-accent-ink' : 'border-line')}>{s ? (TXN_STATUS[s]?.label ?? s) : 'All'}</button>
         ))}
       </div>
       <Card className="overflow-hidden p-2">
+        {!data && <ListSkeleton bare rows={4} label="Loading transactions" />}
         {data?.length === 0 && <Empty title="No transactions" />}
         {(data ?? []).map((t) => (
           <button key={t.id} onClick={() => setOpen(t)} className="flex min-h-14 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left hover:bg-muted">
@@ -181,6 +182,7 @@ function P2p() {
   const { data } = useQuery({ queryKey: ['a-naira-p2p'], queryFn: () => api<{ orders: { id: string; email: string; asset: string; expected: string; status: string; orderStatus: string; mode: string; txHash: string | null; createdAt: number }[] }>('/api/admin/naira/p2p').then((r) => r.orders), refetchInterval: 4000 })
   return (
     <Card className="overflow-hidden p-2">
+      {!data && <ListSkeleton bare rows={3} label="Loading P2P deposits" />}
       {data?.length === 0 && <Empty title="No P2P deposits yet" />}
       {(data ?? []).map((o) => (
         <div key={o.id} className="flex min-h-14 items-center justify-between gap-3 px-3 py-2 text-sm">
@@ -196,6 +198,7 @@ function Bills() {
   const { data } = useQuery({ queryKey: ['a-naira-bills'], queryFn: () => api<{ orders: { id: string; reference: string; email: string; category: string; provider: string; product: string | null; customerRef: string | null; amount: string; status: string; providerRef: string | null; createdAt: number }[] }>('/api/admin/naira/bills').then((r) => r.orders), refetchInterval: 5000 })
   return (
     <Card className="overflow-hidden p-2">
+      {!data && <ListSkeleton bare rows={3} label="Loading bill orders" />}
       {data?.length === 0 && <Empty title="No bill orders yet" />}
       {(data ?? []).map((o) => (
         <div key={o.id} className="flex min-h-14 items-center justify-between gap-3 px-3 py-2 text-sm">

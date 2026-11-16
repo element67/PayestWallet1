@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { crypto, ngn } from '@/lib/format'
-import { Badge, Card, PageTitle, Sandbox, Stat, TokenIcon, cx } from '@/components/ui'
+import { Badge, Card, PageTitle, PanelSkeleton, Sandbox, Stat, TokenIcon, cx } from '@/components/ui'
 import { RatesPanel } from '@/components/founder/RatesPanel'
 import { TokensAdmin } from '@/components/founder/TokensAdmin'
 import { TestCredit } from '@/components/founder/TestCredit'
@@ -28,7 +28,7 @@ export function Founder() {
   return (
     <>
       <PageTitle title="Founder dashboard" sub="Volume, liquidity, rates, limits and risk in one place. Every change is written to the audit log." />
-      <div className="scroll-thin mb-5 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-5 flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button key={t} onClick={() => setTab(t)} className={cx('border border-outline min-h-11 shrink-0 rounded-full px-4 text-sm font-extrabold', tab === t ? 'bg-accent text-accent-ink' : 'bg-card text-card-ink')}>{t}</button>
         ))}
@@ -48,7 +48,7 @@ export function Founder() {
 
 function OverviewPanel() {
   const { data: o } = useQuery({ queryKey: ['admin-overview'], queryFn: () => api<Overview>('/api/admin/overview'), refetchInterval: 3000 })
-  if (!o) return <p className="text-subtle">Loading...</p>
+  if (!o) return <PanelSkeleton label="Loading overview" />
   const max = Math.max(1, ...o.daily.map((d) => d.c))
   return (
     <div className="space-y-5">

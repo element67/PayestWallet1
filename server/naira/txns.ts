@@ -33,7 +33,7 @@ export function newReference(prefix = 'NBT'): string {
   return `${prefix}-${ymd}-${crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()}`
 }
 
-export function createTxn(t: {
+export async function createTxn(t: {
   userId: string
   type: string
   direction: 'credit' | 'debit'
@@ -48,29 +48,29 @@ export function createTxn(t: {
   ledgerTxnId?: string | null
   reviewRequired?: boolean
   prefix?: string
-}): TxnRow {
+}): Promise<TxnRow> {
   const id = uid('txn')
   const t0 = now()
-  run(
+  await run(
     `INSERT INTO transactions(id,reference,user_id,type,direction,amount_kobo,fee_kobo,status,title,counterparty,note,meta,idem_key,ledger_txn_id,review_required,created_at,updated_at,completed_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     id, newReference(t.prefix), t.userId, t.type, t.direction, t.amount.toString(), (t.fee ?? 0n).toString(), t.status, t.title,
     t.counterparty ?? null, t.note ?? null, JSON.stringify(t.meta ?? {}), t.idemKey ?? null, t.ledgerTxnId ?? null, t.reviewRequired ? 1 : 0, t0, t0,
     t.status === 'success' ? t0 : null,
   )
-  return getTxn(id) as TxnRow
+  return await getTxn(id) as TxnRow
 }
 
-export const getTxn = (id: string) => get<TxnRow>('SELECT * FROM transactions WHERE id=?', id)
-export const findByIdem = (userId: string, idem: string) => get<TxnRow>('SELECT * FROM transactions WHERE user_id=? AND idem_key=?', userId, idem)
+export const getTxn = async (id: string) => await get<TxnRow>('SELECT * FROM transactions WHERE id=?', id)
+export const findByIdem = async (userId: string, idem: string) => await get<TxnRow>('SELECT * FROM transactions WHERE user_id=? AND idem_key=?', userId, idem)
 
-export function patchTxn(id: string, p: { status?: TxnStatus; failureReason?: string; ledgerTxnId?: string | null; meta?: Record<string, unknown>; reversed?: boolean; reviewRequired?: boolean; note?: string }) {
-  const row = getTxn(id)
+export async function patchTxn(id: string, p: { status?: TxnStatus; failureReason?: string; ledgerTxnId?: string | null; meta?: Record<string, unknown>; reversed?: boolean; reviewRequired?: boolean; note?: string }) {
+  const row = await getTxn(id)
   if (!row) return
   const meta = p.meta ? JSON.stringify({ ...(JSON.parse(row.meta) as Record<string, unknown>), ...p.meta }) : row.meta
   const status = p.status ?? row.status
   const done = ['success', 'failed', 'reversed'].includes(status)
-  run(
+  await run(
     'UPDATE transactions SET status=?, failure_reason=COALESCE(?, failure_reason), ledger_txn_id=COALESCE(?, ledger_txn_id), meta=?, reversed=?, review_required=?, note=COALESCE(?, note), updated_at=?, completed_at=COALESCE(completed_at, ?) WHERE id=?',
     status, p.failureReason ?? null, p.ledgerTxnId ?? null, meta, p.reversed ? 1 : row.reversed, p.reviewRequired === undefined ? row.review_required : p.reviewRequired ? 1 : 0,
     p.note ?? null, now(), done ? now() : null, id,
@@ -103,11 +103,11 @@ export function txnView(r: TxnRow) {
   }
 }
 
-export function listTxns(userId: string, o: { limit?: number; type?: string; status?: string; before?: number } = {}) {
+export async function listTxns(userId: string, o: { limit?: number; type?: string; status?: string; before?: number } = {}) {
   const where = ['user_id=?']
   const args: (string | number)[] = [userId]
   if (o.type) { where.push('type LIKE ?'); args.push(`${o.type}%`) }
   if (o.status) { where.push('status=?'); args.push(o.status) }
   if (o.before) { where.push('created_at<?'); args.push(o.before) }
-  return all<TxnRow>(`SELECT * FROM transactions WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT ?`, ...args, Math.min(o.limit ?? 30, 100)).map(txnView)
+  return (await all<TxnRow>(`SELECT * FROM transactions WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT ?`, ...args, Math.min(o.limit ?? 30, 100))).map(txnView)
 }

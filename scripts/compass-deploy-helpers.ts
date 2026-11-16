@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { format } from 'util';
 
-import { type Abi, type Hex, encodeDeployData, getCreate2Address } from 'viem';
+import { type Abi, type Hex, encodeDeployData, encodePacked, getCreate2Address, keccak256 } from 'viem';
 
 export type DeployMode = 'fork' | 'live' | 'fork-then-live' | 'verify';
 export type SignerKind = 'dcw' | 'private-key';
@@ -325,8 +325,16 @@ export function buildInitcode(artifact: CompiledArtifact, constructorArgs: unkno
     : encodeDeployData({ abi, bytecode: artifact.bytecode });
 }
 
-export function predictCreate2Address(factory: Hex, salt: Hex, initcode: Hex): Hex {
-  return getCreate2Address({ from: factory, salt, bytecode: initcode });
+/**
+ * The factory namespaces every salt by the account that calls it: the effective salt is keccak256(deployer, salt).
+ * `deployer` must be the account that sends the Create2Factory.deploy transaction.
+ */
+export function effectiveCreate2Salt(deployer: string, salt: Hex): Hex {
+  return keccak256(encodePacked(['address', 'bytes32'], [deployer as Hex, salt]));
+}
+
+export function predictCreate2Address(factory: Hex, salt: Hex, initcode: Hex, deployer: string): Hex {
+  return getCreate2Address({ from: factory, salt: effectiveCreate2Salt(deployer, salt), bytecode: initcode });
 }
 
 export function isTransientRpcError(message: string): boolean {

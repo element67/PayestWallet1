@@ -1,6 +1,6 @@
 /* oxlint-disable */
 /** Zero balances, ledger-derived balances and the founder Test credit: bun scripts/ledger-test.ts */
-import { Database } from 'bun:sqlite'
+import { sql } from './pg'
 const base = process.env.API ?? 'http://127.0.0.1:3001'
 let failures = 0
 const ok = (n: string, c: boolean, x = '') => { if (!c) failures++; console.log(`${c ? 'PASS' : 'FAIL'}  ${n}${x ? '  ' + x : ''}`) }
@@ -26,12 +26,11 @@ const led0 = (await call(`/api/admin/naira/users/${me.id}/ledger?asset=ALL`, F))
 ok('and no ledger entries at all', (led0.entries ?? led0.ledger ?? []).length === 0)
 
 // ---------- the starter funds are gone ----------
-const raw = new Database('data/fintech.db', { readonly: true })
-ok('the old 100 USDC starter balance was removed with an audited cleanup', (raw.query("SELECT COUNT(*) c FROM audit_logs WHERE action='system.cleanup_starter_balances'").get() as { c: number }).c >= 1)
-const removals = raw.query("SELECT COUNT(*) c FROM ledger_entries WHERE reason='sandbox starter balance removed'").get() as { c: number }
-ok('the removal is a compensating ledger entry (nothing was edited)', removals.c >= 1)
-ok('ledger entries carry user, asset, amount, type, status and time', (raw.query('PRAGMA table_info(ledger_entries)').all() as any[]).map((c) => c.name).join(',').match(/owner.*asset.*delta.*side.*status.*created_at|owner.*asset.*delta.*created_at.*side.*status/) !== null)
-raw.close()
+const count = async (q: string) => Number(((await sql.unsafe(q)) as unknown as { c: number }[])[0].c)
+ok('the old 100 USDC starter balance was removed with an audited cleanup', (await count("SELECT COUNT(*) c FROM audit_logs WHERE action='system.cleanup_starter_balances'")) >= 1)
+ok('the removal is a compensating ledger entry (nothing was edited)', (await count("SELECT COUNT(*) c FROM ledger_entries WHERE reason='sandbox starter balance removed'")) >= 1)
+const ledgerCols = ((await sql.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='ledger_entries'")) as unknown as { column_name: string }[]).map((c) => c.column_name)
+ok('ledger entries carry user, asset, amount, type, status and time', ['owner', 'asset', 'delta', 'side', 'status', 'created_at'].every((c) => ledgerCols.includes(c)))
 
 // ---------- Test credit: security ----------
 const body = { userId: me.id, asset: 'USDC', amount: '25', note: 'trying swaps', idempotencyKey: key() }
@@ -66,15 +65,14 @@ ok('test funds can be swapped', sw.s === 200 && sw.d.op.status === 'completed', 
 ok('USDC went down by exactly 5', (await call('/api/balances', N.token)).d.assets.find((a: any) => a.symbol === 'USDC').amount === '20')
 
 // ---------- nothing edits a balance ----------
-const rw = new Database('data/fintech.db')
 let blocked = ''
-try { rw.exec("UPDATE ledger_entries SET delta='999999999' WHERE id=(SELECT MIN(id) FROM ledger_entries)") } catch (e) { blocked = String(e) }
+try { await sql.unsafe("UPDATE ledger_entries SET delta=999999999 WHERE id=(SELECT MIN(id) FROM ledger_entries)") } catch (e) { blocked = String(e) }
 ok('ledger entries cannot be edited even directly in the database', blocked.includes('immutable'))
 blocked = ''
-try { rw.exec('DELETE FROM ledger_entries WHERE id=(SELECT MIN(id) FROM ledger_entries)') } catch (e) { blocked = String(e) }
+try { await sql.unsafe('DELETE FROM ledger_entries WHERE id=(SELECT MIN(id) FROM ledger_entries)') } catch (e) { blocked = String(e) }
 ok('or deleted', blocked.includes('immutable'))
-rw.close()
 for (const p of ['/api/admin/naira/users/x/balance', '/api/balances', '/api/balance/summary']) {
   ok(`no endpoint writes a balance: PUT ${p}`, [404, 405].includes((await call(p, F, 'PUT', { amount: '1000000' })).s))
 }
+await sql.end()
 console.log(failures === 0 ? '\nALL PASSED' : `\n${failures} FAILED`)

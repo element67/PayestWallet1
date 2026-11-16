@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { ago, ngn } from '@/lib/format'
-import { Badge, Button, Card, Empty } from '../ui'
+import { Badge, Button, Card, Empty, ListSkeleton } from '../ui'
 
 interface U { id: string; email: string; name: string; role: string; kycTier: number; status: string; devPreview: boolean; createdAt: number; ngn: string; orders: number }
 
@@ -14,7 +14,7 @@ export function UsersPanel() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
     onError: (e) => toast.error(e.message),
   })
-  if (!data) return <p className="text-subtle">Loading...</p>
+  if (!data) return <ListSkeleton rows={5} label="Loading users" />
   return (
     <Card className="overflow-hidden p-2">
       {data.length === 0 && <Empty title="No users yet" />}

@@ -43,15 +43,17 @@ ok('profile loads', r.s === 200 && r.d.profile.fullName && r.d.profile.email, JS
 ok('profile has member since and verification', typeof r.d.profile.memberSince === 'number' && ['verified', 'unverified'].includes(r.d.profile.verificationStatus))
 const orig = r.d.profile
 const edit = (b: unknown, t = A) => call('/api/profile', t, 'PUT', b)
-ok('rejects short name', (await edit({ fullName: 'A', email: 'a@b.co', phone: '' })).s === 400)
+ok('rejects short name', (await edit({ fullName: 'A', email: orig.email, phone: '' })).s === 400)
 ok('rejects bad email', (await edit({ fullName: 'Ada Eze', email: 'nope', phone: '' })).s === 400)
-ok('rejects bad phone', (await edit({ fullName: 'Ada Eze', email: 'a@b.co', phone: '12345' })).s === 400)
-ok('rejects letters in phone', (await edit({ fullName: 'Ada Eze', email: 'a@b.co', phone: 'abc' })).s === 400)
-r = await edit({ fullName: 'Ada Eze', email: 'Ada@Example.com', phone: '+2348012345670' })
-ok('saves valid details (email lowercased, +234 normalised)', r.s === 200 && r.d.profile.email === 'ada@example.com' && r.d.profile.phone === '08012345670', JSON.stringify(r.d))
+ok('rejects bad phone', (await edit({ fullName: 'Ada Eze', email: orig.email, phone: '12345' })).s === 400)
+ok('rejects letters in phone', (await edit({ fullName: 'Ada Eze', email: orig.email, phone: 'abc' })).s === 400)
+r = await edit({ fullName: 'Ada Eze', email: orig.email, phone: '+2348012345670' })
+ok('saves valid details (+234 normalised)', r.s === 200 && r.d.profile.email === orig.email && r.d.profile.phone === '08012345670', JSON.stringify(r.d))
+ok('changing the sign-in email without a password is refused', [400, 403].includes((await edit({ fullName: 'Ada Eze', email: `other${Date.now()}@test.example`, phone: '' })).s))
 ok('profile reads back what was saved', (await call('/api/profile', A)).d.profile.fullName === 'Ada Eze')
 ok('another user does not see it', (await call('/api/profile', B)).d.profile.fullName !== 'Ada Eze')
-r = await edit({ fullName: 'Ada Eze', email: 'ada@example.com', phone: '08012345670' }, B)
+const origB = (await call('/api/profile', B)).d.profile
+r = await edit({ fullName: 'Ada Eze', email: origB.email, phone: '08012345670' }, B)
 ok('a phone number already used by another account is refused', r.s === 409, r.d.error)
 ok('the other account was not changed by that attempt', (await call('/api/profile', B)).d.profile.fullName !== 'Ada Eze')
 r = await edit({ fullName: orig.fullName, email: orig.email, phone: orig.phone ?? '' })
@@ -59,7 +61,7 @@ ok('restores the original details', r.s === 200)
 
 await call('/api/settings/appearance', A, 'PUT', { themeId: 'cobalt-lime' })
 await call('/api/settings/appearance', B, 'PUT', { themeId: 'cobalt-lime' })
-// the sign-in email is never changed by the profile
+// the sign-in email only changes with the current password, so it is untouched here
 const me = await call('/api/me', A)
 ok('sign-in email is untouched', me.d.user.email === orig.email || /preview/.test(me.d.user.email))
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED')

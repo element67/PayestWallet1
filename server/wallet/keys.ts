@@ -13,7 +13,7 @@ import { mnemonicToSeedSync } from '@scure/bip39'
 import { p2wpkh, TEST_NETWORK } from '@scure/btc-signer'
 import { english, generateMnemonic, mnemonicToAccount, type HDAccount } from 'viem/accounts'
 import { CONFIG } from '../config'
-import { audit, db, get, now, run, uid } from '../db'
+import { all, audit, get, now, run, uid, tx } from '../db'
 
 export const PATHS = { evm: "m/44'/60'/0'/0/0", solana: "m/44'/501'/0'/0'", bitcoin: "m/84'/1'/0'/0/0" } as const
 
@@ -65,46 +65,44 @@ export function deriveAddresses(mnemonic: string) {
 
 export interface WalletAddresses { evm: string; solana: string; bitcoin: string }
 
-export function getAddresses(userId: string): WalletAddresses | null {
-  const w = get<{ id: string }>('SELECT id FROM wallets WHERE user_id=?', userId)
+export async function getAddresses(userId: string): Promise<WalletAddresses | null> {
+  const w = await get<{ id: string }>('SELECT id FROM wallets WHERE user_id=?', userId)
   if (!w) return null
-  const rows = db.query('SELECT family, address FROM wallet_addresses WHERE wallet_id=?').all(w.id) as { family: string; address: string }[]
+  const rows = await all<{ family: string; address: string }>('SELECT family, address FROM wallet_addresses WHERE wallet_id=?', w.id)
   const m = Object.fromEntries(rows.map((r) => [r.family, r.address]))
   return { evm: m.evm, solana: m.solana, bitcoin: m.bitcoin }
 }
 
 /** Creates the user's wallet on first use. Real BIP-39 entropy; testnet networks only. */
-export function ensureWallet(userId: string): WalletAddresses {
-  const existing = getAddresses(userId)
+export async function ensureWallet(userId: string): Promise<WalletAddresses> {
+  const existing = await getAddresses(userId)
   if (existing) return existing
   const mnemonic = generateMnemonic(english, 128)
   const addrs = deriveAddresses(mnemonic)
   const walletId = uid('wal')
   try {
-    db.transaction(() => {
-      run('INSERT INTO wallets(id,user_id,mnemonic_enc,key_version,environment,created_at) VALUES (?,?,?,?,?,?)', walletId, userId, wrap(mnemonic, userId), KEY_VERSION, 'testnet', now())
+    await tx(async () => {
+      await run('INSERT INTO wallets(id,user_id,mnemonic_enc,key_version,environment,created_at) VALUES (?,?,?,?,?,?)', walletId, userId, wrap(mnemonic, userId), KEY_VERSION, 'testnet', now())
       for (const [family, address] of Object.entries(addrs)) {
-        run('INSERT INTO wallet_addresses(id,wallet_id,family,derivation_path,address,created_at) VALUES (?,?,?,?,?,?)', uid('wad'), walletId, family, PATHS[family as keyof typeof PATHS], address, now())
+        await run('INSERT INTO wallet_addresses(id,wallet_id,family,derivation_path,address,created_at) VALUES (?,?,?,?,?,?)', uid('wad'), walletId, family, PATHS[family as keyof typeof PATHS], address, now())
       }
-    })()
-    audit(userId, 'wallet.create', walletId, undefined, { environment: 'testnet', families: Object.keys(addrs) })
+    })
+    await audit(userId, 'wallet.create', walletId, undefined, { environment: 'testnet', families: Object.keys(addrs) })
   } catch {
     // Lost a creation race: the other request's wallet is the one that persisted.
   }
-  const out = getAddresses(userId)
+  const out = await getAddresses(userId)
   if (!out) throw new Error('Wallet creation failed')
   return out
 }
 
 /** The only place a seed phrase is decrypted. The account never leaves the callback. */
 export async function withEvmAccount<T>(userId: string, fn: (account: HDAccount) => Promise<T>): Promise<T> {
-  const row = get<{ mnemonic_enc: string }>('SELECT mnemonic_enc FROM wallets WHERE user_id=?', userId)
+  const row = await get<{ mnemonic_enc: string }>('SELECT mnemonic_enc FROM wallets WHERE user_id=?', userId)
   if (!row) throw new Error('Wallet not found')
   const account = mnemonicToAccount(unwrap(row.mnemonic_enc, userId))
   return fn(account)
 }
 
-export const allAddresses = (family: 'evm' | 'solana' | 'bitcoin') =>
-  (db.query(
-    `SELECT w.user_id, a.address FROM wallet_addresses a JOIN wallets w ON w.id=a.wallet_id WHERE a.family=?`,
-  ).all(family) as { user_id: string; address: string }[])
+export const allAddresses = async (family: 'evm' | 'solana' | 'bitcoin') =>
+  await all<{ user_id: string; address: string }>(`SELECT w.user_id, a.address FROM wallet_addresses a JOIN wallets w ON w.id=a.wallet_id WHERE a.family=?`, family)

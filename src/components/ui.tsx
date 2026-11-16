@@ -9,6 +9,38 @@ export function Card({ children, className, strong }: { children: ReactNode; cla
   return <div className={cx('glass rounded-3xl', strong && 'hero', className)}>{children}</div>
 }
 
+/** A shimmering placeholder block. Use it where content will appear so the page keeps its shape while loading. */
+export function Skeleton({ className }: { className?: string }) {
+  return <div aria-hidden="true" className={cx('skeleton rounded-2xl', className)} />
+}
+
+/** A card of placeholder rows (icon, two lines, amount) for lists that are still loading. */
+export function ListSkeleton({ rows = 4, label = 'Loading', bare }: { rows?: number; label?: string; bare?: boolean }) {
+  return (
+    <div className={cx(!bare && 'glass overflow-hidden rounded-3xl p-2')} role="status" aria-busy="true" aria-label={label}>
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex min-h-14 items-center gap-3 px-3 py-2">
+          <Skeleton className="size-10 shrink-0 !rounded-full" />
+          <div className="min-w-0 flex-1 space-y-2"><Skeleton className="h-3.5 w-2/5" /><Skeleton className="h-3 w-3/5" /></div>
+          <Skeleton className="h-4 w-16 shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Placeholder for a dashboard panel: a stat block and a couple of rows. */
+export function PanelSkeleton({ label = 'Loading' }: { label?: string }) {
+  return (
+    <div className="space-y-5" role="status" aria-busy="true" aria-label={label}>
+      <div className="glass grid grid-cols-2 gap-5 rounded-3xl p-6 lg:grid-cols-3">
+        {Array.from({ length: 6 }, (_, i) => <div key={i} className="space-y-2"><Skeleton className="h-3 w-24" /><Skeleton className="h-7 w-32" /></div>)}
+      </div>
+      <ListSkeleton rows={3} label={label} />
+    </div>
+  )
+}
+
 export function Button({ variant = 'primary', loading, className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' | 'soft'; loading?: boolean }) {
   const v = {
     primary: 'bg-accent text-accent-ink',

@@ -2,7 +2,7 @@ const STUDIO_ORIGINS = ['https://studio.arc.io', 'https://studio-staging.arc.io'
 const HANDSHAKE_TIMEOUT_MS = 1500
 const NAVIGATED_DEBOUNCE_MS = 100
 const trimSlash = (url: string) => url.replace(/\/+$/, '')
-const ownBase = () => trimSlash(new URL(import.meta.env?.BASE_URL ?? '/', `${window.location.origin}/`).href)
+const ownBase = () => trimSlash(new URL('/', `${window.location.origin}/`).href)
 const ABSOLUTE_URL = /^([a-z][a-z\d+.-]*:|\/\/)/i
 const UNSAFE_PATH_CHAR = /%(?![\da-f]{2})|[^\w\-.~!$&'()*+,;=:@%/]/giu
 let known: string | undefined

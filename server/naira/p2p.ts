@@ -18,13 +18,13 @@ interface OrderLite {
   tx_hash: string | null
 }
 
-const order = (id: string) => get<OrderLite>('SELECT * FROM orders WHERE id=?', id)
+const order = async (id: string) => await get<OrderLite>('SELECT * FROM orders WHERE id=?', id)
 
-export function createP2pRecord(orderId: string) {
-  const o = order(orderId)
+export async function createP2pRecord(orderId: string) {
+  const o = await order(orderId)
   if (!o || o.side !== 'sell' || o.payout_type !== 'wallet') return
   const t = now()
-  run(
+  await run(
     "INSERT OR IGNORE INTO p2p_orders(id,user_id,exchange_order_id,asset,crypto_amount,expected_kobo,status,created_at,updated_at) VALUES (?,?,?,?,?,?,'pending',?,?)",
     uid('p2p'), o.user_id, o.id, o.asset, o.crypto_amount, o.net_kobo, t, t,
   )
@@ -36,21 +36,21 @@ const MAP: Record<string, string> = {
 }
 
 /** Keeps the P2P order status in step with the exchange order, which is driven by the monitor and the order engine. */
-export function syncP2pOrder(orderId: string) {
-  const o = order(orderId)
+export async function syncP2pOrder(orderId: string) {
+  const o = await order(orderId)
   if (!o) return
   const status = MAP[o.status] ?? 'pending'
-  run('UPDATE p2p_orders SET status=?, updated_at=? WHERE exchange_order_id=?', status, now(), orderId)
+  await run('UPDATE p2p_orders SET status=?, updated_at=? WHERE exchange_order_id=?', status, now(), orderId)
 }
 
 /** The wallet was credited through the ledger: write the customer-visible transaction once. */
-export function recordP2pCredit(orderId: string, ledgerTxnId: string | null) {
-  const o = order(orderId)
+export async function recordP2pCredit(orderId: string, ledgerTxnId: string | null) {
+  const o = await order(orderId)
   if (!o || !ledgerTxnId) return
-  const p = get<{ id: string; transaction_id: string | null }>('SELECT id, transaction_id FROM p2p_orders WHERE exchange_order_id=?', orderId)
+  const p = await get<{ id: string; transaction_id: string | null }>('SELECT id, transaction_id FROM p2p_orders WHERE exchange_order_id=?', orderId)
   if (p?.transaction_id) return
-  const dec = get<{ decimals: number }>('SELECT decimals FROM assets WHERE symbol=?', o.asset)?.decimals ?? 6
-  const t = createTxn({
+  const dec = (await get<{ decimals: number }>('SELECT decimals FROM assets WHERE symbol=?', o.asset))?.decimals ?? 6
+  const t = await createTxn({
     userId: o.user_id,
     type: 'p2p_deposit',
     direction: 'credit',
@@ -67,11 +67,11 @@ export function recordP2pCredit(orderId: string, ledgerTxnId: string | null) {
       platformFee: fromUnits(BigInt(o.fee_kobo), 2), txHash: o.tx_hash, simulatedChain: o.mode !== 'live',
     },
   })
-  run('UPDATE p2p_orders SET transaction_id=?, updated_at=? WHERE exchange_order_id=?', t.id, now(), orderId)
+  await run('UPDATE p2p_orders SET transaction_id=?, updated_at=? WHERE exchange_order_id=?', t.id, now(), orderId)
 }
 
 /** The deposit later failed on-chain and the credit was clawed back through the ledger. */
-export function markP2pReversed(orderId: string) {
-  const p = get<{ transaction_id: string | null }>('SELECT transaction_id FROM p2p_orders WHERE exchange_order_id=?', orderId)
-  if (p?.transaction_id) patchTxn(p.transaction_id, { status: 'reversed', reversed: true, failureReason: 'The crypto deposit failed after the credit; the credit was reversed.' })
+export async function markP2pReversed(orderId: string) {
+  const p = await get<{ transaction_id: string | null }>('SELECT transaction_id FROM p2p_orders WHERE exchange_order_id=?', orderId)
+  if (p?.transaction_id) await patchTxn(p.transaction_id, { status: 'reversed', reversed: true, failureReason: 'The crypto deposit failed after the credit; the credit was reversed.' })
 }

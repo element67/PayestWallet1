@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Bot, Radio } from 'lucide-react'
 import { api } from '@/lib/api'
 import { ago, duration, short } from '@/lib/format'
-import { Badge, Card, Empty, PageTitle, Sandbox, Stat } from '@/components/ui'
+import { Badge, Card, Empty, PageTitle, PanelSkeleton, Sandbox, Stat } from '@/components/ui'
 
 interface Monitor { chain: string; status: string; last_block: number | null; head_block: number | null; last_poll_at: number | null; poll_ms: number | null; error: string | null; mode: string }
 interface Decision { id: number; at: number; order_id: string | null; kind: string; decision: string; score: number; reasons: string }
@@ -19,7 +19,7 @@ const reasons = (s: string) => JSON.parse(s) as string[]
 
 export function AgentMonitor() {
   const { data: m } = useQuery({ queryKey: ['agent'], queryFn: () => api<Metrics>('/api/admin/agent'), refetchInterval: 2000 })
-  if (!m) return <p className="text-subtle">Loading...</p>
+  if (!m) return <PanelSkeleton label="Loading agent status" />
   const verdictKind = (v: string) => (v === 'genuine' ? 'good' : v === 'fake_token' ? 'bad' : 'warn')
 
   return (

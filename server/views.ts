@@ -16,13 +16,13 @@ export function assetView(a: Asset) {
   }
 }
 
-export function orderView(o: OrderRow, detail = false) {
-  const asset = getAsset(o.asset)
+export async function orderView(o: OrderRow, detail = false) {
+  const asset = await getAsset(o.asset)
   const decimals = asset?.decimals ?? 6
-  const tx = get<{ tx_hash: string; status: string; verdict: string; confirmations: number; simulated: number; chain: string; detect_latency_ms: number | null }>(
+  const tx = await get<{ tx_hash: string; status: string; verdict: string; confirmations: number; simulated: number; chain: string; detect_latency_ms: number | null }>(
     'SELECT * FROM chain_txs WHERE order_id=? ORDER BY first_seen_at DESC LIMIT 1', o.id,
   )
-  const payment = get<{ reference: string; status: string; direction: string; simulated: number }>(
+  const payment = await get<{ reference: string; status: string; direction: string; simulated: number }>(
     'SELECT reference, status, direction, simulated FROM payments WHERE order_id=? ORDER BY created_at DESC LIMIT 1', o.id,
   )
   const hash = tx?.tx_hash ?? o.tx_hash
@@ -38,6 +38,6 @@ export function orderView(o: OrderRow, detail = false) {
     payoutAt: o.payout_at, completedAt: o.completed_at, userId: o.user_id,
   }
   if (!detail) return view
-  const events = all<{ at: number; kind: string; detail: string }>('SELECT at, kind, detail FROM order_events WHERE order_id=? ORDER BY id', o.id)
+  const events = await all<{ at: number; kind: string; detail: string }>('SELECT at, kind, detail FROM order_events WHERE order_id=? ORDER BY id', o.id)
   return { ...view, events }
 }

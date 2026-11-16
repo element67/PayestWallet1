@@ -1,14 +1,12 @@
 import type { ReactNode } from 'react'
-import { useMutation } from '@tanstack/react-query'
 import { ConnectKitButton } from 'connectkit'
-import { Activity, ArrowLeftRight, Bell, Bot, Coins, Ellipsis, FlaskConical, Home, LogOut, Settings, Shield, Sun, UserRound, Wallet } from 'lucide-react'
-import { api, type PublicUser } from '@/lib/api'
+import { Activity, ArrowLeftRight, Bell, Coins, Ellipsis, FlaskConical, Home, LayoutDashboard, LogOut, Settings, Sun, UserRound, Wallet } from 'lucide-react'
 import type { Intent } from '@/lib/nav'
 import { useNotifications } from '@/lib/queries'
 import { useSession } from '@/lib/session'
 import { cx } from './ui'
 
-export type View = 'home' | 'crypto' | 'wallet' | 'exchange' | 'more' | 'profile' | 'activity' | 'alerts' | 'settings' | 'founder' | 'agent'
+export type View = 'home' | 'crypto' | 'wallet' | 'exchange' | 'more' | 'profile' | 'activity' | 'alerts' | 'settings'
 
 interface NavItem { id: View; label: string; icon: typeof Home }
 
@@ -24,28 +22,18 @@ const MORE_ITEMS: NavItem[] = [
   { id: 'activity', label: 'Activity', icon: Activity },
   { id: 'alerts', label: 'Alerts', icon: Bell },
 ]
-const FOUNDER_ITEMS: NavItem[] = [
-  { id: 'founder', label: 'Founder', icon: Shield },
-  { id: 'agent', label: 'AI Agent', icon: Bot },
-]
-
 /** Every screen reached from the More tab. */
-export const moreItemsFor = (founder: boolean): NavItem[] => (founder ? [...FOUNDER_ITEMS, ...MORE_ITEMS] : MORE_ITEMS)
+export const moreItems: NavItem[] = MORE_ITEMS
+
+/** The founder dashboard is a separate area at /admin, not a screen of this app. */
+export const ADMIN_URL = '/admin'
 
 export function Shell({ view, go, children }: { view: View; go: (v: View, i?: Intent) => void; children: ReactNode }) {
-  const { user, signOut, signIn, config } = useSession()
+  const { user, signOut, config } = useSession()
   const { data: notes } = useNotifications()
   const unread = notes?.filter((n) => !n.read).length ?? 0
-  const items = moreItemsFor(user?.role === 'founder')
+  const items = moreItems
   const moreActive = view === 'more' || items.some((n) => n.id === view)
-
-  const swap = useMutation({
-    mutationFn: (role: 'user' | 'founder') => api<{ token: string; user: PublicUser }>('/api/auth/dev-session', { method: 'POST', body: { role } }),
-    onSuccess: (r) => {
-      signIn(r.token, r.user)
-      go(r.user.role === 'founder' ? 'founder' : 'home')
-    },
-  })
 
   const pill = 'border border-outline min-h-11 rounded-full bg-card px-3 text-xs tracking-tight text-card-ink'
   const iconPill = 'border border-outline grid size-11 place-items-center rounded-full bg-card text-card-ink'
@@ -71,6 +59,9 @@ export function Shell({ view, go, children }: { view: View; go: (v: View, i?: In
               </button>
             ))}
           </nav>
+          {user?.role === 'founder' && (
+            <a href={ADMIN_URL} className="no-pop mb-2 flex min-h-11 items-center gap-3 rounded-full border-2 border-outline bg-card px-4 text-sm font-extrabold text-card-ink"><LayoutDashboard size={18} />Admin dashboard</a>
+          )}
           <div className="truncate text-xs font-semibold text-subtle">{user?.email}</div>
         </div>
       </aside>
@@ -98,11 +89,6 @@ export function Shell({ view, go, children }: { view: View; go: (v: View, i?: In
             </div>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 lg:justify-end">
-            {user?.devPreview && (
-              <button onClick={() => swap.mutate(user.role === 'founder' ? 'user' : 'founder')} className={pill}>
-                View as {user.role === 'founder' ? 'customer' : 'founder'}
-              </button>
-            )}
             <ConnectKitButton.Custom>
               {({ isConnected, show, truncatedAddress }) => (
                 <button onClick={show} className={pill}>

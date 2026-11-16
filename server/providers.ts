@@ -17,8 +17,8 @@ export interface PaymentEvent {
 export interface PaymentProvider {
   name: string
   simulated: boolean
-  createCollection(orderId: string, amountKobo: bigint): { reference: string; instructions: string }
-  sendPayout(orderId: string, amountKobo: bigint, reference: string): void
+  createCollection(orderId: string, amountKobo: bigint): Promise<{ reference: string; instructions: string }>
+  sendPayout(orderId: string, amountKobo: bigint, reference: string): void | Promise<void>
 }
 
 export function signWebhook(body: string, ts: number): string {
@@ -27,7 +27,7 @@ export function signWebhook(body: string, ts: number): string {
 
 export type WebhookVerdict = { ok: true; event: PaymentEvent } | { ok: false; reason: string }
 
-export function verifyWebhook(rawBody: string, header: string | null): WebhookVerdict {
+export async function verifyWebhook(rawBody: string, header: string | null): Promise<WebhookVerdict> {
   if (!header) return { ok: false, reason: 'missing signature' }
   const parts = Object.fromEntries(header.split(',').map((p) => p.split('=') as [string, string]))
   const ts = Number(parts.t)
@@ -41,8 +41,8 @@ export function verifyWebhook(rawBody: string, header: string | null): WebhookVe
     return { ok: false, reason: 'invalid json' }
   }
   if (!event.id || !event.reference || !event.type) return { ok: false, reason: 'invalid event' }
-  if (get('SELECT 1 FROM webhook_events WHERE event_id=?', event.id)) return { ok: false, reason: 'replayed event' }
-  run('INSERT INTO webhook_events(event_id, received_at) VALUES (?,?)', event.id, now())
+  if (await get('SELECT 1 FROM webhook_events WHERE event_id=?', event.id)) return { ok: false, reason: 'replayed event' }
+  await run('INSERT INTO webhook_events(event_id, received_at) VALUES (?,?)', event.id, now())
   return { ok: true, event }
 }
 
@@ -59,17 +59,17 @@ async function deliver(event: PaymentEvent) {
 export const sandboxProvider: PaymentProvider = {
   name: 'sandbox-provider',
   simulated: true,
-  createCollection(orderId, amountKobo) {
+  async createCollection(orderId, amountKobo) {
     const reference = `SBX-IN-${randomHex(5).toUpperCase()}`
-    run(
+    await run(
       `INSERT INTO payments(id, order_id, direction, provider, reference, amount_kobo, status, simulated, created_at, updated_at)
        VALUES (?,?,?,?,?,?,?,1,?,?)`,
       uid('pay'), orderId, 'in', 'sandbox-provider', reference, amountKobo.toString(), 'awaiting', now(), now(),
     )
     return { reference, instructions: 'Sandbox virtual account. No real bank transfer is possible. Use "Simulate bank transfer".' }
   },
-  sendPayout(orderId, amountKobo, reference) {
-    run(
+  async sendPayout(orderId, amountKobo, reference) {
+    await run(
       `INSERT OR IGNORE INTO payments(id, order_id, direction, provider, reference, amount_kobo, status, simulated, created_at, updated_at)
        VALUES (?,?,?,?,?,?,?,1,?,?)`,
       uid('pay'), orderId, 'out', 'sandbox-provider', reference, amountKobo.toString(), 'processing', now(), now(),
@@ -83,8 +83,8 @@ export const sandboxProvider: PaymentProvider = {
 }
 
 /** Used by the sandbox "simulate bank transfer" button. */
-export function simulateIncomingTransfer(reference: string, amountKobo: string) {
-  return deliver({ id: uid('evt'), type: 'collection.succeeded', reference, amountKobo, ts: now() })
+export async function simulateIncomingTransfer(reference: string, amountKobo: string) {
+  return await deliver({ id: uid('evt'), type: 'collection.succeeded', reference, amountKobo, ts: now() })
 }
 
 export const provider: PaymentProvider = sandboxProvider

@@ -5,3 +5,6 @@ data/
 recovery_file*
 .circle/
 dist
+recovery-audit.log
+.next
+next-env.d.ts

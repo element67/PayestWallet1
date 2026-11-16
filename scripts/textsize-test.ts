@@ -1,6 +1,6 @@
 /* oxlint-disable */
 /** Text size API checks against the running API: bun scripts/textsize-test.ts */
-import { Database } from 'bun:sqlite'
+import { sql } from './pg'
 const base = process.env.API ?? 'http://127.0.0.1:3001'
 let failures = 0
 const ok = (name: string, cond: boolean, extra = '') => {
@@ -19,18 +19,17 @@ ok('GET needs sign-in', (await call('/api/settings/text-size')).s === 401)
 ok('PUT needs sign-in', (await call('/api/settings/text-size', undefined, 'PUT', { textScale: 'large' })).s === 401)
 
 // a user with no saved setting is created with the default (medium)
-const db = new Database('data/fintech.db')
-const uid = (db.query("select id from users where email like 'preview-user%'").get() as { id: string }).id
-db.query('delete from user_settings where user_id=?').run(uid)
+const uid = ((await sql.unsafe("select id from users where email like 'preview-user%' limit 1")) as unknown as { id: string }[])[0].id
+await sql.unsafe('delete from user_settings where user_id=$1', [uid])
 const first = await call('/api/settings/text-size', A)
 ok('no saved setting: defaults to medium', first.s === 200 && first.d.textScale === 'medium', JSON.stringify(first.d))
-const row = db.query('select theme_id, text_scale from user_settings where user_id=?').get(uid) as { theme_id: string; text_scale: string } | null
+const row = (((await sql.unsafe('select theme_id, text_scale from user_settings where user_id=$1', [uid])) as unknown as { theme_id: string; text_scale: string }[])[0]) ?? null
 ok('the default row was created in user_settings', row?.text_scale === 'medium' && row?.theme_id === 'cobalt-lime', JSON.stringify(row))
 
 for (const id of ['small', 'medium', 'large', 'xlarge']) {
   const r = await call('/api/settings/text-size', A, 'PUT', { textScale: id })
   const g = await call('/api/settings/text-size', A)
-  const stored = (db.query('select text_scale from user_settings where user_id=?').get(uid) as { text_scale: string }).text_scale
+  const stored = ((await sql.unsafe('select text_scale from user_settings where user_id=$1', [uid])) as unknown as { text_scale: string }[])[0].text_scale
   ok(`"${id}" saves, reads back and is in the database`, r.s === 200 && g.d.textScale === id && stored === id)
 }
 for (const bad of ['huge', '', 'LARGE', 'large ', 150, null, ['large'], "xlarge'; drop table user_settings;--"]) {

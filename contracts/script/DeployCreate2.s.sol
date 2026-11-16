@@ -31,9 +31,11 @@ contract DeployCreate2 is Script {
         uint256 deployValue = vm.envOr("DEPLOY_VALUE", uint256(0));
 
         bytes32 bytecodeHash = keccak256(creationCode);
-        address predicted = vm.computeCreate2Address(salt, bytecodeHash, factory);
 
         vm.startBroadcast();
+        // The factory namespaces the salt by the account that calls it, which is the broadcaster.
+        (, address broadcaster,) = vm.readCallers();
+        address predicted = Create2Factory(factory).computeAddress(broadcaster, salt, bytecodeHash);
         deployedAddress = Create2Factory(factory).deploy{value: deployValue}(salt, creationCode);
         vm.stopBroadcast();
 

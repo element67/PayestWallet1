@@ -1,5 +1,6 @@
 /** Minimal router: auth, RBAC, rate limiting, body limits, validation errors, uniform JSON. */
 import { ZodError, type ZodType } from 'zod'
+import { CONFIG } from './config'
 import { HttpError, userFromToken, type User } from './auth'
 import { InsufficientFunds } from './ledger'
 import { MoneyError } from './money'
@@ -34,6 +35,32 @@ export function route(method: string, path: string, access: Access, handler: Rou
   routes.push({ method, re, keys, access, limit, handler })
 }
 
+const PRIVATE_PEER = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc|fd|::ffff:(127\.|10\.|192\.168\.))/i
+
+/**
+ * The address used for rate limiting and audit logs. X-Forwarded-For is client-controlled, so it is read only when
+ * TRUST_PROXY=true AND the direct peer is a private or loopback address (a proxy in front of us). The client is the
+ * entry TRUSTED_PROXY_HOPS from the right: anything a caller prepends to the header sits to its left and is ignored.
+ */
+export function clientIp(headers: Headers, peer: string | undefined, opts: { trustProxy: boolean; hops: number } = { trustProxy: CONFIG.trustProxy, hops: CONFIG.trustedProxyHops }): string {
+  if (opts.trustProxy && peer && PRIVATE_PEER.test(peer)) {
+    const hops = (headers.get('x-forwarded-for') ?? '').split(',').map((h) => h.trim()).filter(Boolean)
+    const hit = hops[hops.length - opts.hops]
+    if (hit) return hit
+  }
+  return peer || 'unknown'
+}
+
+/**
+ * Rejects browser requests that come from another site. Browsers always send Sec-Fetch-Site and a page cannot forge it,
+ * so a cross-site page cannot mint a session here. Requests without the header (curl, server-to-server) pass.
+ * The Origin header is not compared with Host: a dev proxy rewrites Host, which would block the real app.
+ */
+export function assertSameOrigin(req: Request) {
+  const site = req.headers.get('sec-fetch-site')
+  if (site && site !== 'same-origin' && site !== 'none') throw new HttpError(403, 'Cross-site requests are not allowed here')
+}
+
 export function body<T>(c: Ctx, schema: ZodType<T>): T {
   let json: unknown = {}
   if (c.raw) {
@@ -58,13 +85,13 @@ const json = (status: number, data: unknown, extra: Record<string, string> = {})
 
 /** Failed and unauthorized requests are written to the audit log, at most once a minute per caller, path and status. */
 const deniedSeen = new Map<string, number>()
-function logDenied(status: number, path: string, ip: string, userId: string | null, reason: string) {
+async function logDenied(status: number, path: string, ip: string, userId: string | null, reason: string) {
   const key = `${userId ?? ip}|${path}|${status}`
   const t = Date.now()
   if ((deniedSeen.get(key) ?? 0) > t - 60_000) return
   if (deniedSeen.size > 5000) deniedSeen.clear()
   deniedSeen.set(key, t)
-  audit(userId, 'security.request_denied', `${status} ${path}`, undefined, { ip, reason })
+  await audit(userId, 'security.request_denied', `${status} ${path}`, undefined, { ip, reason })
 }
 
 export async function handle(req: Request, ip: string): Promise<Response> {
@@ -80,20 +107,20 @@ export async function handle(req: Request, ip: string): Promise<Response> {
       if (!ipCap.ok) return json(429, { error: 'Too many requests. Slow down.' }, { 'retry-after': String(ipCap.retryAfterSec) })
       const auth = req.headers.get('authorization')
       const token = auth?.startsWith('Bearer ') ? auth.slice(7) : ''
-      const user = userFromToken(token)
+      const user = await userFromToken(token)
       who = user?.id ?? null
       const rl = rateLimit(`${user?.id ?? ip}:${r.method}:${r.re.source}`, r.limit[0], r.limit[1])
       if (!rl.ok) {
-        logDenied(429, url.pathname, ip, who, 'rate limit')
+        await logDenied(429, url.pathname, ip, who, 'rate limit')
         return json(429, { error: 'Too many requests. Slow down.' }, { 'retry-after': String(rl.retryAfterSec) })
       }
       if (r.access !== 'public' && !user) {
-        logDenied(401, url.pathname, ip, null, token ? 'invalid or expired session' : 'no session')
+        await logDenied(401, url.pathname, ip, null, token ? 'invalid or expired session' : 'no session')
         return json(401, { error: 'Sign in required' })
       }
       if (r.access === 'founder' && user?.role !== 'founder') {
-        alert('warning', 'rbac', 'Blocked non-founder admin access', `${url.pathname} by ${user?.email}`, user?.id)
-        logDenied(403, url.pathname, ip, who, 'not a founder')
+        await alert('warning', 'rbac', 'Blocked non-founder admin access', `${url.pathname} by ${user?.email}`, user?.id)
+        await logDenied(403, url.pathname, ip, who, 'not a founder')
         return json(403, { error: 'Founder access required' })
       }
       const raw = req.method === 'GET' || req.method === 'DELETE' ? '' : await req.text()
@@ -105,7 +132,7 @@ export async function handle(req: Request, ip: string): Promise<Response> {
     return json(404, { error: 'Not found' })
   } catch (e) {
     if (e instanceof HttpError) {
-      if (who && [403, 404, 423].includes(e.status)) logDenied(e.status, url.pathname, ip, who, e.message)
+      if (who && [403, 404, 423].includes(e.status)) await logDenied(e.status, url.pathname, ip, who, e.message)
       return json(e.status, { error: e.message, ...e.extra })
     }
     if (e instanceof ZodError) return json(400, { error: e.issues[0]?.message ?? 'Invalid request', field: e.issues[0]?.path.join('.') })

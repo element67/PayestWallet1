@@ -5,7 +5,7 @@
  */
 import { getAddress } from 'viem'
 import { getUsdc } from '../../src/onchain-facts'
-import { db, now, run } from '../db'
+import { now, run, tx } from '../db'
 import { REG_NETWORKS } from './networks'
 
 /** symbol, name, decimals, popular, sort */
@@ -60,29 +60,29 @@ const CANDIDATES: Array<[string, string, string]> = [
   ['EURC', 'arc-testnet', '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a'],
 ]
 
-export function seedTokens() {
+export async function seedTokens() {
   const t = now()
   const decimalsOf = new Map(TOKENS.map(([s, , d]) => [s, d]))
-  db.transaction(() => {
+  await tx(async () => {
     for (const [symbol, name, decimals, popular, sort] of TOKENS) {
-      run('INSERT OR IGNORE INTO tokens(symbol,name,decimals,logo,is_active,popular,sort,created_at,updated_at) VALUES (?,?,?,?,1,?,?,?,?)', symbol, name, decimals, symbol, popular, sort, t, t)
+      await run('INSERT OR IGNORE INTO tokens(symbol,name,decimals,logo,is_active,popular,sort,created_at,updated_at) VALUES (?,?,?,?,1,?,?,?,?)', symbol, name, decimals, symbol, popular, sort, t, t)
     }
-    const dep = (symbol: string, networkId: string, contract: string | null, decimals: number, verified: boolean, source: string) => {
+    const dep = async (symbol: string, networkId: string, contract: string | null, decimals: number, verified: boolean, source: string) => {
       const n = REG_NETWORKS.find((x) => x.id === networkId)
       if (!n) return
       // Sandbox: only verified TESTNET deployments are ever switched on automatically.
       const active = verified && n.testnet ? 1 : 0
-      run(
+      await run(
         `INSERT OR IGNORE INTO token_networks(symbol,network_id,chain_id,is_testnet,contract,decimals,is_active,verified,verified_at,verify_note,source)
          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
         symbol, networkId, n.chainId, n.testnet ? 1 : 0, contract, decimals, active, verified ? 1 : 0, verified ? t : null, verified ? `Registered from ${source}` : 'Waiting for the on-chain check', source,
       )
     }
-    for (const [symbol, networks] of NATIVE) for (const id of networks) dep(symbol, id, null, decimalsOf.get(symbol) ?? 18, true, 'the chain itself (native asset)')
+    for (const [symbol, networks] of NATIVE) for (const id of networks) await dep(symbol, id, null, decimalsOf.get(symbol) ?? 18, true, 'the chain itself (native asset)')
     for (const n of REG_NETWORKS) {
       const u = n.chainId ? getUsdc(n.chainId) : undefined
-      if (u) dep('USDC', n.id, getAddress(u.address), u.decimals, true, 'the verified chain registry')
+      if (u) await dep('USDC', n.id, getAddress(u.address), u.decimals, true, 'the verified chain registry')
     }
-    for (const [symbol, networkId, contract] of CANDIDATES) dep(symbol, networkId, getAddress(contract.toLowerCase()), decimalsOf.get(symbol) ?? 18, false, 'seed')
-  })()
+    for (const [symbol, networkId, contract] of CANDIDATES) await dep(symbol, networkId, getAddress(contract.toLowerCase()), decimalsOf.get(symbol) ?? 18, false, 'seed')
+  })
 }

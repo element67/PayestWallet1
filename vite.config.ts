@@ -53,8 +53,11 @@ export default defineConfig({
     ],
   },
   server: {
-    allowedHosts: true,
-    cors: true,
+    // Arc Studio serves the preview from a generated host name, so every host is allowed by default there.
+    // Outside it, set ALLOWED_HOSTS=host1,host2 to pin the dev server to the hosts you use.
+    allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(',').map((h) => h.trim()).filter(Boolean) : true,
+    // No `cors: true`: Vite's default only lets localhost origins read responses, so another website cannot read the
+    // dev API (for example the dev-session endpoint) from a visitor's browser. The API also rejects cross-site requests itself.
     proxy: {
       '/api': { target: 'http://127.0.0.1:3001', changeOrigin: true },
     },

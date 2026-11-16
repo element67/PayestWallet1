@@ -19,17 +19,17 @@ export function ProfileView() {
   const { user } = useSession()
   const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ['profile', user?.id], queryFn: () => api<{ profile: Profile }>('/api/profile').then((r) => r.profile) })
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '' })
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', currentPassword: '' })
   const [problem, setProblem] = useState<string | null>(null)
 
   const startEditing = (p: Profile) => {
-    setForm({ fullName: p.fullName, email: p.email, phone: p.phone ?? '' })
+    setForm({ fullName: p.fullName, email: p.email, phone: p.phone ?? '', currentPassword: '' })
     setProblem(null)
     setEditing(true)
   }
 
   const save = useMutation({
-    mutationFn: () => api<{ profile: Profile }>('/api/profile', { method: 'PUT', body: { fullName: form.fullName, email: form.email, phone: form.phone.trim() || null } }),
+    mutationFn: () => api<{ profile: Profile }>('/api/profile', { method: 'PUT', body: { fullName: form.fullName, email: form.email, phone: form.phone.trim() || null, currentPassword: form.currentPassword || undefined } }),
     onSuccess: (r) => {
       qc.setQueryData(['profile', user?.id], r.profile)
       void qc.invalidateQueries({ queryKey: ['naira'] })
@@ -43,6 +43,7 @@ export function ProfileView() {
   const submit = () => {
     if (form.fullName.trim().length < 2) return setProblem('Enter your full name')
     if (!EMAIL.test(form.email.trim())) return setProblem('Enter a valid email address')
+    if (form.email.trim().toLowerCase() !== data?.email && !form.currentPassword) return setProblem('Enter your current password to change your email')
     setProblem(null)
     save.mutate()
   }
@@ -90,7 +91,10 @@ export function ProfileView() {
         ) : (
           <form className="mt-5 space-y-3" onSubmit={(e) => { e.preventDefault(); submit() }} noValidate>
             <Field label="Full name" autoComplete="name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} maxLength={80} required />
-            <Field label="Email" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} hint="Contact email. The email you sign in with does not change." required />
+            <Field label="Email" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} hint="This is also the email you sign in with. Changing it needs your current password." required />
+            {form.email.trim().toLowerCase() !== data.email && (
+              <Field label="Current password" type="password" autoComplete="current-password" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} maxLength={200} required />
+            )}
             <Field label="Phone" type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="08012345678 or +2348012345678" maxLength={24} />
             {problem && <p role="alert" className="rounded-2xl border-2 border-outline bg-danger px-3 py-2 text-sm font-bold text-on-danger">{problem}</p>}
             <div className="grid grid-cols-2 gap-3 pt-1">

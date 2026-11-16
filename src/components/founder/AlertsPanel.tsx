@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { ago } from '@/lib/format'
@@ -6,8 +7,21 @@ import { Badge, Button, Card, Empty } from '../ui'
 interface Alert { id: number; at: number; severity: 'info' | 'warning' | 'critical'; kind: string; title: string; detail: string; resolved: number }
 interface Log { id: number; at: number; actor: string | null; action: string; target: string | null; before: string | null; after: string | null }
 
+const PAGE = 25
+
+function More({ shown, total, onMore }: { shown: number; total: number; onMore: () => void }) {
+  if (total <= shown) return null
+  return (
+    <div className="px-4 pb-3 pt-2">
+      <Button variant="ghost" className="w-full" onClick={onMore}>Show {Math.min(PAGE, total - shown)} more ({total - shown} left)</Button>
+    </div>
+  )
+}
+
 export function AlertsPanel() {
   const qc = useQueryClient()
+  const [alertCount, setAlertCount] = useState(PAGE)
+  const [logCount, setLogCount] = useState(PAGE)
   const { data: alerts } = useQuery({ queryKey: ['admin-alerts'], queryFn: () => api<{ alerts: Alert[] }>('/api/admin/alerts').then((r) => r.alerts), refetchInterval: 4000 })
   const { data: logs } = useQuery({ queryKey: ['admin-audit'], queryFn: () => api<{ logs: Log[] }>('/api/admin/audit').then((r) => r.logs), refetchInterval: 8000 })
   const resolve = useMutation({
@@ -16,10 +30,10 @@ export function AlertsPanel() {
   })
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <Card className="p-2">
+      <Card className="min-w-0 self-start p-2">
         <div className="eyebrow px-4 pb-1 pt-3">Suspicious activity and alerts</div>
         {alerts?.length === 0 && <Empty title="No alerts" body="Fake tokens, mismatches and risk blocks show up here." />}
-        {(alerts ?? []).map((a) => (
+        {(alerts ?? []).slice(0, alertCount).map((a) => (
           <div key={a.id} className="rounded-2xl px-4 py-3">
             <div className="flex items-start justify-between gap-2">
               <div className="text-sm font-semibold">{a.title}</div>
@@ -32,11 +46,12 @@ export function AlertsPanel() {
             </div>
           </div>
         ))}
+        <More shown={alertCount} total={alerts?.length ?? 0} onMore={() => setAlertCount((n) => n + PAGE)} />
       </Card>
-      <Card className="p-2">
+      <Card className="min-w-0 self-start p-2">
         <div className="eyebrow px-4 pb-1 pt-3">Audit log</div>
         {logs?.length === 0 && <Empty title="Nothing logged yet" />}
-        {(logs ?? []).map((l) => (
+        {(logs ?? []).slice(0, logCount).map((l) => (
           <div key={l.id} className="rounded-2xl px-4 py-2.5">
             <div className="flex items-baseline justify-between gap-2">
               <span className="mono text-xs font-semibold">{l.action}</span>
@@ -46,6 +61,7 @@ export function AlertsPanel() {
             {l.after && <div className="mono truncate text-xs text-subtle" title={l.after}>{l.after.slice(0, 120)}</div>}
           </div>
         ))}
+        <More shown={logCount} total={logs?.length ?? 0} onMore={() => setLogCount((n) => n + PAGE)} />
       </Card>
     </div>
   )

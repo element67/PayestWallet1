@@ -30,6 +30,17 @@ export function evmRpcUrl(networkId: string): string {
   return process.env[key] || chain.rpcUrls[0]
 }
 
+/**
+ * RPC URL for broadcasting signed transactions. The Arc Studio read proxy rejects eth_sendRawTransaction, so Arc writes go
+ * to the public RPC from the chain registry (reads and receipts still use the proxy). Other networks use their normal URL.
+ */
+export function evmBroadcastUrl(networkId: string): string {
+  if (networkId !== 'arc-testnet') return evmRpcUrl(networkId)
+  const chain = getChain(getNetwork(networkId)?.chainId ?? 0)
+  if (!chain) throw new Error('Unknown Arc network')
+  return process.env.RPC_URL_Arc_Testnet || chain.rpcUrls[0]
+}
+
 export const evmChain = (networkId: string) => evmChains[networkId as keyof typeof evmChains]
 
 const SOLANA_RPC = 'https://api.devnet.solana.com'

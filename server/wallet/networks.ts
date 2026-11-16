@@ -79,13 +79,13 @@ export const getAssetDef = (key: string) => ASSETS.find((a) => a.key === key)
 /** Registry tokens that are enabled but have no active testnet deployment in this wallet. Shown honestly, never with a balance. */
 export const UNAVAILABLE: Array<{ symbol: string; name: string; reason: string }> = []
 
-export function refreshAssets() {
+export async function refreshAssets() {
   const ids = new Set(NETWORKS.map((n) => n.id))
-  const rows = all<{ symbol: string; name: string; logo: string; network_id: string; contract: string | null; decimals: number }>(
+  const rows = (await all<{ symbol: string; name: string; logo: string; network_id: string; contract: string | null; decimals: number }>(
     `SELECT t.symbol, t.name, t.logo, tn.network_id, tn.contract, tn.decimals
        FROM token_networks tn JOIN tokens t ON t.symbol = tn.symbol
       WHERE t.is_active=1 AND tn.is_active=1 AND tn.verified=1 AND tn.is_testnet=1 ORDER BY t.sort, tn.id`,
-  ).filter((r) => ids.has(r.network_id))
+  )).filter((r) => ids.has(r.network_id))
   const next: AssetDef[] = rows.map((r) => ({
     key: `${r.symbol}@${r.network_id}`, symbol: r.symbol, name: r.name, network: r.network_id, kind: r.contract ? 'token' : 'native',
     contract: r.contract ?? undefined, decimals: r.decimals, logo: r.logo,
@@ -93,7 +93,7 @@ export function refreshAssets() {
   }))
   ASSETS.splice(0, ASSETS.length, ...next)
   const have = new Set(next.map((a) => a.symbol))
-  const missing = all<{ symbol: string; name: string }>('SELECT symbol, name FROM tokens WHERE is_active=1 ORDER BY sort').filter((t) => !have.has(t.symbol))
+  const missing = (await all<{ symbol: string; name: string }>('SELECT symbol, name FROM tokens WHERE is_active=1 ORDER BY sort')).filter((t) => !have.has(t.symbol))
   UNAVAILABLE.splice(0, UNAVAILABLE.length, ...missing.map((t) => ({ symbol: t.symbol, name: t.name, reason: 'No verified testnet contract is registered, so it cannot be listed without risking a fake token.' })))
 }
 

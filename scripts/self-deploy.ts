@@ -14,7 +14,7 @@ import {
 
 const DEFAULT_CHAIN = 'ARC-TESTNET';
 
-const WORK_DIR = '/home/user/app';
+const WORK_DIR = process.cwd();
 const CONTRACTS_ROOT_DIR = `${WORK_DIR}/contracts`;
 /*
  * Solidity sources live directly under `contracts/` (no `contract-code/`
@@ -144,7 +144,7 @@ function usage(supportedChains: string[]): string {
     '  bun run deploy:self SimpleToken',
     '  bun run deploy:self SimpleToken \'["My Token","MTK",1000000]\'',
     '  bun run deploy:self SimpleToken --chain BASE-SEPOLIA',
-    '  bun run deploy:self TreasuryVault --artifact /home/user/app/contracts/out/TreasuryVault.sol/TreasuryVault.json',
+    '  bun run deploy:self TreasuryVault --artifact contracts/out/TreasuryVault.sol/TreasuryVault.json',
     "  bun run deploy:self SimpleToken '[]' --wallet-id 00000000-0000-0000-0000-000000000000 --skip-funding",
     '',
     'Flags:',
