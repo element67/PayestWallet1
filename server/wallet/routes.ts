@@ -44,7 +44,11 @@ route('GET', '/api/crypto/txs', 'user', async (c) => {
   const type = c.url.searchParams.get('type')
   const asset = c.url.searchParams.get('asset')
   const rows = await all<Record<string, unknown>>(
-    `SELECT * FROM wallet_txs WHERE user_id=? ${type ? 'AND type=?' : ''} ${asset ? 'AND symbol=?' : ''} ORDER BY created_at DESC LIMIT 200`,
+    // A swap or bridge is shown as its own "paid" and "received" entries, so the plain deposit the monitor also saw for the same
+    // transaction is left out instead of listing the same money twice.
+    `SELECT * FROM wallet_txs w WHERE w.user_id=? ${type ? 'AND w.type=?' : ''} ${asset ? 'AND w.symbol=?' : ''}
+       AND NOT (w.type='received' AND EXISTS (SELECT 1 FROM wallet_txs s WHERE s.user_id=w.user_id AND s.tx_hash=w.tx_hash AND s.type IN ('swapped','bridged')))
+     ORDER BY w.created_at DESC LIMIT 200`,
     c.user.id, ...(type ? [type] : []), ...(asset ? [asset] : []),
   )
   return { txs: rows.map(txView) }

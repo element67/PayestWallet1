@@ -1,34 +1,21 @@
 /**
- * Colour themes. A theme is only three colours: background, card and button. Everything else (text colours, outlines,
- * status colours, background artwork) is derived from them here, so no screen or component carries a colour of its own.
- * Text colours are chosen by contrast, so they stay readable on every background in every theme.
+ * One palette, two modes.
+ *   page background  #FFFFFF (light) / charcoal #1C1C1E (dark)
+ *   cards, sheets, tab bar  #F5F7FA (light) / #2A2A2D (dark), set apart by a thin line
+ *   text  #050912 (light) / #FFFFFF (dark)
+ *   blue  #1558C9 / #2F6FEB for the main button and the active tab; blue is never used for text or icons. All written text and icons are black (white in dark mode)
+ * The Light / Dark toggle swaps the page, surface and text colours and nothing else. Every other token (muted fills,
+ * secondary text, dividers) is a blend of those colours, and the status colours (success, danger, warning) keep their own
+ * hues because they carry meaning. Every colour in the app is a token set here, so no screen carries a colour of its own.
  */
-import { DEFAULT_THEME, isThemeId, type ThemeId } from './themeIds'
+import { DEFAULT_MODE, isMode, type Mode } from './themeIds'
 
-export interface ThemeDef {
-  id: ThemeId
-  name: string
-  bg: string
-  card: string
-  button: string
-  /** Which background composition this theme uses (see Backdrop). */
-  art: 0 | 1 | 2
-}
-
-export const THEMES: ThemeDef[] = [
-  { id: 'cobalt-lime', name: 'Cobalt Lime', bg: '#030407', card: '#1558C9', button: '#D4FF24', art: 0 },
-  { id: 'orange-tape', name: 'Orange Tape', bg: '#F04400', card: '#FFD91A', button: '#000000', art: 1 },
-  { id: 'forest-crimson', name: 'Forest Crimson', bg: '#06110C', card: '#171717', button: '#A31C1B', art: 2 },
-  { id: 'neon-emerald', name: 'Neon Emerald', bg: '#000000', card: '#0E1A10', button: '#39FF88', art: 0 },
-  { id: 'mint-noir', name: 'Mint Noir', bg: '#39F0AE', card: '#000000', button: '#FF0000', art: 1 },
-  { id: 'lemon-lavender', name: 'Lemon Lavender', bg: '#FFF21A', card: '#171717', button: '#A66BFF', art: 2 },
-  { id: 'orchid-orange', name: 'Orchid Orange', bg: '#E7B0DE', card: '#400849', button: '#FF5A0A', art: 0 },
-  { id: 'hot-pink-pulse', name: 'Hot Pink Pulse', bg: '#0B0B0B', card: '#1C1C1C', button: '#FF2DA8', art: 1 },
-  { id: 'lavender-tomato', name: 'Lavender Tomato', bg: '#CBB3E8', card: '#D4FF3F', button: '#E34234', art: 2 },
-  { id: 'sage-burgundy', name: 'Sage Burgundy', bg: '#A5A79B', card: '#E8D2B5', button: '#590907', art: 0 },
-]
-
-export const getTheme = (id: string | null | undefined): ThemeDef => THEMES.find((t) => t.id === id) ?? THEMES[0]
+export const PALETTE = {
+  light: { bg: '#FFFFFF', card: '#F3F6FA', ink: '#050912', line: '#B9C3D0', brand: '#1558C9' },
+  dark: { bg: '#1C1C1E', card: '#2A2A2D', ink: '#FFFFFF', line: '#46474D', brand: '#6AA9FF' },
+  /** The fill of the main button and the active tab. White text on it reads at 4.7:1 or better in both modes. */
+  accent: { light: '#1558C9', dark: '#2F6FEB' },
+} as const
 
 /* ---------- colour maths ---------- */
 type RGB = [number, number, number]
@@ -64,61 +51,38 @@ const inkOn = (bg: string) => (contrast(DARK_INK, bg) >= contrast(LIGHT_INK, bg)
 const fit = (fg: string, bg: string, min = 4.5) => {
   const target = inkOn(bg)
   let c = fg
-  for (let i = 0; i < 20 && contrast(c, bg) < min; i++) c = mix(c, target, 0.12)
+  for (let i = 0; i < 24 && contrast(c, bg) < min; i++) c = mix(c, target, 0.1)
   return c
 }
 
-const STATUS = { success: '#1FBF63', danger: '#F0344F', warn: '#F2A20C' } as const
+/** Muted status colours: tags use them as a soft tint with coloured text, never as loud solid blocks. */
+const STATUS = { success: '#2FA574', danger: '#E5534B', warn: '#D9A441' } as const
 const triplet = (hex: string) => toRgb(hex).join(' ')
 
-/** Muted text shades and divider for one surface colour, plus status colours that read as TEXT on it. */
-function surfaceTokens(surface: string, prefix: string): Record<string, string> {
-  const ink = inkOn(surface)
-  // Inner fills (fields, chips, tracks) get their own tint of the surface.
-  // Fills move away from the text colour, so contrast with the text only goes up. On near-black surfaces there is no room to go darker, so they lift slightly instead.
-  const darkInk = luminance(ink) < 0.5
-  const nearBlack = luminance(surface) < 0.06
-  const pole = darkInk ? '#FFFFFF' : nearBlack ? ink : '#000000'
-  const muted = mix(surface, pole, darkInk ? 0.4 : nearBlack ? 0.12 : 0.3)
-  const strong = mix(surface, pole, darkInk ? 0.6 : nearBlack ? 0.2 : 0.5)
+/** Muted fills, divider and text shades for one surface, plus status colours that read as TEXT on it. */
+function surfaceTokens(surface: string, ink: string, mode: Mode, prefix: string): Record<string, string> {
+  const light = mode === 'light'
+  const muted = mix(surface, ink, light ? 0.05 : 0.07)
+  const strong = mix(surface, ink, light ? 0.09 : 0.12)
   const out: Record<string, string> = {
     [`--${prefix}ink`]: ink,
-    [`--${prefix}ink-2`]: mix(ink, surface, 0.12),
+    [`--${prefix}ink-2`]: mix(ink, surface, 0.06),
     // Muted text must stay readable on the surface AND on its inner fills.
-    [`--${prefix}subtle`]: fit(fit(mix(ink, surface, 0.3), surface, 4.8), strong, 4.8),
+    [`--${prefix}subtle`]: fit(mix(ink, surface, light ? 0.3 : 0.28), strong, light ? 7 : 5.5),
     [`--${prefix}muted`]: muted,
     [`--${prefix}strong`]: strong,
-    [`--${prefix}divider`]: mix(surface, ink, 0.3),
+    [`--${prefix}divider`]: mix(surface, ink, light ? 0.22 : 0.18),
   }
-  for (const [name, base] of Object.entries(STATUS)) out[`--${prefix}${name}-rgb`] = triplet(fit(base, surface))
+  for (const [name, base] of Object.entries(STATUS)) out[`--${prefix}${name}-rgb`] = triplet(fit(base, strong))
   return out
 }
 
-/** Every CSS variable for a theme. */
-export function themeVars(t: ThemeDef): Record<string, string> {
-  const { bg, card, button } = t
-  const ink = inkOn(bg)
-  const buttonInk = inkOn(button)
-  const bgDark = luminance(bg) < 0.03
-  const cardDark = luminance(card) < 0.03
-  // Dark cards on a dark page would lose their edge, so their hard shadow takes the button colour instead.
-  const shadow = bgDark && cardDark ? button : DARK_INK
-  const page = surfaceTokens(bg, '')
-  const onCard = surfaceTokens(card, 'card-')
-
-  // Artwork. Big shapes only use colours the page text can sit on; bolder colours go to small accents at the edges.
-  const safe = (c: string) => contrast(ink, c) >= 4.5 && contrast(page['--subtle'], c) >= 4.5
-  const tint = (c: string) => {
-    let v = mix(bg, c, 0.35)
-    for (let i = 0; i < 6 && !safe(v); i++) v = mix(v, bg, 0.4)
-    return v
-  }
-  const big1 = safe(card) ? card : tint(card)
-  const big2 = safe(button) ? button : tint(button)
-  let big3 = mix(bg, ink, bgDark ? 0.2 : 0.12)
-  for (let i = 0; i < 8 && !safe(big3); i++) big3 = mix(big3, bg, 0.4)
-  const big6 = safe(mix(card, button, 0.5)) ? mix(card, button, 0.5) : tint(mix(card, button, 0.5))
-
+/** Every CSS variable for a mode. */
+export function themeVars(mode: Mode): Record<string, string> {
+  const { bg, card, ink, line, brand } = PALETTE[mode]
+  const accent = PALETTE.accent[mode]
+  const page = surfaceTokens(bg, ink, mode, '')
+  const onCard = surfaceTokens(card, ink, mode, 'card-')
   return {
     '--bg': bg,
     '--ink': page['--ink'],
@@ -134,19 +98,14 @@ export function themeVars(t: ThemeDef): Record<string, string> {
     '--card-muted': onCard['--card-muted'],
     '--card-strong': onCard['--card-strong'],
     '--card-divider': onCard['--card-divider'],
-    '--accent': button,
-    '--accent-ink': buttonInk,
-    '--outline': DARK_INK,
-    '--shadow-c': shadow,
-    '--focus': fit(button, bg, 3),
+    '--accent': accent,
+    '--accent-ink': inkOn(accent),
+    // A thin line around cards and fields keeps each feature clearly separate from the next, in both modes.
+    '--outline': line,
+    // Blue for feature labels and icons: the deeper blue on white, a lighter blue on charcoal so it stays easy to read.
+    '--brand': brand,
+    '--focus': accent,
     '--paper': LIGHT_INK,
-    '--halftone': mix(bg, ink, bgDark ? 0.16 : 0.14),
-    '--art-1': big1,
-    '--art-2': big2,
-    '--art-3': big3,
-    '--art-4': button,
-    '--art-5': card,
-    '--art-6': big6,
     '--success-rgb': page['--success-rgb'],
     '--danger-rgb': page['--danger-rgb'],
     '--warn-rgb': page['--warn-rgb'],
@@ -164,31 +123,31 @@ export function themeVars(t: ThemeDef): Record<string, string> {
 }
 
 /* ---------- applying and remembering ---------- */
-const KEY = 'nb_theme_id'
+const MODE_KEY = 'nb_theme_mode'
 
-export function applyTheme(id: string): ThemeId {
-  const theme = getTheme(id)
+export function applyTheme(mode: Mode = DEFAULT_MODE): Mode {
   const root = document.documentElement
-  for (const [k, v] of Object.entries(themeVars(theme))) root.style.setProperty(k, v)
-  root.dataset.theme = theme.id
-  root.dataset.art = String(theme.art)
-  root.style.colorScheme = luminance(theme.bg) < 0.18 ? 'dark' : 'light'
-  return theme.id
+  for (const [k, v] of Object.entries(themeVars(mode))) root.style.setProperty(k, v)
+  root.dataset.mode = mode
+  root.style.colorScheme = mode
+  return mode
 }
 
-export function localTheme(): ThemeId {
+/** The saved mode on this device. The app is bright by default: it only goes dark when the user chooses Dark. */
+export function localMode(): Mode {
   try {
-    const v = localStorage.getItem(KEY)
-    return isThemeId(v) ? v : DEFAULT_THEME
+    const v = localStorage.getItem(MODE_KEY)
+    if (isMode(v)) return v
+    return DEFAULT_MODE
   } catch {
-    return DEFAULT_THEME
+    return DEFAULT_MODE
   }
 }
 
-export function rememberTheme(id: ThemeId) {
+export function rememberMode(mode: Mode) {
   try {
-    localStorage.setItem(KEY, id)
+    localStorage.setItem(MODE_KEY, mode)
   } catch {
-    /* private mode: the server copy still applies */
+    /* private mode: the choice lasts until the tab closes */
   }
 }

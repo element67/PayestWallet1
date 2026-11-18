@@ -1,3 +1,4 @@
+import { NetworkIcon } from '../NetworkIcon'
 import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
@@ -39,7 +40,7 @@ function ReceiveRow({ id, icon, title, network, value, preview, warning, expande
           <span className="min-w-0 flex-1">
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <span className="text-sm font-semibold">{title}</span>
-              <Badge kind="live">{network}</Badge>
+              <Badge kind="live"><NetworkIcon name={network} size={14} />{network}</Badge>
             </span>
             <span className="mono mt-0.5 block truncate text-xs text-ink-2">{preview}</span>
             <span className="mt-0.5 block text-xs leading-snug text-warn">{warning}</span>
@@ -58,7 +59,7 @@ function ReceiveRow({ id, icon, title, network, value, preview, warning, expande
         {expanded && (
           <motion.div
             id={`recv-${id}`} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }} className="overflow-hidden"
+            transition={{ duration: 0 }} className="overflow-hidden"
           >
             <div className="px-4 pb-5 pt-1 text-center">
               {qr && (

@@ -18,7 +18,7 @@ for (const [m, p] of [['GET', '/api/settings/appearance'], ['PUT', '/api/setting
   ok(`${m} ${p} needs sign-in`, (await call(p, undefined, m, m === 'GET' ? undefined : {})).s === 401)
 }
 
-const IDS = ['cobalt-lime', 'orange-tape', 'forest-crimson', 'neon-emerald', 'mint-noir', 'lemon-lavender', 'orchid-orange', 'hot-pink-pulse', 'lavender-tomato', 'sage-burgundy']
+const IDS = ['sage-burgundy', 'midnight-cobalt', 'lavender-tomato', 'orchid-violet', 'charcoal-crimson', 'mint-noir']
 let r = await call('/api/settings/appearance', A)
 ok('a user with nothing saved gets a theme', r.s === 200 && IDS.includes(r.d.themeId), r.d.themeId)
 for (const id of IDS) {
@@ -26,8 +26,8 @@ for (const id of IDS) {
   const g = await call('/api/settings/appearance', A)
   if (r.s !== 200 || g.d.themeId !== id) ok(`saves ${id}`, false, JSON.stringify(r.d))
 }
-ok('every one of the 10 themes saves and reads back', true)
-for (const bad of ['neon', '', 'COBALT-LIME', 'cobalt-lime; drop table', 7, null]) {
+ok('every one of the 6 themes saves and reads back', true)
+for (const bad of ['neon', '', 'MIDNIGHT-COBALT', 'cobalt-lime', 'orange-tape', 'cobalt-lime; drop table', 7, null]) {
   r = await call('/api/settings/appearance', A, 'PUT', { themeId: bad })
   ok(`rejects theme ${JSON.stringify(bad)}`, r.s === 400 && /theme/i.test(r.d.error ?? ''), r.d.error)
 }
@@ -35,8 +35,8 @@ r = await call('/api/settings/appearance', A, 'PUT', {})
 ok('rejects a missing theme', r.s === 400)
 
 await call('/api/settings/appearance', A, 'PUT', { themeId: 'mint-noir' })
-await call('/api/settings/appearance', B, 'PUT', { themeId: 'orchid-orange' })
-ok('themes are per user', (await call('/api/settings/appearance', A)).d.themeId === 'mint-noir' && (await call('/api/settings/appearance', B)).d.themeId === 'orchid-orange')
+await call('/api/settings/appearance', B, 'PUT', { themeId: 'orchid-violet' })
+ok('themes are per user', (await call('/api/settings/appearance', A)).d.themeId === 'mint-noir' && (await call('/api/settings/appearance', B)).d.themeId === 'orchid-violet')
 
 r = await call('/api/profile', A)
 ok('profile loads', r.s === 200 && r.d.profile.fullName && r.d.profile.email, JSON.stringify(r.d.profile))
@@ -59,8 +59,8 @@ ok('the other account was not changed by that attempt', (await call('/api/profil
 r = await edit({ fullName: orig.fullName, email: orig.email, phone: orig.phone ?? '' })
 ok('restores the original details', r.s === 200)
 
-await call('/api/settings/appearance', A, 'PUT', { themeId: 'cobalt-lime' })
-await call('/api/settings/appearance', B, 'PUT', { themeId: 'cobalt-lime' })
+await call('/api/settings/appearance', A, 'PUT', { themeId: 'midnight-cobalt' })
+await call('/api/settings/appearance', B, 'PUT', { themeId: 'midnight-cobalt' })
 // the sign-in email only changes with the current password, so it is untouched here
 const me = await call('/api/me', A)
 ok('sign-in email is untouched', me.d.user.email === orig.email || /preview/.test(me.d.user.email))

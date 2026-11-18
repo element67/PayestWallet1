@@ -1,6 +1,7 @@
 import { ConnectKitButton } from 'connectkit'
 import { useAccount } from 'wagmi'
 import { NETWORK_NAME, type DexNetwork } from '@/lib/nairaswap'
+import { NetworkLabel } from '../NetworkIcon'
 import { Segmented } from '../ui'
 
 export type Signer = 'app' | 'browser'
@@ -14,7 +15,7 @@ export function DexControls({ networks, networkId, onNetwork, signer, onSigner }
     <div className="space-y-3">
       <div>
         <span className="eyebrow mb-2 block">Network</span>
-        <Segmented value={networkId as DexNetwork['id']} onChange={onNetwork} options={networks.map((n) => ({ value: n.id, label: NETWORK_NAME[n.id] ?? n.id }))} />
+        <Segmented value={networkId as DexNetwork['id']} onChange={onNetwork} options={networks.map((n) => ({ value: n.id, label: <NetworkLabel id={n.id} name={NETWORK_NAME[n.id] ?? n.id} size={20} /> }))} />
       </div>
       <div>
         <span className="eyebrow mb-2 block">Sign with</span>

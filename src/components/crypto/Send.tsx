@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { parseScan } from '@/lib/qr'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, ArrowLeft, Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -6,20 +7,27 @@ import { api } from '@/lib/api'
 import { type CryptoOverview, type CryptoTx, type SendPreview, statusTone } from '@/lib/crypto'
 import { crypto, short } from '@/lib/format'
 import { usePrivacy } from '@/lib/privacy'
+import { NetworkLabel, NetworkPicker } from '../NetworkIcon'
 import { Badge, Button, Card, Field, Row, TokenIcon } from '../ui'
 
 const newKey = () => `send-${globalThis.crypto.randomUUID()}`
 
-export function Send({ data }: { data: CryptoOverview }) {
+/** The chain family an address belongs to, so a scanned address opens on a network that can pay it. */
+const familyOf = (a: string) => { const r = parseScan(a); return r.kind === 'crypto' ? r.family : null }
+
+export function Send({ data, initialTo }: { data: CryptoOverview; initialTo?: string }) {
   const { mask } = usePrivacy()
   const qc = useQueryClient()
   const networks = data.networks
-  const [networkId, setNetworkId] = useState(networks.find((n) => n.canSend)?.id ?? networks[0].id)
+  const [networkId, setNetworkId] = useState(() => {
+    const fam = initialTo ? familyOf(initialTo) : null
+    return (fam && networks.find((n) => n.family === fam && n.canSend)?.id) || (fam && networks.find((n) => n.family === fam)?.id) || networks.find((n) => n.canSend)?.id || networks[0].id
+  })
   const net = networks.find((n) => n.id === networkId) ?? networks[0]
   const assets = data.assets.filter((a) => a.network === networkId)
   const [assetKey, setAssetKey] = useState('')
   const asset = assets.find((a) => a.key === assetKey) ?? assets[0]
-  const [to, setTo] = useState('')
+  const [to, setTo] = useState(initialTo ?? '')
   const [amount, setAmount] = useState('')
   const [preview, setPreview] = useState<SendPreview | null>(null)
   const [idem, setIdem] = useState(newKey)
@@ -57,7 +65,7 @@ export function Send({ data }: { data: CryptoOverview }) {
           <h2 className="display text-xl font-semibold">Confirm transfer</h2>
           <div className="display num mt-3 text-4xl font-semibold">{crypto(preview.amount)} {preview.asset}</div>
           <div className="mt-4 divide-y divide-line">
-            <Row label="Network" value={preview.network} />
+            <Row label="Network" value={<NetworkLabel name={preview.network} />} />
             <Row label="From" value={short(preview.from, 10, 6)} mono />
             <Row label="To" value={<span className="break-all">{preview.to}</span>} mono />
             <Row label="Network fee (estimate)" value={`${crypto(preview.fee, 8)} ${preview.feeSymbol}`} />
@@ -78,10 +86,7 @@ export function Send({ data }: { data: CryptoOverview }) {
     <div className="mx-auto max-w-xl space-y-4">
       <Card strong className="space-y-4 p-6">
         <div>
-          <div className="eyebrow mb-1.5">Network</div>
-          <select value={networkId} onChange={(e) => { setNetworkId(e.target.value); setAssetKey('') }} className="min-h-11 w-full rounded-2xl border border-line bg-surface-strong px-3 text-sm" aria-label="Network">
-            {networks.map((n) => <option key={n.id} value={n.id}>{n.name}{n.canSend ? '' : ' (send not enabled)'}</option>)}
-          </select>
+          <NetworkPicker label="Network" value={networkId} options={networks.map((n) => ({ id: n.id, name: n.name, note: n.canSend ? undefined : 'Send not enabled' }))} onChange={(id) => { setNetworkId(id); setAssetKey('') }} />
           {!net.canSend && <p className="mt-2 text-sm text-warn">{net.sendNote}</p>}
         </div>
         <div>
@@ -124,7 +129,7 @@ function Tracker({ id, onDone }: { id: string; onDone: () => void }) {
               {(data.status === 'failed' || data.status === 'dropped') && (data.note ?? 'The transfer did not complete.')}
             </div>
             <div className="mt-4 divide-y divide-line">
-              <Row label="Network" value={data.network} />
+              <Row label="Network" value={<NetworkLabel name={data.network} />} />
               <Row label="To" value={<span className="break-all">{data.to}</span>} mono />
               <Row label="Transaction hash" value={data.hash ? <a className="break-all underline" href={data.url ?? '#'} target="_blank" rel="noopener noreferrer">{data.hash}</a> : 'pending broadcast'} mono />
               {data.fee && <Row label="Network fee paid" value={`${crypto(data.fee, 8)} ${data.feeSymbol}`} />}

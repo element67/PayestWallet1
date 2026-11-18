@@ -11,6 +11,8 @@ import { all, alert, audit, get, notify, now, run, setting, uid } from '../db'
 import { fromUnits, toUnits } from '../money'
 import { scrub } from '../rpc'
 import { evmBroadcastUrl, evmChain, evmClient, readBalance } from './chains'
+import { findChain } from '../bridge/chains'
+import { EXTRA_DECIMALS } from './history'
 import { ensureWallet, withEvmAccount, type WalletAddresses } from './keys'
 import { ASSETS, UNAVAILABLE, getAssetDef, getNetwork, verifiedTokens, type AssetDef, type NetworkDef } from './networks'
 
@@ -257,15 +259,17 @@ const serial = <T>(key: string, fn: () => Promise<T>): Promise<T> => {
 export function txView(t: Record<string, unknown>) {
   const net = getNetwork(String(t.network))
   const def = t.asset_key ? getAssetDef(String(t.asset_key)) : undefined
-  const decimals = def?.decimals ?? 18
+  // Entries for tokens outside the wallet's asset list (cirBTC from a swap) carry their own decimals; everything else keeps the wallet's.
+  const decimals = def?.decimals ?? EXTRA_DECIMALS[String(t.symbol).toUpperCase()] ?? 18
+  const bridgeNet = net ? undefined : findChain(t.network)
   const hash = String(t.tx_hash)
   const real = !hash.startsWith('sim:') && !hash.startsWith('pending:')
   return {
-    id: t.id, type: t.type, network: net?.name ?? t.network, networkId: t.network, symbol: t.symbol, assetKey: t.asset_key, tokenRef: t.token_ref,
+    id: t.id, type: t.type, network: net?.name ?? bridgeNet?.name ?? t.network, networkId: t.network, symbol: t.symbol, assetKey: t.asset_key, tokenRef: t.token_ref,
     amount: fromUnits(BigInt(String(t.amount)), decimals), from: t.from_addr, to: t.to_addr, hash: real ? hash : null, simulated: hash.startsWith('sim:'),
     fee: t.fee_raw ? fromUnits(BigInt(String(t.fee_raw)), net?.nativeDecimals ?? 18) : null, feeSymbol: t.fee_symbol, status: t.status, verdict: t.verdict,
     confirmations: t.confirmations, finalConfirmations: net?.finalConfirmations ?? 1, riskScore: t.risk_score, riskFlags: JSON.parse(String(t.risk_flags)) as string[], note: t.note,
-    url: real && net ? net.explorerTx(hash) : null, createdAt: t.created_at, detectedAt: t.detected_at, finalizedAt: t.finalized_at,
+    url: real ? (net ? net.explorerTx(hash) : bridgeNet?.explorer ? bridgeNet.explorer.replace('{hash}', hash) : null) : null, createdAt: t.created_at, detectedAt: t.detected_at, finalizedAt: t.finalized_at,
   }
 }
 

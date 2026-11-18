@@ -1,3 +1,4 @@
+import { NetworkLabel } from '../NetworkIcon'
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, Copy, Plus } from 'lucide-react'
@@ -32,7 +33,7 @@ function TokenRow({ t, action }: { t: Token; action?: React.ReactNode }) {
         <TokenIcon symbol={t.symbol} size={36} />
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{t.name}</div>
-          <div className="truncate text-xs text-subtle">{t.networkName}</div>
+          <div className="text-xs text-subtle"><NetworkLabel name={t.networkName} size={14} /></div>
         </div>
         {action ?? (
           <div className="shrink-0 text-right">

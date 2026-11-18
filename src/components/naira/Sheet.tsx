@@ -25,16 +25,16 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="sticker relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl lg:rounded-3xl"
+            className="sticker liquid relative flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-3xl lg:rounded-3xl"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+            transition={{ duration: 0 }}
           >
-            <div className="mx-auto mt-2 h-2 w-14 rounded-full border-2 border-outline bg-accent lg:hidden" />
+            <div className="mx-auto mt-2 h-2 w-14 rounded-full border-2 border-outline bg-line-strong lg:hidden" />
             <div className="flex items-center justify-between px-5 pb-2 pt-3">
               <h2 className="display text-2xl">{title}</h2>
-              <button aria-label="Close" onClick={onClose} className="border border-outline grid size-11 place-items-center rounded-full bg-accent text-accent-ink"><X size={18} /></button>
+              <button aria-label="Close" onClick={onClose} className="border border-outline grid size-11 place-items-center rounded-full bg-muted text-ink"><X size={18} /></button>
             </div>
             <div className="overflow-y-auto px-5 pb-6">{children}</div>
           </motion.div>

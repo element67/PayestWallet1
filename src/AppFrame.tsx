@@ -16,6 +16,7 @@ import { StrictMode, type ReactNode } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectKitProvider } from 'connectkit'
+import { MotionConfig } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { config } from './config'
 import { AppSkeleton } from './components/AppSkeleton'
@@ -27,17 +28,17 @@ import { SessionProvider, useSession } from './lib/session'
 import { ThemeProvider } from './lib/theme'
 import { TextSizeProvider } from './lib/textSize'
 import { installShareSync } from './lib/share'
-import { applyTheme, localTheme } from './lib/themes'
+import { applyTheme, localMode } from './lib/themes'
 import { applyTextSize, localTextSize } from './lib/textSizes'
 
 const queryClient = new QueryClient()
 
 // The wallet-connect popup reads the same theme tokens as the rest of the app.
 const connectTheme = {
-  '--ck-font-family': '"DM Sans", sans-serif',
+  '--ck-font-family': 'Inter, ui-sans-serif, system-ui, sans-serif',
   '--ck-border-radius': '24px',
-  '--ck-overlay-background': 'color-mix(in srgb, var(--outline) 72%, transparent)',
-  '--ck-overlay-backdrop-filter': 'none',
+  '--ck-overlay-background': 'rgb(8 10 16 / 0.4)',
+  '--ck-overlay-backdrop-filter': 'blur(8px)',
   '--ck-body-background': 'var(--card)',
   '--ck-body-background-secondary': 'var(--card-muted)',
   '--ck-body-background-secondary-hover-background': 'var(--card-strong)',
@@ -51,9 +52,9 @@ const connectTheme = {
   '--ck-secondary-button-background': 'var(--card-muted)',
   '--ck-secondary-button-hover-background': 'var(--card-strong)',
   '--ck-focus-color': 'var(--accent)',
-  '--ck-modal-box-shadow': '0 0 0 3px var(--outline), 7px 7px 0 3px var(--shadow-c)',
-  '--ck-primary-button-box-shadow': '0 0 0 2px var(--outline)',
-  '--ck-secondary-button-box-shadow': '0 0 0 2px var(--outline)',
+  '--ck-modal-box-shadow': '0 0 0 1px var(--outline)',
+  '--ck-primary-button-box-shadow': '0 0 0 1px var(--outline)',
+  '--ck-secondary-button-box-shadow': '0 0 0 1px var(--outline)',
 } as Record<string, string>
 
 // Studio logo SVG
@@ -72,7 +73,7 @@ const StudioWatermark = () => (
 )
 
 // The saved theme is applied before the first paint of the app, so there is no flash of the wrong colours.
-applyTheme(localTheme())
+applyTheme(localMode())
 applyTextSize(localTextSize())
 installShareSync()
 
@@ -88,8 +89,9 @@ function Frame({ children }: { children: ReactNode }) {
 export default function AppFrame({ children }: { children: ReactNode }) {
   return (
     <StrictMode>
-      {/* #root carries the stacking rules in index.css that keep the backdrop art behind the screens and the halftone dots behind the cards. */}
       <div id="root">
+      {/* The look is still: every motion (sheets, expanders, fades) completes instantly. */}
+      <MotionConfig transition={{ duration: 0 }} reducedMotion="always">
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <ConnectKitProvider customTheme={connectTheme}>
@@ -114,7 +116,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
                   description: 'text-xs font-medium',
                   error: '!bg-danger !text-on-danger',
                   success: '',
-                  actionButton: 'rounded-full border-2 border-outline bg-accent px-3 py-1 text-accent-ink',
+                  actionButton: 'rounded-full bg-accent px-3 py-1 text-accent-ink',
                   cancelButton: 'rounded-full border-2 border-outline bg-muted px-3 py-1 text-ink',
                 },
               }}
@@ -122,6 +124,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
           </ConnectKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
+      </MotionConfig>
       </div>
     </StrictMode>
   )

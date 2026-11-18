@@ -1,3 +1,4 @@
+import { NetworkLabel } from '../NetworkIcon'
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, ExternalLink, ShieldCheck } from 'lucide-react'
@@ -76,7 +77,7 @@ export function DexReview({ res, signer, onBack, onDone }: { res: DexPreviewResp
       <Card className="space-y-1 p-5">
         <div className="mb-1 flex items-center justify-between">
           <span className="eyebrow">Review {TITLE[p.kind].toLowerCase()}</span>
-          <span className="text-xs font-bold text-subtle">{NETWORK_NAME[p.networkId]}</span>
+          <span className="text-xs font-bold text-subtle"><NetworkLabel id={p.networkId} name={NETWORK_NAME[p.networkId] ?? p.networkId} size={16} /></span>
         </div>
         {Object.entries(p.summary).map(([k, v]) => <Row key={k} label={SUMMARY_LABELS[k] ?? k} value={<span className="num font-semibold">{summaryValue(k, v)}</span>} />)}
         <Row label="Signed by" value={signer === 'app' ? 'Your app wallet (PIN)' : 'Your browser wallet'} />

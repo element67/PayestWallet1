@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import { crypto, ngn } from '@/lib/format'
 import type { HomeAsset } from '@/lib/home'
 import { usePrivacy } from '@/lib/privacy'
+import { NetworkLabel } from '../NetworkIcon'
 import { Badge, Card, TokenIcon } from '../ui'
 
 function Row({ a }: { a: HomeAsset }) {
@@ -12,7 +13,7 @@ function Row({ a }: { a: HomeAsset }) {
       <TokenIcon symbol={a.symbol} size={36} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-sm font-semibold">{a.name}{a.kind === 'credit' && <Badge kind="sandbox">Sandbox</Badge>}</div>
-        <div className="truncate text-xs text-subtle">{a.chain}</div>
+        <div className="text-xs text-subtle">{a.kind === 'onchain' ? <NetworkLabel name={a.chain} size={14} /> : a.chain}</div>
       </div>
       <div className="shrink-0 text-right">
         <div className="num text-sm font-semibold">{mask(isNaira ? ngn(a.amount) : `${crypto(a.amount)} ${a.symbol}`)}</div>

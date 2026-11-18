@@ -1,17 +1,32 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, Mail, Pencil, Phone, ShieldAlert } from 'lucide-react'
+import { BadgeCheck, Camera, Mail, Pencil, Phone, ShieldAlert, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Avatar } from '@/components/Avatar'
 import { Badge, Button, Card, Empty, Field, PageTitle, Row } from '@/components/ui'
 import { api } from '@/lib/api'
+import type { Profile } from '@/lib/profile'
 import { useSession } from '@/lib/session'
 
-interface Profile {
-  fullName: string; email: string; phone: string | null; avatarUrl: string | null
-  verificationStatus: string; tier: number; memberSince: number; updatedAt: number
+/** Crops to a centred square and shrinks the picture so it stays small enough to save (the server accepts at most 40 KB). */
+async function toAvatar(file: File): Promise<string> {
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error('Choose a PNG, JPEG or WebP picture')
+  if (file.size > 15 * 1024 * 1024) throw new Error('That picture is too large')
+  const bmp = await createImageBitmap(file)
+  const side = Math.min(bmp.width, bmp.height)
+  for (const [px, q] of [[256, 0.85], [256, 0.7], [192, 0.7], [160, 0.6], [128, 0.55]] as const) {
+    const canvas = document.createElement('canvas')
+    canvas.width = px
+    canvas.height = px
+    const ctx = canvas.getContext('2d')
+    if (!ctx) break
+    ctx.drawImage(bmp, (bmp.width - side) / 2, (bmp.height - side) / 2, side, side, 0, 0, px, px)
+    const url = canvas.toDataURL('image/jpeg', q)
+    if (url.length * 0.75 < 38_000) return url
+  }
+  throw new Error('That picture could not be made small enough. Try another one')
 }
 
-const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || '?'
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export function ProfileView() {
@@ -21,6 +36,18 @@ export function ProfileView() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', currentPassword: '' })
   const [problem, setProblem] = useState<string | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  const saveAvatar = useMutation({
+    mutationFn: async (file: File) => api<{ profile: Profile }>('/api/profile/avatar', { method: 'PUT', body: { image: await toAvatar(file) } }),
+    onSuccess: (r) => { qc.setQueryData(['profile', user?.id], r.profile); toast.success('Picture saved') },
+    onError: (e) => toast.error(e.message),
+  })
+  const removeAvatar = useMutation({
+    mutationFn: () => api<{ profile: Profile }>('/api/profile/avatar', { method: 'DELETE' }),
+    onSuccess: (r) => { qc.setQueryData(['profile', user?.id], r.profile); toast.success('Picture removed') },
+    onError: (e) => toast.error(e.message),
+  })
 
   const startEditing = (p: Profile) => {
     setForm({ fullName: p.fullName, email: p.email, phone: p.phone ?? '', currentPassword: '' })
@@ -67,15 +94,19 @@ export function ProfileView() {
       <PageTitle title="Profile" sub="How you appear in NairaBridge." />
       <Card strong className="p-5">
         <div className="flex items-center gap-4">
-          <div className="display grid size-20 shrink-0 place-items-center rounded-full border-3 border-outline bg-accent text-3xl text-accent-ink shadow-pop" aria-hidden="true">
-            {data.avatarUrl ? <img src={data.avatarUrl} alt="" className="size-full rounded-full object-cover" /> : initials(data.fullName)}
-          </div>
+          <Avatar name={data.fullName} url={data.avatarUrl} className="size-20 text-3xl" />
           <div className="min-w-0">
             <h2 className="display truncate text-2xl">{data.fullName}</h2>
             <div className="mt-1.5">
               <Badge kind={verified ? 'good' : 'warn'}>{verified ? <BadgeCheck size={13} /> : <ShieldAlert size={13} />}{verified ? 'Verified' : 'Not verified'}</Badge>
             </div>
           </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="Upload a profile picture" onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) saveAvatar.mutate(f) }} />
+          <Button type="button" variant="soft" className="min-h-11" loading={saveAvatar.isPending} onClick={() => fileInput.current?.click()}><Camera size={16} /> {data.avatarUrl ? 'Change picture' : 'Upload picture'}</Button>
+          {data.avatarUrl && <Button type="button" variant="ghost" className="min-h-11" loading={removeAvatar.isPending} onClick={() => removeAvatar.mutate()}><Trash2 size={16} /> Remove</Button>}
         </div>
 
         {!editing ? (

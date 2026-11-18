@@ -14,7 +14,8 @@ import { scrub } from '../rpc'
 import { evmBroadcastUrl, evmChain, evmClient } from '../wallet/chains'
 import { ensureWallet, withEvmAccount } from '../wallet/keys'
 import { ASSETS } from '../wallet/networks'
-import { walletLimits } from '../wallet/service'
+import { recordDexHistory } from '../wallet/history'
+import { syncUser, walletLimits } from '../wallet/service'
 import { toUnits } from '../money'
 import {
   DEX_NETWORKS, buildSteps, dexConfig, dexTokens, listPools, previewAdd, previewRemove, previewSwap, routerAbi,
@@ -147,6 +148,8 @@ async function executeInApp(user: User, networkId: string, params: DexParams, id
   }
   await run("UPDATE dex_ops SET status='confirmed', hashes=?, updated_at=? WHERE id=?", JSON.stringify(hashes), now(), id)
   await audit(user.id, `dex.${params.kind}`, id, undefined, { network: cfg.networkId, params, hashes })
+  await recordDexHistory(user.id, cfg.networkId, hashes, params.kind).catch(() => undefined) // History is best effort: the swap itself is done
+  void syncUser(user.id).catch(() => undefined)
   await notify(user.id, 'order', `${labels[params.kind]} complete`, `Confirmed on ${cfg.networkId === 'arc-testnet' ? 'Arc Testnet' : 'Base Sepolia'}.`)
   return opView(await get<Record<string, unknown>>('SELECT * FROM dex_ops WHERE id=?', id) as Record<string, unknown>)
 }

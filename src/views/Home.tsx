@@ -1,16 +1,15 @@
 import { AlertCircle } from 'lucide-react'
 import { ActionGrid, type HomeActionId } from '@/components/home/Actions'
+import { BridgedBalances } from '@/components/crypto/BridgedBalances'
 import { AssetsList } from '@/components/home/AssetsList'
 import { DashboardCard } from '@/components/home/DashboardCard'
 import { P2PCard } from '@/components/home/P2PCard'
 import { HeldPayouts } from '@/components/HeldPayouts'
 import type { Intent } from '@/lib/nav'
 import { useHome } from '@/lib/home'
-import { useSession } from '@/lib/session'
 import type { View } from '@/components/Shell'
 
 export function Home({ go }: { go: (view: View, intent?: Intent) => void }) {
-  const { user } = useSession()
   const { data, isError, refetch } = useHome()
 
   const pick = (id: HomeActionId) => {
@@ -21,10 +20,6 @@ export function Home({ go }: { go: (view: View, intent?: Intent) => void }) {
 
   return (
     <div className="space-y-5">
-      <div>
-        <div className="eyebrow plate-sub mb-2 !py-0.5">Welcome back</div>
-        <h1 className="plate display text-4xl leading-tight">{user?.name.split(' ')[0]}</h1>
-      </div>
       <HeldPayouts />
       {isError && (
         <button onClick={() => void refetch()} className="border border-outline flex min-h-[44px] w-full items-center gap-2 rounded-2xl bg-danger px-4 text-left text-sm font-extrabold text-on-danger">
@@ -35,6 +30,7 @@ export function Home({ go }: { go: (view: View, intent?: Intent) => void }) {
       <P2PCard onPick={(side) => go('exchange', { side })} />
       <ActionGrid onPick={pick} />
       <AssetsList assets={data?.assets} onViewAll={() => go('crypto')} />
+      <BridgedBalances onBridge={(from) => go('crypto', { screen: 'bridge', from })} />
     </div>
   )
 }

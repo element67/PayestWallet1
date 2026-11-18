@@ -1,13 +1,14 @@
 /** Bridge API: preview, start (PIN), status, resume (PIN), history. The wallet key never leaves the server. */
 import { z } from 'zod'
 import { body, route } from '../http'
+import { bridgeChains } from './chains'
 import { getBridgeOp, listBridgeOps, previewBridge, retryBridge, startBridge } from './service'
 
 const input = z.object({ from: z.string().max(40), to: z.string().max(40), amount: z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount').max(20) })
 const pin = z.string().regex(/^\d{4}$/, 'PIN must be 4 digits')
 
 route('GET', '/api/bridge/config', 'user', () => ({
-  chains: [{ id: 'arc-testnet', name: 'Arc Testnet' }, { id: 'ethereum-sepolia', name: 'Ethereum Sepolia' }, { id: 'base-sepolia', name: 'Base Sepolia' }],
+  chains: bridgeChains().map((c) => ({ id: c.id, name: c.name, family: c.family, kit: c.kit, chainId: c.chainId ?? null, gasSymbol: c.gasSymbol })),
   token: 'USDC',
 }))
 

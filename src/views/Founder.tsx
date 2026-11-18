@@ -30,7 +30,7 @@ export function Founder() {
       <PageTitle title="Founder dashboard" sub="Volume, liquidity, rates, limits and risk in one place. Every change is written to the audit log." />
       <div className="mb-5 flex flex-wrap gap-2">
         {TABS.map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={cx('border border-outline min-h-11 shrink-0 rounded-full px-4 text-sm font-extrabold', tab === t ? 'bg-accent text-accent-ink' : 'bg-card text-card-ink')}>{t}</button>
+          <button key={t} onClick={() => setTab(t)} className={cx('border border-outline min-h-11 shrink-0 rounded-full px-4 text-sm font-extrabold', tab === t ? 'bg-accent text-accent-ink' : 'bg-card text-ink')}>{t}</button>
         ))}
       </div>
       {tab === 'Overview' && <OverviewPanel />}

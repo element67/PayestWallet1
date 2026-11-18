@@ -17,7 +17,7 @@ interface Alert { id: number; at: number; severity: 'info' | 'warning' | 'critic
 
 function Health({ label, ok, detail, href }: { label: string; ok: boolean | null; detail: string; href: string }) {
   return (
-    <Link href={href} className="block rounded-2xl border-2 border-outline bg-card p-4 text-card-ink transition hover:-translate-y-0.5">
+    <Link href={href} className="block rounded-2xl border-2 border-outline bg-card p-4 text-card-ink">
       <div className="flex items-center gap-2 text-sm font-extrabold">
         <span className={cx('size-3 rounded-full border-2 border-outline', ok === null ? 'bg-muted' : ok ? 'bg-success' : 'bg-danger')} aria-hidden />
         {label}

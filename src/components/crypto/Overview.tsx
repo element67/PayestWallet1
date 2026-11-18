@@ -7,9 +7,11 @@ import type { CryptoOverview } from '@/lib/crypto'
 import { ago, ngn, short, usd } from '@/lib/format'
 import { useBalanceSummary } from '@/lib/home'
 import { EyeToggle, usePrivacy } from '@/lib/privacy'
+import { useNav } from '@/lib/navigation'
 import { useSession } from '@/lib/session'
 import { ActionButton, HOME_ACTIONS } from '../home/Actions'
 import { Badge, Button, Card, Empty, Sandbox, cx } from '../ui'
+import { BridgedBalances } from './BridgedBalances'
 import { EmptyBalance } from './EmptyBalance'
 import { Tokens } from './Tokens'
 
@@ -19,6 +21,7 @@ const CRYPTO_ACTIONS = ['send', 'receive', 'exchange', 'buy', 'sell', 'swap', 'b
 export function Overview({ data, go }: { data: CryptoOverview; go: (a: CryptoAction) => void }) {
   const qc = useQueryClient()
   const { user } = useSession()
+  const nav = useNav()
   const { mask } = usePrivacy('crypto')
   const { data: sum, isError: sumError, refetch: retrySum } = useBalanceSummary()
   const [dev, setDev] = useState(false)
@@ -75,6 +78,7 @@ export function Overview({ data, go }: { data: CryptoOverview; go: (a: CryptoAct
       </div>
 
       <Tokens />
+      <BridgedBalances onBridge={(from) => nav.go('crypto', { screen: 'bridge', from })} />
 
       <section>
         <div className="mb-3 flex items-center justify-between">

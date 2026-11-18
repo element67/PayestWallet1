@@ -24,7 +24,7 @@ await sql.unsafe('delete from user_settings where user_id=$1', [uid])
 const first = await call('/api/settings/text-size', A)
 ok('no saved setting: defaults to medium', first.s === 200 && first.d.textScale === 'medium', JSON.stringify(first.d))
 const row = (((await sql.unsafe('select theme_id, text_scale from user_settings where user_id=$1', [uid])) as unknown as { theme_id: string; text_scale: string }[])[0]) ?? null
-ok('the default row was created in user_settings', row?.text_scale === 'medium' && row?.theme_id === 'cobalt-lime', JSON.stringify(row))
+ok('the default row was created in user_settings', row?.text_scale === 'medium' && row?.theme_id === 'midnight-cobalt', JSON.stringify(row))
 
 for (const id of ['small', 'medium', 'large', 'xlarge']) {
   const r = await call('/api/settings/text-size', A, 'PUT', { textScale: id })
@@ -40,10 +40,10 @@ ok('rejects a missing value', (await call('/api/settings/text-size', A, 'PUT', {
 ok('still the last valid value after bad requests', (await call('/api/settings/text-size', A)).d.textScale === 'xlarge')
 
 // the theme is untouched by a text size change, and the other way round
-await call('/api/settings/appearance', A, 'PUT', { themeId: 'orange-tape' })
+await call('/api/settings/appearance', A, 'PUT', { themeId: 'sage-burgundy' })
 ok('changing the theme keeps the text size', (await call('/api/settings/text-size', A)).d.textScale === 'xlarge')
 await call('/api/settings/text-size', A, 'PUT', { textScale: 'small' })
-ok('changing the text size keeps the theme', (await call('/api/settings/appearance', A)).d.themeId === 'orange-tape')
+ok('changing the text size keeps the theme', (await call('/api/settings/appearance', A)).d.themeId === 'sage-burgundy')
 
 // per user
 await call('/api/settings/text-size', B, 'PUT', { textScale: 'large' })
@@ -52,6 +52,6 @@ ok('settings are per user', (await call('/api/settings/text-size', A)).d.textSca
 // restore defaults
 await call('/api/settings/text-size', A, 'PUT', { textScale: 'medium' })
 await call('/api/settings/text-size', B, 'PUT', { textScale: 'medium' })
-await call('/api/settings/appearance', A, 'PUT', { themeId: 'cobalt-lime' })
+await call('/api/settings/appearance', A, 'PUT', { themeId: 'midnight-cobalt' })
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED')
 process.exit(failures ? 1 : 0)

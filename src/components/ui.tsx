@@ -52,7 +52,7 @@ export function Button({ variant = 'primary', loading, className, children, ...r
     <button
       {...rest}
       disabled={rest.disabled || loading}
-      className={cx('border border-outline min-h-12 inline-flex items-center justify-center gap-2 rounded-full px-6 text-sm font-extrabold tracking-tight transition disabled:cursor-not-allowed disabled:opacity-50', v, className)}
+      className={cx('border border-outline min-h-12 inline-flex items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold tracking-tight transition disabled:cursor-not-allowed disabled:opacity-50', v, className)}
     >
       {loading && <Loader2 size={16} className="animate-spin" />}
       {children}
@@ -72,14 +72,14 @@ export function Field({ label, hint, wrapperClassName, ...rest }: InputHTMLAttri
 
 export function Badge({ children, kind = 'info' }: { children: ReactNode; kind?: 'good' | 'bad' | 'warn' | 'info' | 'sandbox' | 'live' }) {
   const k = {
-    good: 'bg-success text-on-success',
-    bad: 'bg-danger text-on-danger',
-    warn: 'bg-warn text-on-warn',
-    info: 'bg-surface-strong text-ink',
-    sandbox: 'bg-warn text-on-warn',
-    live: 'bg-success text-on-success',
+    good: 'bg-success/15 text-success',
+    bad: 'bg-danger/15 text-danger',
+    warn: 'bg-warn/15 text-warn',
+    info: 'bg-surface-strong text-subtle',
+    sandbox: 'bg-warn/15 text-warn',
+    live: 'bg-success/15 text-success',
   }[kind]
-  return <span className={cx('inline-flex items-center gap-1 rounded-full border-2 border-outline px-2.5 py-0.5 text-xs font-extrabold', k)}>{children}</span>
+  return <span className={cx('inline-flex items-center gap-1 rounded-full border-2 border-outline px-2.5 py-0.5 text-xs font-semibold', k)}>{children}</span>
 }
 
 export const Sandbox = ({ label = 'Sandbox' }: { label?: string }) => <Badge kind="sandbox">{label}</Badge>
@@ -104,7 +104,7 @@ const LOGOS = {
 } as const
 
 /** Wrapped assets have no icon of their own: show the base asset's mark with a small badge. */
-const WRAPPED: Record<string, { base: keyof typeof LOGOS; tag: string }> = { WETH: { base: 'ETH', tag: 'W' }, CBBTC: { base: 'BTC', tag: 'cb' } }
+const WRAPPED: Record<string, { base: keyof typeof LOGOS; tag: string }> = { WETH: { base: 'ETH', tag: 'W' }, CBBTC: { base: 'BTC', tag: 'cb' }, CIRBTC: { base: 'BTC', tag: 'c' } }
 
 /** `logo` is the icon key stored with the token in the registry; it falls back to the symbol. */
 export function TokenIcon({ symbol, size = 28, logo }: { symbol: string; size?: number; logo?: string }) {
@@ -119,14 +119,14 @@ export function TokenIcon({ symbol, size = 28, logo }: { symbol: string; size?: 
     return (
       <span className="relative inline-block" style={{ width: size, height: size }}>
         <Base {...p} />
-        <span className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full border border-outline bg-accent px-[3px] font-bold leading-none text-accent-ink" style={{ fontSize: Math.max(14, size * 0.38), minWidth: Math.max(18, size * 0.5), height: Math.max(18, size * 0.5) }}>{w.tag}</span>
+        <span className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full border border-outline bg-surface-strong px-[3px] font-bold leading-none text-ink" style={{ fontSize: Math.max(14, size * 0.38), minWidth: Math.max(18, size * 0.5), height: Math.max(18, size * 0.5) }}>{w.tag}</span>
       </span>
     )
   }
   return <div className="grid place-items-center rounded-full bg-muted text-xs font-bold" style={{ width: size, height: size }}>{symbol.slice(0, 1).toUpperCase()}</div>
 }
 
-export function Segmented<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
+export function Segmented<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode }[] }) {
   return (
     <div className="flex w-full flex-wrap gap-1 rounded-3xl border-3 border-outline bg-muted p-1" role="tablist">
       {options.map((o) => (
@@ -156,8 +156,8 @@ export function Row({ label, value, mono }: { label: string; value: ReactNode; m
 export function Empty({ title, body }: { title: string; body?: string }) {
   return (
     <div className="px-6 py-10 text-center">
-      <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full border-3 border-outline bg-accent shadow-pop" aria-hidden="true">
-        <span className="size-5 rounded-md border-2 border-outline bg-card rotate-12" />
+      <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-surface-strong text-subtle" aria-hidden="true">
+        <span className="size-5 rounded-md bg-card" />
       </div>
       <div className="display text-xl text-ink">{title}</div>
       {body && <p className="mx-auto mt-2 max-w-sm text-pretty text-sm font-medium text-subtle">{body}</p>}

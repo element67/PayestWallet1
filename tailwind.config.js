@@ -20,6 +20,8 @@ export default {
         'card-ink': 'var(--card-ink)',
         paper: 'var(--paper)',
         accent: 'var(--accent)',
+        // Blue for feature labels and icons (a lighter blue in dark mode so it stays readable on charcoal).
+        brand: 'var(--brand)',
         'accent-ink': 'var(--accent-ink)',
         focus: 'var(--focus)',
         success: 'rgb(var(--success-rgb) / <alpha-value>)',
@@ -29,11 +31,11 @@ export default {
         'on-danger': 'var(--on-danger)',
         'on-warn': 'var(--on-warn)',
       },
-      // One ultra-heavy face for all text. Only hashes and addresses use a monospace face (also at its heaviest weight).
+      // One clean sans-serif face for all text. Only hashes and addresses use a monospace face.
       fontFamily: {
-        display: ['"Archivo Black"', '"Arial Black"', 'Impact', 'sans-serif'],
-        sans: ['"Archivo Black"', '"Arial Black"', 'Impact', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'Menlo', 'monospace'],
+        display: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Arial', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Arial', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'Menlo', 'monospace'],
       },
       // The type scale is defined once, here. Every size is rem x --text-scale (set by the Text size setting), so one setting
       // controls the whole app. At Small (scale 1) the smallest text is 14px and body text is 16px. Headlines scale half as fast.
@@ -54,13 +56,15 @@ export default {
         // Bottom tab bar labels: five labels share one pill, so they grow only slightly.
         tab: ['calc(0.8125rem * var(--tab-scale, 1))', { lineHeight: '1.1' }],
       },
+      // The look is flat: the old shadow classes stay valid but draw nothing, and the heavier border widths are hairlines.
       boxShadow: {
-        card: '5px 5px 0 var(--shadow-c)',
-        pop: '3px 3px 0 var(--shadow-c)',
-        press: '1px 1px 0 var(--shadow-c)',
+        card: 'none',
+        pop: 'none',
+        press: 'none',
       },
       borderWidth: {
-        3: '3px',
+        2: '1px',
+        3: '1px',
       },
     },
   },

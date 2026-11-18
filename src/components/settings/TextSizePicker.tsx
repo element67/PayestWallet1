@@ -12,7 +12,7 @@ export function TextSizePicker() {
   const { sizeId, size, setSize, step, reset, saving } = useTextSize()
   const atMin = sizeId === TEXT_SIZES[0]?.id
   const atMax = sizeId === TEXT_SIZES[TEXT_SIZES.length - 1]?.id
-  const stepBtn = 'border border-outline grid min-h-14 min-w-14 place-items-center rounded-full bg-accent px-4 text-accent-ink'
+  const stepBtn = 'border border-outline grid min-h-14 min-w-14 place-items-center rounded-full bg-surface-strong px-4 text-ink'
   return (
     <div className="space-y-5">
       <Card strong className="p-5">

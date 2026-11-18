@@ -58,6 +58,22 @@ async function recordIncoming(s: Seen) {
 }
 
 /* ---------- EVM ---------- */
+
+/**
+ * How far back a scan will ever look, and how it catches up.
+ * - A chain with fast blocks (Arc) produces more blocks per second than a 40-block window per poll can read, so the cursor used to
+ *   fall further behind every minute and new USDC and EURC transfers were never reached. Each poll now reads several chunks, up to a
+ *   time budget, so the monitor keeps pace with the head.
+ * - If the cursor is still further behind than MAX_LOOKBACK blocks (the worker was stopped for a long time), it jumps to head minus
+ *   MAX_LOOKBACK instead of replaying a backlog that could take days. The jump is written to the monitor state so it is visible.
+ */
+const CHUNK = 1000n
+const MIN_CHUNK = 40n
+/** Block range per request that each endpoint accepted last time. A provider that refuses a range gets a smaller one next time. */
+const chunkSize = new Map<string, bigint>()
+const MAX_LOOKBACK = 30_000n
+const BUDGET_MS = 12_000
+
 async function scanEvm(net: NetworkDef) {
   const started = now()
   const client = evmClient(net.id)
@@ -68,40 +84,60 @@ async function scanEvm(net: NetworkDef) {
   const key = `evm:${net.id}`
   let last = BigInt(await cursor(key) ?? String(head - 5n))
   if (last >= head) last = head - 1n
-  const to = head - last > 40n ? last + 40n : head
-  const from = last + 1n
-  const verified = verifiedTokens(net.id)
-
-  const logs = await client.getLogs({ fromBlock: from, toBlock: to, event: transferEvent, args: { to: [...byAddr.keys()] as `0x${string}`[] } })
-  for (const log of logs) {
-    const userId = byAddr.get((log.args.to as string).toLowerCase())
-    if (!userId || !log.transactionHash || log.blockNumber == null) continue
-    const token = log.address.toLowerCase()
-    const def = ASSETS.find((a) => a.network === net.id && a.contract?.toLowerCase() === token)
-    await recordIncoming({
-      userId, network: net, tokenAddress: log.address, symbol: def?.symbol ?? null, assetKey: verified.has(token) ? (def?.key ?? null) : null, amount: log.args.value as bigint,
-      from: log.args.from as string, to: log.args.to as string, hash: log.transactionHash, block: Number(log.blockNumber), confirmations: confirmationsFor(head, log.blockNumber), status: 'confirmed', logIndex: Number(log.logIndex ?? 0),
-    })
+  let skipped = 0n
+  if (head - last > MAX_LOOKBACK) {
+    skipped = head - MAX_LOOKBACK - last
+    last = head - MAX_LOOKBACK
   }
-  // Native transfers: block scan, only where the native asset is a wallet asset (not Arc, where gas is USDC).
+  const verified = verifiedTokens(net.id)
   const nativeDef = ASSETS.find((a) => a.network === net.id && a.kind === 'native')
-  if (nativeDef && net.scanNative) {
-    for (let n = from; n <= to; n++) {
-      const block = await client.getBlock({ blockNumber: n, includeTransactions: true })
-      for (const tx of block.transactions) {
-        if (!tx.to || tx.value === 0n) continue
-        const userId = byAddr.get(tx.to.toLowerCase())
-        if (!userId) continue
-        await recordIncoming({
-          userId, network: net, tokenAddress: null, symbol: nativeDef.symbol, assetKey: nativeDef.key, amount: tx.value, from: tx.from, to: tx.to,
-          hash: tx.hash, block: Number(n), confirmations: confirmationsFor(head, n), status: 'confirmed',
-        })
+
+  while (last < head && now() - started < BUDGET_MS) {
+    const from = last + 1n
+    const size = chunkSize.get(net.id) ?? CHUNK
+    const to = head - last > size ? last + size : head
+    let logs: Awaited<ReturnType<typeof client.getLogs<typeof transferEvent>>>
+    try {
+      logs = await client.getLogs({ fromBlock: from, toBlock: to, event: transferEvent, args: { to: [...byAddr.keys()] as `0x${string}`[] } })
+    } catch (e) {
+      if (size <= MIN_CHUNK) throw e
+      chunkSize.set(net.id, size / 2n > MIN_CHUNK ? size / 2n : MIN_CHUNK) // the endpoint refused this range: halve it and try again at once
+      continue
+    }
+    for (const log of logs) {
+      const userId = byAddr.get((log.args.to as string).toLowerCase())
+      if (!userId || !log.transactionHash || log.blockNumber == null) continue
+      const token = log.address.toLowerCase()
+      const def = ASSETS.find((a) => a.network === net.id && a.contract?.toLowerCase() === token)
+      await recordIncoming({
+        userId, network: net, tokenAddress: log.address, symbol: def?.symbol ?? null, assetKey: verified.has(token) ? (def?.key ?? null) : null, amount: log.args.value as bigint,
+        from: log.args.from as string, to: log.args.to as string, hash: log.transactionHash, block: Number(log.blockNumber), confirmations: confirmationsFor(head, log.blockNumber), status: 'confirmed', logIndex: Number(log.logIndex ?? 0),
+      })
+    }
+    // Native transfers need one request per block, so only the newest blocks of the range are scanned (and never on Arc, where gas is USDC).
+    if (nativeDef && net.scanNative) {
+      for (let n = to - 40n > from ? to - 40n : from; n <= to; n++) {
+        const block = await client.getBlock({ blockNumber: n, includeTransactions: true })
+        for (const tx of block.transactions) {
+          if (!tx.to || tx.value === 0n) continue
+          const userId = byAddr.get(tx.to.toLowerCase())
+          if (!userId) continue
+          await recordIncoming({
+            userId, network: net, tokenAddress: null, symbol: nativeDef.symbol, assetKey: nativeDef.key, amount: tx.value, from: tx.from, to: tx.to,
+            hash: tx.hash, block: Number(n), confirmations: confirmationsFor(head, n), status: 'confirmed',
+          })
+        }
       }
     }
+    last = to
+    await setCursor(key, last.toString())
   }
-  await setCursor(key, to.toString())
   await trackEvm(net, head)
-  await state(net.id, 'live', { head, last: to, ms: now() - started, error: null })
+  const behind = head - last
+  await state(net.id, 'live', {
+    head, last, ms: now() - started,
+    error: skipped > 0n ? `Skipped ${skipped} old blocks (more than ${MAX_LOOKBACK} behind)` : behind > (chunkSize.get(net.id) ?? CHUNK) * 3n ? `Catching up: ${behind} blocks behind` : null,
+  })
 }
 
 /** Receipts for pending/unfinal EVM transactions (ours and incoming): status, confirmations, failures, finality. */

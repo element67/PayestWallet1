@@ -4,7 +4,7 @@
  */
 import { z } from 'zod'
 import { DEFAULT_TEXT_SIZE, isTextSizeId, TEXT_SIZE_IDS } from '../src/lib/textSizeIds'
-import { DEFAULT_THEME, isThemeId, THEME_IDS } from '../src/lib/themeIds'
+import { DEFAULT_THEME, isThemeId, normalizeThemeId, THEME_IDS } from '../src/lib/themeIds'
 import { HttpError, type User } from './auth'
 import { audit, get, now, run, tx } from './db'
 import { body, route } from './http'
@@ -13,7 +13,7 @@ import { body, route } from './http'
 
 async function themeFor(userId: string): Promise<string> {
   const row = await get<{ theme_id: string }>('SELECT theme_id FROM user_settings WHERE user_id=?', userId)
-  if (row) return isThemeId(row.theme_id) ? row.theme_id : DEFAULT_THEME
+  if (row) return normalizeThemeId(row.theme_id)
   await run('INSERT OR IGNORE INTO user_settings(user_id, theme_id, updated_at) VALUES (?,?,?)', userId, DEFAULT_THEME, now())
   return DEFAULT_THEME
 }
@@ -141,3 +141,39 @@ export async function updateProfile(user: User, b: z.infer<typeof profileSchema>
 }
 
 route('PUT', '/api/profile', 'user', async (c) => await updateProfile(c.user, body(c, profileSchema)), [20, 60_000])
+
+/* ---------------- profile picture ---------------- */
+
+/** The browser shrinks the picture to a small square before sending it; the request limit is 64 KB, so this is a hard ceiling. */
+const MAX_AVATAR_BYTES = 40 * 1024
+const DATA_URL = /^data:image\/(?:png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/
+
+/** The real image type, read from the file's own first bytes, never from what the caller claims. */
+function sniffImage(buf: Buffer): 'png' | 'jpeg' | 'webp' | null {
+  if (buf.length > 12 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpeg'
+  if (buf.length > 12 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png'
+  if (buf.length > 12 && buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return 'webp'
+  return null
+}
+
+route('PUT', '/api/profile/avatar', 'user', async (c) => {
+  const { image } = body(c, z.object({ image: z.string().max(70_000) }))
+  const m = DATA_URL.exec(image)
+  if (!m) throw new HttpError(400, 'Choose a PNG, JPEG or WebP picture')
+  const bytes = Buffer.from(m[1], 'base64')
+  if (bytes.length === 0 || bytes.length > MAX_AVATAR_BYTES) throw new HttpError(413, 'That picture is too large. Choose a smaller one')
+  const kind = sniffImage(bytes)
+  if (!kind) throw new HttpError(400, 'That file is not a valid PNG, JPEG or WebP picture')
+  await profileFor(c.user)
+  const url = `data:image/${kind};base64,${bytes.toString('base64')}`
+  await run('UPDATE user_profiles SET avatar_url=?, updated_at=? WHERE user_id=?', url, now(), c.user.id)
+  await audit(c.user.id, 'profile.avatar_set', c.user.id)
+  return { profile: await profileFor(c.user) }
+}, [20, 60_000])
+
+route('DELETE', '/api/profile/avatar', 'user', async (c) => {
+  await profileFor(c.user)
+  await run('UPDATE user_profiles SET avatar_url=NULL, updated_at=? WHERE user_id=?', now(), c.user.id)
+  await audit(c.user.id, 'profile.avatar_removed', c.user.id)
+  return { profile: await profileFor(c.user) }
+}, [20, 60_000])

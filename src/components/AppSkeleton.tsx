@@ -21,7 +21,7 @@ export function AppSkeleton() {
           <Skeleton className="h-56 w-full !rounded-3xl" />
         </div>
       </div>
-      <nav className="sticker fixed inset-x-1.5 bottom-3 z-30 mx-auto grid max-w-md grid-cols-5 gap-1 rounded-full p-2 lg:hidden" aria-hidden="true">
+      <nav className="sticker liquid fixed inset-x-1.5 bottom-3 z-30 mx-auto grid max-w-md grid-cols-5 gap-1 rounded-full p-2 lg:hidden" aria-hidden="true">
         {Array.from({ length: 5 }, (_, i) => <Skeleton key={i} className="h-12 !rounded-full" />)}
       </nav>
     </div>

@@ -29,7 +29,7 @@ export function AgentMonitor() {
         <Card strong className="p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="grid size-11 place-items-center rounded-2xl bg-accent text-accent-ink"><Bot size={22} /></div>
+              <div className="grid size-11 place-items-center rounded-2xl bg-surface-strong text-ink"><Bot size={22} /></div>
               <div>
                 <div className="display text-xl font-semibold">Agent is {m.status}</div>
                 <div className="text-xs text-subtle">Rule-based risk engine. Holds no keys. Requests actions that the payout engine re-checks.</div>

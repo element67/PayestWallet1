@@ -1,3 +1,4 @@
+import { NetworkLabel } from '../NetworkIcon'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
@@ -6,6 +7,10 @@ import { type CryptoTx, statusTone, useCryptoTxs } from '@/lib/crypto'
 import { ago, crypto, short } from '@/lib/format'
 import { usePrivacy } from '@/lib/privacy'
 import { Badge, Card, Empty, Row, Segmented, Sandbox, TokenIcon } from '../ui'
+
+/** Swaps and bridges write two entries, one for each side; the note starts with Paid or Received so the direction is clear. */
+const isIncoming = (t: CryptoTx) => t.type === 'received' || /^Received/.test(t.note ?? '')
+const headline = (t: CryptoTx) => (t.type === 'swapped' ? (isIncoming(t) ? 'Swap received' : 'Swap paid') : t.type === 'bridged' ? (isIncoming(t) ? 'Bridge received' : 'Bridge sent') : t.type)
 
 const TYPES = [
   { value: '', label: 'All' }, { value: 'received', label: 'Received' }, { value: 'sent', label: 'Sent' },
@@ -31,9 +36,9 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
             {t.verdict === 'unverified_token' && <Badge kind="bad">Unverified token</Badge>}
           </div>
           <div className="mt-3 divide-y divide-line">
-            <Row label="Type" value={<span className="capitalize">{t.type}</span>} />
+            <Row label="Type" value={<span className="capitalize">{headline(t)}</span>} />
             <Row label="Asset" value={`${mask(crypto(t.amount))} ${t.symbol ?? 'unknown token'}`} />
-            <Row label="Network" value={t.network} />
+            <Row label="Network" value={<NetworkLabel name={t.network} />} />
             <Row label="From" value={<span className="break-all">{t.from ?? '-'}</span>} mono />
             <Row label="To" value={<span className="break-all">{t.to ?? '-'}</span>} mono />
             <Row label="Hash" value={t.hash ? <a className="break-all underline" href={t.url ?? '#'} target="_blank" rel="noopener noreferrer">{t.hash}</a> : t.simulated ? 'none (simulated)' : 'not broadcast'} mono />
@@ -70,16 +75,16 @@ export function History() {
         {!data?.length && (
           <Empty
             title={type ? `No ${type} transactions` : 'No crypto transactions yet'}
-            body={['swapped', 'bridged', 'purchased'].includes(type) ? 'Swaps, bridges and purchases appear here once their providers are connected.' : 'Transfers appear as soon as the monitors see them onchain.'}
+            body={['swapped', 'bridged', 'purchased'].includes(type) ? 'Swaps and bridges you make from the app appear here. Purchases appear once their provider is connected.' : 'Transfers appear as soon as the monitors see them onchain.'}
           />
         )}
         {(data ?? []).map((t) => (
           <button key={t.id} onClick={() => setOpen(t.id)} className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl px-4 py-3 text-left hover:bg-muted">
             <TokenIcon symbol={t.symbol ?? '?'} size={34} />
             <div className="min-w-0">
-              <div className="text-sm font-semibold capitalize">{t.type} {mask(crypto(t.amount))} {t.symbol ?? 'unknown token'}</div>
-              <div className="mono truncate text-xs text-subtle">{t.network} · {t.simulated ? 'simulated' : t.hash ? short(t.hash, 10, 6) : 'not broadcast'} · {ago(t.createdAt)}</div>
-              <div className="mono truncate text-xs text-subtle">{t.type === 'received' ? `from ${short(t.from, 8, 6)}` : `to ${short(t.to, 8, 6)}`}{t.fee ? ` · fee ${crypto(t.fee, 6)} ${t.feeSymbol}` : ''}</div>
+              <div className="text-sm font-semibold capitalize">{headline(t)} {mask(crypto(t.amount))} {t.symbol ?? 'unknown token'}</div>
+              <div className="mono text-xs text-subtle"><NetworkLabel name={t.network} size={14} /> · {t.simulated ? 'simulated' : t.hash ? short(t.hash, 10, 6) : 'not broadcast'} · {ago(t.createdAt)}</div>
+              <div className="mono truncate text-xs text-subtle">{isIncoming(t) ? `from ${short(t.from, 8, 6)}` : `to ${short(t.to, 8, 6)}`}{t.fee ? ` · fee ${crypto(t.fee, 6)} ${t.feeSymbol}` : ''}</div>
             </div>
             <Badge kind={t.verdict === 'unverified_token' ? 'bad' : statusTone(t.status)}>{t.verdict === 'unverified_token' ? 'unverified' : t.status}</Badge>
           </button>

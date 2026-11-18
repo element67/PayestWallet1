@@ -6,7 +6,7 @@ import { cx } from '../ui'
 export function ListRow({ icon, label, detail, onClick, badge }: { icon: ReactNode; label: string; detail?: ReactNode; onClick: () => void; badge?: ReactNode }) {
   return (
     <button onClick={onClick} className="no-pop group flex min-h-[64px] w-full items-center gap-3 rounded-2xl px-3 py-2 text-left hover:bg-muted">
-      <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-outline bg-accent text-accent-ink">{icon}</span>
+      <span className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-outline bg-surface-strong text-ink">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-base font-extrabold text-ink">{label}</span>
         {detail && <span className="block truncate text-xs font-medium text-subtle">{detail}</span>}

@@ -11,6 +11,7 @@
 import { createHmac } from 'node:crypto'
 import { AppKit } from '@circle-fin/app-kit'
 import { createViemAdapterFromPrivateKey } from '@circle-fin/adapter-viem-v2'
+import { createSolanaKitAdapterFromPrivateKey } from '@circle-fin/adapter-solana-kit'
 import { bytesToHex } from 'viem'
 import { CONFIG } from '../config'
 import { HttpError, type User } from '../auth'
@@ -18,29 +19,30 @@ import { all, alert, audit, get, notify, now, run, setting, uid } from '../db'
 import { fromUnits, toUnits } from '../money'
 import { verifyPin, assertOperational } from '../naira/wallet'
 import { scrub } from '../rpc'
-import { readBalance } from '../wallet/chains'
-import { ensureWallet, withEvmAccount } from '../wallet/keys'
-import { getAssetDef, getNetwork } from '../wallet/networks'
-import { walletLimits } from '../wallet/service'
+import { ensureWallet, withWalletKeys } from '../wallet/keys'
+import { forgetHoldings } from './holdings'
+import { recordBridgeHistory } from './history'
+import { syncUser, walletLimits } from '../wallet/service'
+import { bridgeChains, chainName, findChain, hasGas, usdcBalance, type BridgeChain } from './chains'
 
-export const BRIDGE_CHAINS = { 'arc-testnet': 'Arc_Testnet', 'ethereum-sepolia': 'Ethereum_Sepolia', 'base-sepolia': 'Base_Sepolia' } as const
-export type BridgeChainId = keyof typeof BRIDGE_CHAINS
+export type BridgeChainId = string
 export const WARN_ABOVE_USDC = 100
 
 export interface BridgeInput { from: BridgeChainId; to: BridgeChainId; amount: string }
 
-const asChain = (v: unknown): BridgeChainId => {
-  if (typeof v !== 'string' || !(v in BRIDGE_CHAINS)) throw new HttpError(400, 'Choose Arc Testnet, Ethereum Sepolia or Base Sepolia')
-  return v as BridgeChainId
+const asChain = (v: unknown): BridgeChain => {
+  const c = findChain(v)
+  if (!c) throw new HttpError(400, `Choose one of the supported test networks: ${bridgeChains().map((x) => x.name).join(', ')}`)
+  return c
 }
 
 export function checkInput(i: BridgeInput): { from: BridgeChainId; to: BridgeChainId; amountRaw: bigint } {
   const from = asChain(i.from), to = asChain(i.to)
-  if (from === to) throw new HttpError(400, 'Choose two different networks')
+  if (from.id === to.id) throw new HttpError(400, 'Choose two different networks')
   if (!/^\d+(\.\d{1,6})?$/.test(i.amount)) throw new HttpError(400, 'Enter a valid USDC amount (up to 6 decimals)')
   const amountRaw = toUnits(i.amount, 6)
   if (amountRaw <= 0n) throw new HttpError(400, 'Enter an amount above zero')
-  return { from, to, amountRaw }
+  return { from: from.id, to: to.id, amountRaw }
 }
 
 const sig = (userId: string, i: BridgeInput, exp: number) =>
@@ -48,17 +50,19 @@ const sig = (userId: string, i: BridgeInput, exp: number) =>
 
 async function evaluate(user: User, input: BridgeInput) {
   const { from, to, amountRaw } = checkInput(input)
+  const src = asChain(from), dst = asChain(to)
   if (await setting('platform_paused') === 'true') throw new HttpError(503, 'Transfers are temporarily paused')
-  const def = getAssetDef(`USDC@${from}`)
-  if (!def) throw new HttpError(400, `USDC is not available on ${getNetwork(from)?.name ?? from}`)
   const limits = await walletLimits()
   if (!limits.perTx.USDC) throw new HttpError(403, 'Bridging USDC is not switched on yet: no send limit has been set for it.')
   if (amountRaw > toUnits(limits.perTx.USDC, 6)) throw new HttpError(403, `Per-transfer limit is ${limits.perTx.USDC} USDC`)
   const addrs = await ensureWallet(user.id)
-  const address = addrs.evm
-  const bal = await readBalance(def, address)
-  if (bal.raw < amountRaw) throw new HttpError(400, `Not enough USDC on ${getNetwork(from)?.name}. You have ${fromUnits(bal.raw, 6)}.`)
-  return { from, to, amountRaw, address, balance: bal.raw }
+  // The source address signs and pays; the USDC always lands on the user's OWN address on the destination chain.
+  const sourceAddress = src.family === 'solana' ? addrs.solana : addrs.evm
+  const recipient = dst.family === 'solana' ? addrs.solana : addrs.evm
+  const balance = await usdcBalance(src, sourceAddress)
+  if (balance < amountRaw) throw new HttpError(400, `Not enough USDC on ${src.name}. You have ${fromUnits(balance, 6)}.`)
+  if (!(await hasGas(src, sourceAddress))) throw new HttpError(400, `Your wallet has no ${src.gasSymbol} on ${src.name} to pay the network fee. Add a little test ${src.gasSymbol} first.`)
+  return { from, to, src, dst, amountRaw, sourceAddress, recipient, balance }
 }
 
 export async function previewBridge(user: User, input: BridgeInput) {
@@ -66,11 +70,13 @@ export async function previewBridge(user: User, input: BridgeInput) {
   const exp = now() + 120_000
   const warnings: string[] = []
   if (Number(input.amount) > WARN_ABOVE_USDC) warnings.push(`This is more than ${WARN_ABOVE_USDC} USDC. Double-check the networks.`)
-  if (e.from !== 'arc-testnet') warnings.push(`You need a little ${getNetwork(e.from)?.nativeSymbol} on ${getNetwork(e.from)?.name} to pay the network fee.`)
+  if (e.src.id !== 'arc-testnet') warnings.push(`The network fee on ${e.src.name} is paid in ${e.src.gasSymbol} from your wallet.`)
+  else warnings.push('The network fee on Arc Testnet is paid in USDC from the same balance.')
+  if (e.dst.family === 'solana') warnings.push('Solana accounts need a USDC token account to receive. If this is your first USDC on Solana Devnet and the transfer stops at the last step, try Resume.')
   warnings.push('Circle charges a small forwarding fee that is taken from the amount you receive. Standard transfers are fast, usually under a minute.')
   return {
-    confirmToken: sig(user.id, input, exp), expiresAt: exp, from: e.from, to: e.to, fromName: getNetwork(e.from)?.name, toName: getNetwork(e.to)?.name,
-    amount: fromUnits(e.amountRaw, 6), recipient: e.address, balance: fromUnits(e.balance, 6), warnings,
+    confirmToken: sig(user.id, input, exp), expiresAt: exp, from: e.from, to: e.to, fromName: e.src.name, toName: e.dst.name,
+    amount: fromUnits(e.amountRaw, 6), recipient: e.recipient, balance: fromUnits(e.balance, 6), warnings,
   }
 }
 
@@ -86,7 +92,7 @@ const replacer = (_k: string, v: unknown) => (typeof v === 'bigint' ? v.toString
 
 export function opView(r: Record<string, unknown>) {
   return {
-    id: r.id, from: r.from_chain, to: r.to_chain, fromName: getNetwork(String(r.from_chain))?.name, toName: getNetwork(String(r.to_chain))?.name,
+    id: r.id, from: r.from_chain, to: r.to_chain, fromName: chainName(r.from_chain), toName: chainName(r.to_chain),
     amount: r.amount, recipient: r.recipient, status: r.status, steps: JSON.parse(String(r.steps)) as StepView[], error: r.error ?? null,
     canRetry: r.status === 'failed' && Boolean(r.result), createdAt: r.created_at, updatedAt: r.updated_at,
   }
@@ -101,9 +107,12 @@ async function drive(opId: string, userId: string, input: BridgeInput, resume: u
   // A heartbeat shows the transfer is alive. If this process stops, the heartbeat stops and the sweep below marks it interrupted.
   const beat = setInterval(() => void run("UPDATE bridge_ops SET updated_at=? WHERE id=? AND status='running'", now(), opId), 15_000)
   try {
-    await withEvmAccount(userId, async (account) => {
-      const privateKey = bytesToHex(account.getHdKey().privateKey as Uint8Array)
-      const adapter = createViemAdapterFromPrivateKey({ privateKey })
+    const src = asChain(input.from), dst = asChain(input.to)
+    await withWalletKeys(userId, async ({ evm, solanaSecret }) => {
+      // One adapter per chain family; the key behind it lives only inside this callback.
+      const evmAdapter = createViemAdapterFromPrivateKey({ privateKey: bytesToHex(evm.getHdKey().privateKey as Uint8Array) })
+      const solAdapter = src.family === 'solana' || dst.family === 'solana' ? createSolanaKitAdapterFromPrivateKey({ privateKey: solanaSecret }) : null
+      const adapterFor = (c: BridgeChain) => (c.family === 'solana' ? solAdapter : evmAdapter)
       const kit = new AppKit()
       // Live progress: every step event updates the stored step list so the screen can show where the transfer is.
       const live = new Map<string, StepView>()
@@ -116,12 +125,13 @@ async function drive(opId: string, userId: string, input: BridgeInput, resume: u
         live.set(name, { name, state: String(v.state ?? 'success'), txHash, explorerUrl: typeof v.explorerUrl === 'string' ? v.explorerUrl : undefined })
         void run('UPDATE bridge_ops SET steps=?, updated_at=? WHERE id=?', JSON.stringify([...live.values()]), now(), opId)
       })
-      const recipient = account.address
+      // The mint always goes to the user's own address on the destination chain, and Circle's forwarder submits it.
+      const recipientAddress = dst.family === 'solana' ? (await ensureWallet(userId)).solana : evm.address
       const result = resume
-        ? await kit.retryBridge(resume as Parameters<typeof kit.retryBridge>[0], { from: adapter, to: adapter })
+        ? await kit.retryBridge(resume as Parameters<typeof kit.retryBridge>[0], { from: adapterFor(src) as never, to: adapterFor(dst) as never })
         : await kit.bridge({
-            from: { adapter, chain: BRIDGE_CHAINS[input.from] },
-            to: { recipientAddress: recipient, chain: BRIDGE_CHAINS[input.to], useForwarder: true },
+            from: { adapter: adapterFor(src) as never, chain: src.kit as never },
+            to: { recipientAddress, chain: dst.kit as never, useForwarder: true } as never,
             amount: input.amount,
           })
       const steps = viewSteps(result.steps)
@@ -129,7 +139,12 @@ async function drive(opId: string, userId: string, input: BridgeInput, resume: u
       const failedStep = steps.find((s) => s.state === 'error')
       await run('UPDATE bridge_ops SET status=?, steps=?, error=?, result=?, updated_at=? WHERE id=?',
         ok ? 'completed' : 'failed', JSON.stringify(steps), ok ? null : (failedStep?.error ?? 'The transfer did not finish'), ok ? null : JSON.stringify(result, replacer), now(), opId)
-      if (ok) await notify(userId, 'order', 'Bridge complete', `${input.amount} USDC arrived on ${getNetwork(input.to)?.name}.`)
+      if (ok) {
+        await recordBridgeHistory(userId, src, dst, input.amount, steps)
+        forgetHoldings(userId)
+        void syncUser(userId)
+      }
+      if (ok) await notify(userId, 'order', 'Bridge complete', `${input.amount} USDC arrived on ${chainName(input.to)}.`)
       else await alert('warning', 'bridge_failed', 'Bridge transfer stopped', failedStep?.error ?? 'Unknown', userId)
       await audit(userId, ok ? 'bridge.completed' : 'bridge.failed', opId, undefined, { from: input.from, to: input.to, amount: input.amount })
     })
@@ -154,14 +169,14 @@ export async function startBridge(user: User, input: BridgeInput, confirmToken: 
   try {
     await run(
       "INSERT INTO bridge_ops(id,user_id,from_chain,to_chain,amount,recipient,status,idem_key,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
-      id, user.id, e.from, e.to, input.amount, e.address, 'running', idem, now(), now(),
+      id, user.id, e.from, e.to, input.amount, e.recipient, 'running', idem, now(), now(),
     )
   } catch {
     const again = await get<Record<string, unknown>>('SELECT * FROM bridge_ops WHERE user_id=? AND idem_key=?', user.id, idem)
     if (again) return opView(again)
     throw new HttpError(409, 'Could not record this transfer')
   }
-  await audit(user.id, 'bridge.started', id, undefined, { from: e.from, to: e.to, amount: input.amount, recipient: e.address })
+  await audit(user.id, 'bridge.started', id, undefined, { from: e.from, to: e.to, amount: input.amount, recipient: e.recipient })
   void drive(id, user.id, input, null)
   return opView(await get<Record<string, unknown>>('SELECT * FROM bridge_ops WHERE id=?', id) as Record<string, unknown>)
 }

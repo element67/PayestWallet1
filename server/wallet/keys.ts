@@ -104,5 +104,20 @@ export async function withEvmAccount<T>(userId: string, fn: (account: HDAccount)
   return fn(account)
 }
 
+/**
+ * Both signing keys, for a cross-chain transfer that may start on an EVM chain or on Solana. Like withEvmAccount, the keys exist
+ * only inside the callback; the Solana key is returned as a base58 secret (seed + public key) the Circle Solana adapter accepts.
+ */
+export async function withWalletKeys<T>(userId: string, fn: (keys: { evm: HDAccount; solanaSecret: string }) => Promise<T>): Promise<T> {
+  const row = await get<{ mnemonic_enc: string }>('SELECT mnemonic_enc FROM wallets WHERE user_id=?', userId)
+  if (!row) throw new Error('Wallet not found')
+  const mnemonic = unwrap(row.mnemonic_enc, userId)
+  const seed32 = slip10Ed25519(mnemonicToSeedSync(mnemonic), PATHS.solana)
+  const secret = new Uint8Array(64)
+  secret.set(seed32)
+  secret.set(ed25519.getPublicKey(seed32), 32)
+  return fn({ evm: mnemonicToAccount(mnemonic), solanaSecret: base58.encode(secret) })
+}
+
 export const allAddresses = async (family: 'evm' | 'solana' | 'bitcoin') =>
   await all<{ user_id: string; address: string }>(`SELECT w.user_id, a.address FROM wallet_addresses a JOIN wallets w ON w.id=a.wallet_id WHERE a.family=?`, family)

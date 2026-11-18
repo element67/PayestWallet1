@@ -10,22 +10,24 @@ import '@/console-capture'
 
 import { StrictMode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MotionConfig } from 'framer-motion'
 import { Toaster } from 'sonner'
 import { SessionProvider } from '@/lib/session'
 import { ThemeProvider } from '@/lib/theme'
 import { TextSizeProvider } from '@/lib/textSize'
-import { applyTheme, localTheme } from '@/lib/themes'
+import { applyTheme, localMode } from '@/lib/themes'
 import { applyTextSize, localTextSize } from '@/lib/textSizes'
 import AdminApp from './AdminApp'
 
 const queryClient = new QueryClient()
-applyTheme(localTheme())
+applyTheme(localMode())
 applyTextSize(localTextSize())
 
 export default function AdminRoot() {
   return (
     <StrictMode>
       <div id="root">
+        <MotionConfig transition={{ duration: 0 }} reducedMotion="always">
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
             <ThemeProvider>
@@ -36,6 +38,7 @@ export default function AdminRoot() {
             </ThemeProvider>
           </SessionProvider>
         </QueryClientProvider>
+        </MotionConfig>
       </div>
     </StrictMode>
   )

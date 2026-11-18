@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, Landmark, LifeBuoy, KeyRound, Link2, MonitorSmartphone, Palette, Plus, ShieldCheck, Trash2, Type } from 'lucide-react'
+import { Bell, Landmark, LifeBuoy, KeyRound, Link2, LogOut, MonitorSmartphone, Palette, Plus, ShieldCheck, Trash2, Type } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useBanks } from '@/lib/queries'
 import { useNairaOverview } from '@/lib/naira'
 import { useBalanceSummary } from '@/lib/home'
 import type { SettingsPage } from '@/lib/nav'
+import { useSession } from '@/lib/session'
 import { useTheme } from '@/lib/theme'
 import { useTextSize } from '@/lib/textSize'
+import { HelpPanel } from '@/components/HelpPanel'
+import { Sheet } from '@/components/naira/Sheet'
 import { SetPinSheet } from '@/components/naira/SetPin'
 import { AppearancePicker } from '@/components/settings/AppearancePicker'
 import { TextSizePicker } from '@/components/settings/TextSizePicker'
@@ -17,7 +20,7 @@ import { Button, Card, Empty, Field, PageTitle, Row, Segmented } from '@/compone
 import { Alerts } from './Alerts'
 
 function Display({ open }: { open: (p: SettingsPage) => void }) {
-  const { theme } = useTheme()
+  const { mode } = useTheme()
   const { size } = useTextSize()
   const qc = useQueryClient()
   const { data: sum } = useBalanceSummary()
@@ -30,7 +33,7 @@ function Display({ open }: { open: (p: SettingsPage) => void }) {
   return (
     <div className="space-y-5">
       <Card className="p-2">
-        <ListRow icon={<Palette size={20} />} label="Appearance" detail={`${theme.name} theme`} onClick={() => open('appearance')} />
+        <ListRow icon={<Palette size={20} />} label="Appearance" detail={mode === 'dark' ? 'Dark mode' : 'Light mode'} onClick={() => open('appearance')} />
         <ListRow icon={<Type size={20} />} label="Text size" detail={`${size.label}, ${size.percent}%`} onClick={() => open('textsize')} />
       </Card>
       <Card className="p-5">
@@ -124,24 +127,36 @@ function Linked() {
   )
 }
 
-const HELP: [string, string][] = [
-  ['Is this real money?', 'No. NairaBridge runs in sandbox mode: Naira payouts, vault releases and non-Arc chains are simulated. USDC on Arc Testnet is the one live chain.'],
-  ['How do I add funds to test?', 'Use the Get test USDC button in the Arc Studio sidebar, or ask the founder for a Test credit.'],
-  ['Where is my transaction PIN?', 'Settings, Security. You set it once and use it for Naira payments, transfers and buys.'],
-  ['How do I change the colours?', 'Settings, Display, Appearance. Your choice is saved to your account.'],
-  ['How do I make the letters bigger?', 'Settings, Display, Text size. Pick Small, Medium, Large or Extra large. It is saved to your account.'],
-]
-
 function Help() {
   return (
-    <Card className="divide-y divide-line p-2">
-      {HELP.map(([q, a]) => (
-        <div key={q} className="px-3 py-3">
-          <div className="text-base font-extrabold">{q}</div>
-          <p className="mt-1 text-pretty text-sm font-medium text-ink-2">{a}</p>
-        </div>
-      ))}
+    <Card className="p-3">
+      <HelpPanel />
     </Card>
+  )
+}
+
+/** Signing out asks first, then ends this device's session on the server and clears the app's data. */
+function LogoutRow() {
+  const { signOut } = useSession()
+  const [asking, setAsking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const confirm = async () => {
+    setBusy(true)
+    await signOut()
+  }
+  return (
+    <>
+      <ListRow icon={<LogOut size={20} />} label="Logout" detail="Sign out of this device" onClick={() => setAsking(true)} />
+      <Sheet open={asking} onClose={() => !busy && setAsking(false)} title="Log out?">
+        <div className="space-y-4 pb-2">
+          <p className="text-sm font-medium text-ink-2">You will be signed out of NairaBridge on this device. Your balances and transactions stay safe in your account.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="ghost" disabled={busy} onClick={() => setAsking(false)}>Stay signed in</Button>
+            <Button variant="danger" loading={busy} onClick={() => void confirm()}>Log out</Button>
+          </div>
+        </div>
+      </Sheet>
+    </>
   )
 }
 
@@ -156,14 +171,15 @@ export function SettingsView({ initial = 'list' }: { initial?: SettingsPage }) {
 
   return (
     <>
-      {parent ? <BackBar title={TITLES[page]} crumb={TITLES[parent]} onBack={() => setPage(parent)} /> : <PageTitle title="Settings" sub="Display, notifications, security and help." />}
+      {parent ? <BackBar title={TITLES[page]} crumb={TITLES[parent]} onBack={() => setPage(parent)} /> : <PageTitle title="Settings" sub="Display, notifications, security, help and logout." />}
       {page === 'list' && (
         <Card className="divide-y divide-line p-2">
           <ListRow icon={<Palette size={20} />} label="Display" detail="Appearance, text size and balance currency" onClick={() => setPage('display')} />
           <ListRow icon={<Bell size={20} />} label="Notifications" detail="Payout updates and security alerts" onClick={() => setPage('notifications')} />
           <ListRow icon={<ShieldCheck size={20} />} label="Security" detail="Transaction PIN and signed-in devices" onClick={() => setPage('security')} />
           <ListRow icon={<Link2 size={20} />} label="Linked accounts" detail="Payout bank accounts" onClick={() => setPage('linked')} />
-          <ListRow icon={<LifeBuoy size={20} />} label="Help and support" detail="Answers to common questions" onClick={() => setPage('help')} />
+          <ListRow icon={<LifeBuoy size={20} />} label="Help and support" detail="AI agent, Telegram, contact and FAQs" onClick={() => setPage('help')} />
+          <LogoutRow />
         </Card>
       )}
       {page === 'display' && <Display open={setPage} />}

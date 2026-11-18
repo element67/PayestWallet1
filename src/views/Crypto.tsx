@@ -27,7 +27,7 @@ function Skeleton() {
   )
 }
 
-export function Crypto({ initial, go }: { initial?: Intent['screen']; go: (view: View, intent?: Intent) => void }) {
+export function Crypto({ initial, address, bridgeFrom, go }: { initial?: Intent['screen']; address?: string; bridgeFrom?: string; go: (view: View, intent?: Intent) => void }) {
   const [tab, setTab] = useState<'overview' | 'history'>('overview')
   const [screen, setScreen] = useState<Screen | null>(isScreen(initial) ? initial : null)
   const { data, error, isLoading } = useCrypto()
@@ -62,10 +62,10 @@ export function Crypto({ initial, go }: { initial?: Intent['screen']; go: (view:
         <>
           {!screen && tab === 'overview' && <Overview data={data} go={open} />}
           {!screen && tab === 'history' && <History />}
-          {screen === 'send' && <Send data={data} />}
+          {screen === 'send' && <Send data={data} initialTo={address} />}
           {screen === 'receive' && <Receive data={data} />}
           {screen === 'swap' && <SwapHub onDone={close} />}
-          {screen === 'bridge' && <OnchainBridge onDone={close} />}
+          {screen === 'bridge' && <OnchainBridge onDone={close} initialFrom={bridgeFrom} />}
           {screen === 'buy' && <BuyScreen onDone={close} />}
         </>
       )}

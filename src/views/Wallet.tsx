@@ -150,7 +150,7 @@ export function Wallet({ openTransfer = false }: { openTransfer?: boolean }) {
         <h2 className="display mb-3 text-xl font-semibold">Bills &amp; services</h2>
         <div className="grid grid-cols-3 gap-3">
           {SERVICES.map((s) => (
-            <button key={s.id} disabled={frozen} onClick={() => open(s.id)} className="glass flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-2xl text-sm font-semibold transition hover:bg-muted active:scale-95 disabled:opacity-50">
+            <button key={s.id} disabled={frozen} onClick={() => open(s.id)} className="glass flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-2xl text-sm font-semibold !text-ink transition hover:bg-muted active:scale-95 disabled:opacity-50">
               <s.icon size={22} />{s.label}
             </button>
           ))}

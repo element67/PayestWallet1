@@ -593,3 +593,86 @@
 {"level":"debug","message":"[vite] hot updated: /src/components/naira/PaymentFlow.tsx","timestamp":1794292683947}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794293342232}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1794293471054}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794819040301,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1794819040309}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794819040309,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794819040310,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794843974907}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794843974911}
+{"level":"log","message":"[ChromeTransport] chromePort disconnected","timestamp":1794860571865}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794860594007}
+{"level":"log","message":"[Fast Refresh] done in 3821ms","timestamp":1794860597820}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794860599287}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/crypto?screen=bridge. Falling back to browser navigation. TypeError: Load failed","timestamp":1794860607497}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/crypto?screen=receive. Falling back to browser navigation. TypeError: Load failed","timestamp":1794860683159}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794860729191}
+{"level":"log","message":"[Fast Refresh] done in 3473ms","timestamp":1794860732660}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794860975041}
+{"level":"log","message":"[Fast Refresh] done in 4195ms","timestamp":1794860979236}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/wallet?screen=transfer. Falling back to browser navigation. TypeError: Load failed","timestamp":1794860982386}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794861011597}
+{"level":"log","message":"[Fast Refresh] done in 3218ms","timestamp":1794861014815}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/exchange. Falling back to browser navigation. TypeError: Load failed","timestamp":1794863212595}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/wallet. Falling back to browser navigation. TypeError: Load failed","timestamp":1794863357867}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794863383856}
+{"level":"log","message":"[Fast Refresh] done in 1035ms","timestamp":1794863384890}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794863435127}
+{"level":"log","message":"[Fast Refresh] done in 6369ms","timestamp":1794863441496}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794863501815}
+{"level":"log","message":"[Fast Refresh] done in 2388ms","timestamp":1794863504203}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794864476174,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1794864476181}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794864476181,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)","timestamp":1794864476182,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:9:6166)"}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794899307274}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794938733282}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794938733287}
+{"level":"error","message":"Uncaught TypeError: Cannot redefine property: ethereum","timestamp":1794938733937,"source":"chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:5093","stack":"TypeError: Cannot redefine property: ethereum\n    at Object.defineProperty (<anonymous>)\n    at t.inject (chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:5093)\n    at window.addEventListener.once (chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:9013)"}
+{"level":"error","message":"Uncaught TypeError: Cannot redefine property: ethereum","timestamp":1794938733987,"source":"chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:5093","stack":"TypeError: Cannot redefine property: ethereum\n    at Object.defineProperty (<anonymous>)\n    at t.inject (chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:5093)\n    at window.addEventListener.once (chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/evmAsk.js:76:9013)"}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794938832302}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794938832505}
+{"level":"log","message":"[Fast Refresh] done in 2511ms","timestamp":1794938834814}
+{"level":"log","message":"[Fast Refresh] done in 2830ms","timestamp":1794938835335}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794938937228}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794938937325}
+{"level":"log","message":"[Fast Refresh] done in 14842ms","timestamp":1794938952166}
+{"level":"warn","message":"[Fast Refresh] performing full reload\n\nFast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.\nYou might have a file which exports a React component but also exports a value that is imported by a non-React component file.\nConsider migrating the non-React component export to a separate file and importing it into both files.\n\nIt is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.\nFast Refresh requires at least one parent function component in your React tree.","timestamp":1794938959064}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794939067962}
+{"level":"log","message":"(previous line repeated 1× more)","timestamp":1794939078816}
+{"level":"log","message":"[Fast Refresh] done in 3199ms","timestamp":1794939078816}
+{"level":"warn","message":"[Fast Refresh] performing full reload\n\nFast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.\nYou might have a file which exports a React component but also exports a value that is imported by a non-React component file.\nConsider migrating the non-React component export to a separate file and importing it into both files.\n\nIt is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.\nFast Refresh requires at least one parent function component in your React tree.","timestamp":1794939085487}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/crypto. Falling back to browser navigation. TypeError: Failed to fetch\n    at value (chrome-extension://aflkmfhebedbjioipglgcbcmnbpgliof/injected.js:1:8051958)\n    at globalThis.fetch (webpack-internal:///(app-pages-browser)/./src/tracing.ts:273:61)\n    at createFetch (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:163:33)\n    at async fetchServerResponse (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:88:21)\n    at async Object.task (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/promise-queue.js:30:32)","timestamp":1794939100359,"stack":"TypeError: Failed to fetch\n    at value (chrome-extension://aflkmfhebedbjioipglgcbcmnbpgliof/injected.js:1:8051958)\n    at globalThis.fetch (webpack-internal:///(app-pages-browser)/./src/tracing.ts:273:61)\n    at createFetch (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:163:33)\n    at async fetchServerResponse (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:88:21)\n    at async Object.task (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/promise-queue.js:30:32)"}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794939127316}
+{"level":"log","message":"[Fast Refresh] done in 7418ms","timestamp":1794939134732}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794939134770}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794939153886}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794939571956}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794939688235}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1794939805757}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794942916603}
+{"level":"log","message":"[Fast Refresh] done in 6630ms","timestamp":1794942923233}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794942937906}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943156073}
+{"level":"log","message":"[Fast Refresh] done in 2991ms","timestamp":1794943159064}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943202625}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943202627}
+{"level":"log","message":"[Fast Refresh] done in 5231ms","timestamp":1794943207857}
+{"level":"log","message":"[Fast Refresh] done in 5234ms","timestamp":1794943207859}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943458909}
+{"level":"log","message":"[Fast Refresh] done in 6879ms","timestamp":1794943465787}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943475464}
+{"level":"log","message":"[Fast Refresh] done in 5561ms","timestamp":1794943481024}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/more. Falling back to browser navigation. TypeError: Load failed","timestamp":1794943496383}
+{"level":"error","message":"(previous line repeated 3× more)","timestamp":1794943499412}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/wallet. Falling back to browser navigation. TypeError: Load failed","timestamp":1794943499412}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/more. Falling back to browser navigation. TypeError: Load failed","timestamp":1794943500660}
+{"level":"error","message":"(previous line repeated 6× more)","timestamp":1794943503229}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/crypto. Falling back to browser navigation. TypeError: Load failed","timestamp":1794943503229}
+{"level":"error","message":"(previous line repeated 1× more)","timestamp":1794943504962}
+{"level":"error","message":"Failed to fetch RSC payload for https://in2cj10te4tx366t48ugk.preview.studio.arc.io/wallet. Falling back to browser navigation. TypeError: Load failed","timestamp":1794943504962}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943505664}
+{"level":"warn","message":"[Fast Refresh] performing full reload\n\nFast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.\nYou might have a file which exports a React component but also exports a value that is imported by a non-React component file.\nConsider migrating the non-React component export to a separate file and importing it into both files.\n\nIt is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.\nFast Refresh requires at least one parent function component in your React tree.","timestamp":1794943512618}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943540183}
+{"level":"log","message":"[Fast Refresh] done in 2992ms","timestamp":1794943543174}
+{"level":"log","message":"[Fast Refresh] rebuilding","timestamp":1794943543864}
+{"level":"warn","message":"[Fast Refresh] performing full reload\n\nFast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.\nYou might have a file which exports a React component but also exports a value that is imported by a non-React component file.\nConsider migrating the non-React component export to a separate file and importing it into both files.\n\nIt is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.\nFast Refresh requires at least one parent function component in your React tree.","timestamp":1794943547863}

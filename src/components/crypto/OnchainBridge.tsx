@@ -1,28 +1,23 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ConnectKitButton } from 'connectkit'
-import { ArrowDownUp, CheckCircle2, CircleDashed, ExternalLink, Loader2, XCircle } from 'lucide-react'
+import { ArrowDownUp, ArrowRight, CheckCircle2, CircleDashed, ExternalLink, Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { api } from '@/lib/api'
 import { parseError } from '@/lib/format'
 import { newKey } from '@/lib/naira'
+import { NetworkLabel, NetworkPicker } from '../NetworkIcon'
 import { PinPad } from '../naira/PinPad'
 import { Sheet } from '../naira/Sheet'
 import { Button, Card, Field, Row, Segmented } from '../ui'
 
-type ChainId = 'arc-testnet' | 'ethereum-sepolia' | 'base-sepolia'
-const CHAINS: Record<ChainId, { name: string; kit: 'Arc_Testnet' | 'Ethereum_Sepolia' | 'Base_Sepolia'; chainId: number }> = {
-  'arc-testnet': { name: 'Arc Testnet', kit: 'Arc_Testnet', chainId: 5042002 },
-  'ethereum-sepolia': { name: 'Ethereum Sepolia', kit: 'Ethereum_Sepolia', chainId: 11155111 },
-  'base-sepolia': { name: 'Base Sepolia', kit: 'Base_Sepolia', chainId: 84532 },
-}
-const IDS = Object.keys(CHAINS) as ChainId[]
+interface Chain { id: string; name: string; family: 'evm' | 'solana'; kit: string; chainId: number | null; gasSymbol: string }
 const STEP_LABEL: Record<string, string> = { approve: 'Approve USDC', burn: 'Burn on source chain', fetchAttestation: "Wait for Circle's proof", mint: 'Mint on destination' }
 
 interface Step { name: string; state: string; txHash?: string; explorerUrl?: string }
 interface BridgeOp { id: string; fromName: string; toName: string; amount: string; recipient: string; status: 'running' | 'completed' | 'failed'; steps: Step[]; error: string | null; canRetry: boolean }
-interface BridgePreview { confirmToken: string; expiresAt: number; fromName: string; toName: string; amount: string; recipient: string; balance: string; warnings: string[] }
+interface BridgePreview { from: string; to: string; confirmToken: string; expiresAt: number; fromName: string; toName: string; amount: string; recipient: string; balance: string; warnings: string[] }
 
 function StepList({ steps, running }: { steps: Step[]; running: boolean }) {
   const names = ['approve', 'burn', 'fetchAttestation', 'mint']
@@ -44,11 +39,12 @@ function StepList({ steps, running }: { steps: Step[]; running: boolean }) {
   )
 }
 
-/** Real USDC transfers between Arc, Ethereum Sepolia and Base Sepolia over Circle CCTP, signed by the app wallet or a browser wallet. */
-export function OnchainBridge({ onDone }: { onDone: () => void }) {
+/** Real USDC transfers between the supported test networks over Circle CCTP, signed by the app wallet or a browser wallet (browser wallets cover the EVM networks). */
+export function OnchainBridge({ onDone, initialFrom }: { onDone: () => void; initialFrom?: string }) {
   const qc = useQueryClient()
-  const [from, setFrom] = useState<ChainId>('arc-testnet')
-  const [to, setTo] = useState<ChainId>('base-sepolia')
+  const { data: cfg } = useQuery({ queryKey: ['bridge-config'], queryFn: () => api<{ chains: Chain[] }>('/api/bridge/config'), staleTime: 10 * 60_000 })
+  const [from, setFrom] = useState(initialFrom ?? 'arc-testnet')
+  const [to, setTo] = useState(initialFrom === 'arc-testnet' || !initialFrom ? 'base-sepolia' : 'arc-testnet')
   const [amount, setAmount] = useState('')
   const [signer, setSigner] = useState<'app' | 'browser'>('app')
   const [preview, setPreview] = useState<BridgePreview | null>(null)
@@ -60,8 +56,23 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
   const { switchChainAsync } = useSwitchChain()
   const [local, setLocal] = useState<{ status: 'running' | 'completed' | 'failed'; steps: Step[]; error: string | null } | null>(null)
 
-  const valid = /^\d+(\.\d{1,6})?$/.test(amount) && Number(amount) > 0 && from !== to
+  const chains = cfg?.chains ?? []
+  const byId = (id: string) => chains.find((c) => c.id === id)
+  const fromChain = byId(from), toChain = byId(to)
+  // A browser wallet signs on EVM networks only; the app wallet covers every network, Solana included.
+  const choices = signer === 'browser' ? chains.filter((c) => c.family === 'evm') : chains
+  const valid = /^\d+(\.\d{1,6})?$/.test(amount) && Number(amount) > 0 && from !== to && Boolean(fromChain && toChain)
   const flip = () => { setFrom(to); setTo(from); setPreview(null) }
+  const other = (id: string) => choices.find((c) => c.id !== id)?.id ?? id
+  const chooseSigner = (v: 'app' | 'browser') => {
+    setSigner(v)
+    setPreview(null)
+    if (v === 'browser') {
+      const ok = (id: string) => byId(id)?.family === 'evm'
+      if (!ok(from)) setFrom('arc-testnet')
+      if (!ok(to) || to === 'arc-testnet') setTo('base-sepolia')
+    }
+  }
 
   const review = useMutation({
     mutationFn: () => api<{ preview: BridgePreview }>('/api/bridge/preview', { method: 'POST', body: { from, to, amount } }),
@@ -90,7 +101,8 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
     if (!connector || !address) return toast.error('Connect the wallet that will sign')
     setLocal({ status: 'running', steps: [], error: null })
     try {
-      await switchChainAsync({ chainId: CHAINS[from].chainId })
+      if (!fromChain?.chainId || !toChain) throw new Error('Choose two EVM networks')
+      await switchChainAsync({ chainId: fromChain.chainId })
       const [{ AppKit }, { createViemAdapterFromProvider }] = await Promise.all([import('@circle-fin/app-kit'), import('@circle-fin/adapter-viem-v2')])
       const provider = (await connector.getProvider()) as Parameters<typeof createViemAdapterFromProvider>[0]['provider']
       const adapter = await createViemAdapterFromProvider({ provider })
@@ -108,8 +120,8 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
         setLocal({ status: 'running', steps: [...seen], error: null })
       })
       const result = await kit.bridge({
-        from: { adapter, chain: CHAINS[from].kit },
-        to: { recipientAddress: address, chain: CHAINS[to].kit, useForwarder: true },
+        from: { adapter, chain: fromChain.kit as never },
+        to: { recipientAddress: address, chain: toChain.kit as never, useForwarder: true },
         amount,
       })
       const steps = (result.steps as Step[]).map((s) => ({ name: s.name, state: s.state, txHash: s.txHash, explorerUrl: s.explorerUrl }))
@@ -127,7 +139,9 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
           <h2 className="display text-xl">{shown.status === 'completed' ? 'Bridge complete' : shown.status === 'failed' ? 'Bridge needs attention' : 'Bridging…'}</h2>
           <span className="num text-sm font-semibold">{amount} USDC</span>
         </div>
-        <p className="text-sm text-subtle">{CHAINS[from].name} to {CHAINS[to].name}</p>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
+          <NetworkLabel id={from} name={fromChain?.name ?? from} /> <ArrowRight size={14} aria-label="to" /> <NetworkLabel id={to} name={toChain?.name ?? to} />
+        </p>
         <StepList steps={shown.steps} running={shown.status === 'running'} />
         {shown.error && <p className="text-sm text-danger" role="alert">{shown.error}</p>}
         {shown.status === 'completed' && <p className="text-sm text-subtle">Circle's forwarding fee was taken from the amount, so a little less than {amount} USDC arrives. It can take a minute to show in your balance.</p>}
@@ -144,19 +158,13 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
   return (
     <div className="space-y-4">
       <Card className="space-y-4 p-5">
-        <div>
-          <span className="eyebrow mb-2 block">From</span>
-          <Segmented value={from} onChange={(v) => { setFrom(v); if (v === to) setTo(IDS.find((x) => x !== v) as ChainId); setPreview(null) }} options={IDS.map((i) => ({ value: i, label: CHAINS[i].name }))} />
-        </div>
+        <NetworkPicker label="From" value={from} options={choices} onChange={(v) => { setFrom(v); if (v === to) setTo(other(v)); setPreview(null) }} />
         <div className="flex justify-center"><button onClick={flip} aria-label="Swap direction" className="grid size-11 place-items-center rounded-full border border-line-strong hover:bg-muted"><ArrowDownUp size={18} /></button></div>
-        <div>
-          <span className="eyebrow mb-2 block">To</span>
-          <Segmented value={to} onChange={(v) => { setTo(v); if (v === from) setFrom(IDS.find((x) => x !== v) as ChainId); setPreview(null) }} options={IDS.map((i) => ({ value: i, label: CHAINS[i].name }))} />
-        </div>
+        <NetworkPicker label="To" value={to} options={choices} onChange={(v) => { setTo(v); if (v === from) setFrom(other(v)); setPreview(null) }} />
         <Field label="Amount (USDC)" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, '')); setPreview(null) }} />
         <div>
           <span className="eyebrow mb-2 block">Sign with</span>
-          <Segmented value={signer} onChange={(s) => { setSigner(s); setPreview(null) }} options={[{ value: 'app', label: 'App wallet (PIN)' }, { value: 'browser', label: 'Browser wallet' }]} />
+          <Segmented value={signer} onChange={chooseSigner} options={[{ value: 'app', label: 'App wallet (PIN)' }, { value: 'browser', label: 'Browser wallet' }]} />
           {signer === 'browser' && (
             <div className="mt-3 flex items-center justify-between gap-3 text-sm">
               <span className="text-subtle">{isConnected ? <>Connected <span className="mono">{address?.slice(0, 6)}…{address?.slice(-4)}</span></> : 'Connect the wallet that will sign'}</span>
@@ -167,7 +175,8 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
       </Card>
       {preview && signer === 'app' && (
         <Card className="space-y-1 p-5">
-          <Row label="Route" value={`${preview.fromName} to ${preview.toName}`} />
+          <Row label="From" value={<NetworkLabel id={preview.from} name={preview.fromName} />} />
+          <Row label="To" value={<NetworkLabel id={preview.to} name={preview.toName} />} />
           <Row label="Amount" value={`${preview.amount} USDC`} />
           <Row label="Sent to" value={<span className="mono text-xs">{preview.recipient.slice(0, 10)}…{preview.recipient.slice(-6)} (your wallet)</span>} />
           <Row label="Balance on source" value={`${preview.balance} USDC`} />
@@ -180,7 +189,7 @@ export function OnchainBridge({ onDone }: { onDone: () => void }) {
       ) : (
         <Button className="w-full" disabled={!valid || !isConnected} onClick={() => void runBrowser()}>Bridge {amount || ''} USDC</Button>
       )}
-      <p className="text-xs text-subtle">USDC moves over Circle's cross-chain protocol: it is burned on the source chain and minted to the same address on the destination. Testnet only.</p>
+      <p className="text-xs text-subtle">USDC moves over Circle's cross-chain protocol: it is burned on the source chain and minted to the same address on the destination. Testnet only. A browser wallet can bridge between the EVM networks; the app wallet can also bridge to and from Solana Devnet.</p>
       <Sheet open={pinOpen && !opId} onClose={() => setPinOpen(false)} title="Confirm bridge">
         {preview && <p className="mb-4 text-center text-sm text-ink-2">Bridge <b>{preview.amount} USDC</b> from <b>{preview.fromName}</b> to <b>{preview.toName}</b>. Enter your 4-digit PIN.</p>}
         <PinPad key={round} disabled={start.isPending} onComplete={(pin) => start.mutate(pin)} />

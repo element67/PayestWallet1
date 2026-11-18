@@ -4,9 +4,9 @@ import { Card } from '../ui'
 /** Entry to the P2P exchange. Both buttons open the verified swap flow. */
 export function P2PCard({ onPick }: { onPick: (side: 'sell' | 'buy') => void }) {
   return (
-    <Card className="border border-accent/40 p-4">
+    <Card className="border border-outline p-4">
       <div className="flex items-center gap-2">
-        <span className="grid size-9 place-items-center rounded-xl bg-accent text-accent-ink"><ShieldCheck size={18} /></span>
+        <span className="grid size-9 place-items-center rounded-xl bg-surface-strong text-ink"><ShieldCheck size={18} /></span>
         <div>
           <h2 className="display text-lg font-semibold leading-tight">Payest P2P Exchange</h2>
           <p className="text-xs text-subtle">Swap crypto and Naira, fast and verified.</p>

@@ -15,9 +15,12 @@ import { removeStarterBalances } from '../server/maintenance'
 import { seedFounder } from '../server/auth'
 import { startWalletMonitors } from '../server/wallet/monitor'
 import { seedTokens } from '../server/tokens/seed'
+import { backfillBridgeHistory } from '../server/bridge/history'
+import { backfillDexHistory } from '../server/wallet/history'
 import { onRegistryChange } from '../server/tokens/service'
 import { verifyPending } from '../server/tokens/verify'
 import { sweepStaleBridgeOps } from '../server/bridge/service'
+import { sweepStaleSwapOps } from '../server/swap/service'
 import { every } from '../server/timers'
 import '../server/app' // the queue and agent use code that registers API routes; keep one registry per process
 
@@ -49,7 +52,13 @@ export async function startWorker() {
   })
 
   every('bridge-sweep', 60_000, sweepStaleBridgeOps)
+  every('swap-sweep', 60_000, sweepStaleSwapOps)
   startHoldSweeper()
+  // Swaps, liquidity changes and bridges made before History recorded them get their entries now. Each entry is written once, so
+  // running it again after a restart, or a minute later when a chain endpoint was slow to answer, is harmless.
+  const backfill = () => Promise.all([backfillDexHistory(), backfillBridgeHistory()]).then(([d, b]) => console.log(`[worker] history backfill: ${d} exchange entries, ${b} bridge transfers checked`)).catch((e) => console.warn('[worker] history backfill failed:', e instanceof Error ? e.message : e))
+  setTimeout(() => void backfill(), 10_000)
+  setTimeout(() => void backfill(), 120_000)
 
   // Non-Arc monitors run through the sandbox simulator (see chain/sim.ts).
   await run(

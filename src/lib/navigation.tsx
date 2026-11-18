@@ -23,6 +23,8 @@ export function intentToQuery(i: Intent & { order?: string } = {}): string {
   const q = new URLSearchParams()
   if (i.screen) q.set('screen', i.screen)
   if (i.side) q.set('side', i.side)
+  if (i.address) q.set('address', i.address)
+  if (i.from) q.set('from', i.from)
   if (i.settings) q.set('settings', i.settings)
   if (i.order) q.set('order', i.order)
   const s = q.toString()
@@ -31,10 +33,12 @@ export function intentToQuery(i: Intent & { order?: string } = {}): string {
 
 /** Reads the intent back from the address. Unknown values are ignored, never trusted. */
 export function intentFromQuery(q: URLSearchParams): Intent & { order?: string } {
-  const screen = q.get('screen'), side = q.get('side'), settings = q.get('settings'), order = q.get('order')
+  const screen = q.get('screen'), side = q.get('side'), settings = q.get('settings'), order = q.get('order'), address = q.get('address'), from = q.get('from')
   return {
     screen: SCREENS.find((s) => s === screen),
     side: side === 'sell' || side === 'buy' ? side : undefined,
+    address: address && /^[A-Za-z0-9]{25,100}$/.test(address) ? address : undefined,
+    from: from && /^[a-z0-9-]{3,40}$/.test(from) ? from : undefined,
     settings: SETTINGS.find((s) => s === settings),
     order: order && /^[\w-]{4,60}$/.test(order) ? order : undefined,
   }

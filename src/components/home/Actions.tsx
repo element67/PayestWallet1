@@ -6,8 +6,8 @@ export interface ActionDef { id: string; label: string; icon: ReactNode; tone?: 
 
 export function ActionButton({ label, icon, onClick, primary }: { label: string; icon: ReactNode; onClick: () => void; primary?: boolean }) {
   return (
-    <button onClick={onClick} className="glass tile no-pop group flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-3xl px-1 py-2 text-xs font-extrabold" aria-label={label}>
-      <span className={cx('grid size-12 place-items-center rounded-full border-2 border-outline transition group-active:scale-95', primary ? 'bg-accent text-accent-ink' : 'bg-surface-strong text-ink')}>{icon}</span>
+    <button onClick={onClick} className="glass tile no-pop group flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-3xl px-1 py-2 text-xs font-extrabold !text-ink" aria-label={label}>
+      <span className={cx('grid size-12 place-items-center rounded-full border-2 border-outline', primary ? 'bg-accent text-accent-ink' : 'bg-surface-strong text-ink')}>{icon}</span>
       {label}
     </button>
   )
