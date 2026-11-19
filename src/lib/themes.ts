@@ -1,7 +1,7 @@
 /**
  * One palette, two modes.
- *   page background  #FFFFFF (light) / charcoal #1C1C1E (dark)
- *   cards, sheets, tab bar  #F5F7FA (light) / #2A2A2D (dark), set apart by a thin line
+ *   page background  #FFFFFF (light) / black #000000 (dark)
+ *   cards, sheets, tab bar  #F5F7FA (light) / #111113 (dark), set apart by a thin line
  *   text  #050912 (light) / #FFFFFF (dark)
  *   blue  #1558C9 / #2F6FEB for the main button and the active tab; blue is never used for text or icons. All written text and icons are black (white in dark mode)
  * The Light / Dark toggle swaps the page, surface and text colours and nothing else. Every other token (muted fills,
@@ -12,9 +12,9 @@ import { DEFAULT_MODE, isMode, type Mode } from './themeIds'
 
 export const PALETTE = {
   light: { bg: '#FFFFFF', card: '#F3F6FA', ink: '#050912', line: '#B9C3D0', brand: '#1558C9' },
-  dark: { bg: '#1C1C1E', card: '#2A2A2D', ink: '#FFFFFF', line: '#46474D', brand: '#6AA9FF' },
+  dark: { bg: '#000000', card: '#111113', ink: '#FFFFFF', line: '#2E2E33', brand: '#6AA9FF' },
   /** The fill of the main button and the active tab. White text on it reads at 4.7:1 or better in both modes. */
-  accent: { light: '#1558C9', dark: '#2F6FEB' },
+  accent: { light: '#0A58FF', dark: '#1F6BFF' },
 } as const
 
 /* ---------- colour maths ---------- */
@@ -100,6 +100,8 @@ export function themeVars(mode: Mode): Record<string, string> {
     '--card-divider': onCard['--card-divider'],
     '--accent': accent,
     '--accent-ink': inkOn(accent),
+    // The lighter top of the blue's gloss, so the main button and the active tab shine instead of looking flat.
+    '--accent-hi': mix(accent, '#FFFFFF', 0.28),
     // A thin line around cards and fields keeps each feature clearly separate from the next, in both modes.
     '--outline': line,
     // Blue for feature labels and icons: the deeper blue on white, a lighter blue on charcoal so it stays easy to read.

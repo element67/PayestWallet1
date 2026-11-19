@@ -22,11 +22,12 @@
   --card-muted: #e7eaee;
   --card-strong: #dee1e5;
   --card-divider: #bfc2c7;
-  --accent: #1558C9;
+  --accent: #0A58FF;
   --accent-ink: #FFFFFF;
+  --accent-hi: #4f87ff;
   --outline: #B9C3D0;
   --brand: #1558C9;
-  --focus: #1558C9;
+  --focus: #0A58FF;
   --paper: #FFFFFF;
   --success-rgb: 34 112 82;
   --danger-rgb: 169 63 59;
@@ -43,28 +44,29 @@
   color-scheme: light;
 }
 html[data-mode='dark'] {
-  --bg: #1C1C1E;
+  --bg: #000000;
   --ink: #FFFFFF;
-  --ink-2: #f1f1f2;
-  --subtle: #bfbfc0;
-  --surface-muted: #2c2c2e;
-  --surface-strong: #373739;
-  --divider: #454547;
-  --card: #2A2A2D;
+  --ink-2: #f0f0f0;
+  --subtle: #b8b8b8;
+  --surface-muted: #121212;
+  --surface-strong: #1f1f1f;
+  --divider: #2e2e2e;
+  --card: #111113;
   --card-ink: #FFFFFF;
-  --card-ink-2: #f2f2f2;
-  --card-subtle: #c3c3c4;
-  --card-muted: #39393c;
-  --card-strong: #444446;
-  --card-divider: #505053;
-  --accent: #2F6FEB;
+  --card-ink-2: #f1f1f1;
+  --card-subtle: #bcbcbd;
+  --card-muted: #222224;
+  --card-strong: #2e2e2f;
+  --card-divider: #3c3c3d;
+  --accent: #1F6BFF;
   --accent-ink: #FFFFFF;
-  --outline: #46474D;
+  --accent-hi: #5e94ff;
+  --outline: #2E2E33;
   --brand: #6AA9FF;
-  --focus: #2F6FEB;
+  --focus: #1F6BFF;
   --paper: #FFFFFF;
-  --success-rgb: 87 182 143;
-  --danger-rgb: 236 130 124;
+  --success-rgb: 47 165 116;
+  --danger-rgb: 232 100 93;
   --warn-rgb: 217 164 65;
   --fill-success-rgb: 47 165 116;
   --fill-danger-rgb: 229 83 75;
@@ -72,9 +74,9 @@ html[data-mode='dark'] {
   --on-success: #0A0A10;
   --on-danger: #0A0A10;
   --on-warn: #0A0A10;
-  --card-success-rgb: 119 196 164;
-  --card-danger-rgb: 240 154 149;
-  --card-warn-rgb: 221 173 84;
+  --card-success-rgb: 68 174 130;
+  --card-danger-rgb: 234 116 109;
+  --card-warn-rgb: 217 164 65;
   color-scheme: dark;
 }
 
@@ -295,10 +297,10 @@ a:focus-visible {
   font-family: inherit;
   text-decoration: none;
   color: var(--accent-ink);
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent-hi), var(--accent) 72%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.38);
   border: 1px solid var(--accent);
   border-radius: 999px;
-  box-shadow: none;
 }
 /* On phones the badge sits in the page flow, above the floating tab bar's reserved space, so it never covers content. */
 @media (max-width: 1023px) {
@@ -361,9 +363,9 @@ html[data-mode='dark'] .liquid,
 html[data-mode='dark'] .sticker.liquid,
 html[data-mode='dark'] .glass.liquid {
   background-color: color-mix(in srgb, var(--card) 58%, transparent);
-  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0) 60%);
-  border-color: rgb(255 255 255 / 0.1);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 -1px 0 rgb(255 255 255 / 0.03);
+  background-image: none;
+  border-color: rgb(255 255 255 / 0.08);
+  box-shadow: none;
 }
 /* The sticky top bar is a full-width strip: only a light line underneath, no side or top border. */
 header.liquid {
@@ -428,11 +430,32 @@ html[data-text='large'] .dash-split > * + *, html[data-text='xlarge'] .dash-spli
 svg.lucide[stroke-width='2'] { stroke-width: 2.5; }
 svg.lucide { shape-rendering: geometricPrecision; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ---------- clear spacing ---------- */
-/* A little more air between stacked blocks, so each feature reads as its own group. */
-.space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem !important; }
-.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem !important; }
-.space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.625rem !important; }
+/* ---------- compact spacing ---------- */
+/* Tighter gaps, padding and margins across the whole app. Touch targets keep their 44px minimum height. */
+.space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem !important; }
+.space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem !important; }
+.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
+.space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem !important; }
+.space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
+.gap-3 { gap: 0.5rem; }
+.gap-4 { gap: 0.625rem; }
+.gap-5 { gap: 0.75rem; }
+.gap-6 { gap: 1rem; }
+.gap-x-6 { column-gap: 1rem; }
+.p-4 { padding: 0.75rem; }
+.p-5 { padding: 0.875rem; }
+.p-6 { padding: 1rem; }
+.px-5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+.py-5 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-4 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.mb-3 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 0.625rem; }
+.mb-5 { margin-bottom: 0.75rem; }
+.mb-6 { margin-bottom: 0.875rem; }
+.mt-3 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 0.625rem; }
+.mt-5 { margin-top: 0.75rem; }
+.mt-6 { margin-top: 0.875rem; }
 
 /* Line icons take the colour of the text next to them (black in light mode, white in dark mode). Only the blue buttons and the active tab are blue. */
 /* On a solid blue, red or green fill the icon takes the text colour of that fill, so it never disappears into it. */
@@ -442,6 +465,12 @@ svg.lucide { shape-rendering: geometricPrecision; stroke-linecap: round; stroke-
 [class*='text-accent-ink'] svg.lucide {
   color: inherit;
 }
+/* The blue shines: a light-to-deep gradient with a thin bright top edge on the main button and the active tab. */
+.bg-accent {
+  background-image: linear-gradient(180deg, var(--accent-hi), var(--accent) 72%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.38);
+}
+
 /* Solid fills keep their own edge: the card outline colour is only for neutral boxes. */
 button.bg-accent, a.bg-accent, .bg-danger.border, .bg-success.border {
   border-color: transparent;

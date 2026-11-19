@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { useCrypto } from '@/lib/crypto'
 import type { Intent } from '@/lib/nav'
-import { OnchainBridge } from '@/components/crypto/OnchainBridge'
+import { TradeScreen } from '@/components/trade/TradeScreen'
 import { BuyScreen } from '@/components/crypto/BuyScreen'
 import { History } from '@/components/crypto/History'
 import { Overview, type CryptoAction } from '@/components/crypto/Overview'
@@ -65,7 +65,7 @@ export function Crypto({ initial, address, bridgeFrom, go }: { initial?: Intent[
           {screen === 'send' && <Send data={data} initialTo={address} />}
           {screen === 'receive' && <Receive data={data} />}
           {screen === 'swap' && <SwapHub onDone={close} />}
-          {screen === 'bridge' && <OnchainBridge onDone={close} initialFrom={bridgeFrom} />}
+          {screen === 'bridge' && <TradeScreen kind="bridge" onDone={close} initialFrom={bridgeFrom} />}
           {screen === 'buy' && <BuyScreen onDone={close} />}
         </>
       )}

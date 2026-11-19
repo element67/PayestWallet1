@@ -38,8 +38,8 @@ export function Overview() {
   const critical = open.filter((a) => a.severity === 'critical').length
   const failedJobs = sys?.queue.counts.failed ?? 0
   const monitorsBad = sys?.monitors.filter((m) => m.stale || m.error).length ?? 0
-  const dex24 = chain?.dex.last24h.reduce((n, r) => n + r.count, 0) ?? 0
-  const bridge24 = chain?.bridge.last24h.reduce((n, r) => n + r.count, 0) ?? 0
+  const swap24 = chain?.last24h.filter((r) => r.kind === 'swap').reduce((n, r) => n + r.count, 0) ?? 0
+  const bridge24 = chain?.last24h.filter((r) => r.kind === 'bridge').reduce((n, r) => n + r.count, 0) ?? 0
   const max = Math.max(1, ...o.daily.map((d) => d.c))
   return (
     <div className="space-y-5">
@@ -57,7 +57,7 @@ export function Overview() {
         <Stat label="Customers" value={o.counts.users} />
         <Stat label="Held for review" value={o.counts.flagged} />
         <Stat label="Failed or reversed" value={o.counts.failed} />
-        <Stat label="Exchange operations, 24h" value={dex24} sub="onchain swaps and pools" />
+        <Stat label="Onchain swaps, 24h" value={swap24} sub="all providers" />
         <Stat label="Bridge transfers, 24h" value={bridge24} />
       </Card>
 

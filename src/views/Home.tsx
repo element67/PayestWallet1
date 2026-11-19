@@ -1,6 +1,6 @@
 import { AlertCircle } from 'lucide-react'
 import { ActionGrid, type HomeActionId } from '@/components/home/Actions'
-import { BridgedBalances } from '@/components/crypto/BridgedBalances'
+import { BridgedBalances } from '@/components/trade/BridgedBalances'
 import { AssetsList } from '@/components/home/AssetsList'
 import { DashboardCard } from '@/components/home/DashboardCard'
 import { P2PCard } from '@/components/home/P2PCard'

@@ -6,6 +6,7 @@ import { all, get, now, setting } from './db'
 import { route } from './http'
 import { verifyLedger } from './ledger'
 import { scrub } from './rpc'
+import { providerStatus, tradeMode } from './trade/config'
 
 const DAY = 86_400_000
 const num = (v: unknown) => Number(v ?? 0)
@@ -53,33 +54,23 @@ route('GET', '/api/admin/system', 'founder', async () => {
 
 route('GET', '/api/admin/onchain', 'founder', async () => {
   const since = now() - DAY
-  const dex = await all<Record<string, unknown>>(
-    `SELECT o.id, o.network, o.kind, o.summary, o.status, o.note, o.hashes, o.created_at, u.email FROM dex_ops o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 100`,
+  const ops = await all<Record<string, unknown>>(
+    `SELECT o.id, o.kind, o.provider, o.mode, o.from_chain, o.to_chain, o.token_in, o.token_out, o.amount_in, o.amount_out, o.status, o.error, o.steps, o.tx_hashes, o.created_at, u.email
+       FROM trade_ops o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 100`,
   )
-  const bridge = await all<Record<string, unknown>>(
-    `SELECT o.id, o.from_chain, o.to_chain, o.amount, o.recipient, o.status, o.error, o.steps, o.created_at, u.email FROM bridge_ops o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 100`,
+  const stats = await all<{ kind: string; provider: string; status: string; c: number }>('SELECT kind, provider, status, COUNT(*) c FROM trade_ops WHERE created_at>? GROUP BY kind, provider, status', since)
+  const uni = await all<Record<string, unknown>>(
+    `SELECT o.id, o.chain, o.token_in, o.token_out, o.amount_in, o.amount_out, o.status, o.error, o.tx_hash, o.created_at, u.email FROM swap_ops o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 50`,
   )
-  const dexStats = await all<{ kind: string; status: string; c: number }>('SELECT kind, status, COUNT(*) c FROM dex_ops WHERE created_at>? GROUP BY kind, status', since)
-  const bridgeStats = await all<{ status: string; c: number; vol: string | null }>(
-    'SELECT status, COUNT(*) c, SUM(CAST(amount AS NUMERIC)) vol FROM bridge_ops WHERE created_at>? GROUP BY status', since,
-  )
-  const hashes = (v: unknown): string[] => { try { return JSON.parse(String(v)) as string[] } catch { return [] } }
-  const steps = (v: unknown): { name: string; state: string }[] => { try { return JSON.parse(String(v)) as { name: string; state: string }[] } catch { return [] } }
+  const list = <T,>(v: unknown, fallback: T): T => { try { return JSON.parse(String(v)) as T } catch { return fallback } }
   return {
-    contracts: ['ARC', 'ETH', 'BASE'].map((k) => ({
-      network: ({ ARC: 'arc-testnet', ETH: 'ethereum-sepolia', BASE: 'base-sepolia' } as Record<string, string>)[k],
-      router: process.env[`NAIRASWAP_${k}_ROUTER`] ?? null, factory: process.env[`NAIRASWAP_${k}_FACTORY`] ?? null, treasury: process.env[`NAIRASWAP_${k}_TREASURY`] ?? null,
+    mode: await tradeMode(), providers: providerStatus(),
+    last24h: stats.map((r) => ({ kind: r.kind, provider: r.provider, status: r.status, count: num(r.c) })),
+    ops: ops.map((o) => ({
+      id: o.id, email: o.email, kind: o.kind, provider: o.provider, mode: o.mode, from: o.from_chain, to: o.to_chain, tokenIn: o.token_in, tokenOut: o.token_out, amountIn: o.amount_in,
+      amountOut: o.amount_out ?? null, status: o.status, error: o.error ? scrub(o.error) : null, steps: list<{ name: string; state: string }[]>(o.steps, []).map((s) => `${s.name}:${s.state}`),
+      hashes: list<string[]>(o.tx_hashes, []), createdAt: num(o.created_at),
     })),
-    dex: {
-      last24h: dexStats.map((r) => ({ kind: r.kind, status: r.status, count: num(r.c) })),
-      ops: dex.map((o) => ({ id: o.id, email: o.email, network: o.network, kind: o.kind, summary: o.summary, status: o.status, note: o.note ? scrub(o.note) : null, hashes: hashes(o.hashes), createdAt: num(o.created_at) })),
-    },
-    bridge: {
-      last24h: bridgeStats.map((r) => ({ status: r.status, count: num(r.c), usdc: r.vol ?? '0' })),
-      ops: bridge.map((o) => ({
-        id: o.id, email: o.email, from: o.from_chain, to: o.to_chain, amount: o.amount, recipient: o.recipient, status: o.status,
-        error: o.error ? scrub(o.error) : null, steps: steps(o.steps).map((s) => `${s.name}:${s.state}`), createdAt: num(o.created_at),
-      })),
-    },
+    uniswap: uni.map((o) => ({ id: o.id, email: o.email, chain: o.chain, tokenIn: o.token_in, tokenOut: o.token_out, amountIn: o.amount_in, amountOut: o.amount_out ?? null, status: o.status, error: o.error ? scrub(o.error) : null, hash: o.tx_hash ?? null, createdAt: num(o.created_at) })),
   }
 })

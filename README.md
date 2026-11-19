@@ -100,11 +100,16 @@ The API stores data in Postgres. To bring an older local SQLite file (`data/fint
 | `DATABASE_URL` | Required. Postgres connection string (Supabase: Project settings, Database, direct or session connection). Server side only, never put it in a `NEXT_PUBLIC_` variable. |
 | `DATABASE_SSL` | Optional. `false` turns off SSL for a local Postgres. Remote databases use SSL by default. |
 | `ACHSWAP_FACTORY`, `ACHSWAP_ROUTER`, `ACHSWAP_WRAPPED` | Addresses of the AchSwap V2 factory, router and wrapped USDC on Arc Testnet, used for read-only onchain quotes (`POST /api/dex/quote`). |
-| `NAIRASWAP_ARC_ROUTER`, `NAIRASWAP_ARC_FACTORY`, `NAIRASWAP_ARC_TREASURY` | Addresses of your own exchange contracts on Arc Testnet (router, factory, fee treasury). |
-| `NAIRASWAP_ETH_ROUTER`, `NAIRASWAP_ETH_FACTORY`, `NAIRASWAP_ETH_TREASURY` | The same three contracts on Ethereum Sepolia. |
-| `NAIRASWAP_BASE_ROUTER`, `NAIRASWAP_BASE_FACTORY`, `NAIRASWAP_BASE_TREASURY` | The same three contracts on Base Sepolia. |
+| `ENABLE_MAINNET_INTEGRATIONS` | Optional, `false` by default. While it is not `true`, the Swap screen runs on Uniswap only: Circle swaps, LI.FI and AchSwap stay switched off (their code stays in place). Set `NEXT_PUBLIC_ENABLE_MAINNET_INTEGRATIONS` to `true` as well to show their logos in full color. |
+| `KIT_KEY` | Optional. Circle App Kit key, server side only. Circle swaps and bridges also run without one. |
+| `LIFI_API_KEY` | Optional. LI.FI key for a higher rate limit, server side only. |
+| `LIFI_INTEGRATOR` | Optional. Your integrator name sent to LI.FI (default `nairabridge`). |
+| `LIFI_ALLOWED_TARGETS` | Mainnet only. Comma-separated LI.FI contract addresses a LI.FI transaction may target. Until it is set, LI.FI trades are refused. |
+| `ACHSWAP_API_KEY` | Mainnet only. AchSwap Developer API key, server side only. Without it AchSwap is skipped. |
+| `ACHSWAP_EXECUTOR` | Optional. Overrides AchSwap's route executor address if AchSwap publishes a new one. |
 | `SUPPORT_AI_URL`, `SUPPORT_TELEGRAM_URL`, `SUPPORT_EMAIL` | Optional. The Help channels: an https address for the AI support agent, the official Telegram community (https://t.me/...) and the support email. A channel that is not set shows as "Not set up yet". |
 | `ALLOWED_DEV_ORIGINS` | Optional. Extra hosts allowed to load the Next.js dev server (the Arc Studio preview hosts are built in). |
+| `FRAME_ANCESTORS` | Optional. Comma-separated https addresses of sites allowed to show this app in a frame (for example `https://app.example.com`). Arc Studio's own preview hosts are built in; every other site is refused. |
 | `NEXT_PUBLIC_TRACE_PARENT_ORIGINS` | Optional. Extra origins allowed to receive trace telemetry when the app runs inside a frame. |
 | `FOUNDER_EMAIL` | Account registered with this email becomes the founder. |
 | `REAL_MONEY_ENABLED` | Reserved. Has no effect until live providers exist. |
@@ -116,17 +121,18 @@ The API stores data in Postgres. To bring an older local SQLite file (`data/fint
 2. Under Founder, Limits and fees, set the Arc Testnet vault address (an address you control, watch only).
 3. Under Rates, publish your own rates. Seeded rates are placeholders.
 
-## Onchain exchange
+## Swap and bridge
 
-The Swap screen has three modes: exchange balances (founder rates), an onchain swap, and liquidity pools. The onchain modes use the NairaSwap contracts in `contracts/` (factory, pair pools with LP tokens, router, fee treasury) on Arc Testnet, Ethereum Sepolia and Base Sepolia. You can sign with the app wallet (transaction PIN) or with a connected browser wallet. A 0.30% fee is charged on each trade: 0.25% stays with liquidity providers and 0.05% goes to the treasury. Run `forge test` for the contract tests.
+The Crypto tab's Swap and Bridge screens run on one module with a common provider interface (quote, approval check, execute). Each provider has its own adapter, and the server, never the browser, chooses between them:
 
-## Circle swap (testnet)
+- **Circle App Kit** is first for USDC and EURC bridges (native burn and mint, no wrapped tokens, Fast or Standard speed with the fee difference shown, resumable if interrupted) and for stablecoin swaps on Arc. On the test network it swaps USDC, EURC and cirBTC on Arc Testnet and bridges between 16 test networks.
+- **AchSwap** handles other tokens on Arc mainnet (swaps only).
+- **LI.FI** handles bridges and swaps Circle does not cover, on mainnet.
+- Each provider that supports a route is asked at once. One that fails, times out or does not support the route is skipped, and the screen shows the recommended quote and the alternatives.
 
-Swap has a fourth mode, **Circle swap**, that swaps USDC, EURC and cirBTC on Arc Testnet through Circle's swap service from the user's own app wallet. The user picks the tokens and amount, gets a quote (expected amount, the minimum they will receive after the slippage limit, fees and the swap provider), then confirms with the transaction PIN. A swap is limited by the founder's per-transaction limit for the token being spent, stops while the platform is paused, can never be sent to another address, and cannot run twice from a retry. Each swap is saved with its status, amounts and transaction link. Slippage is always limited (1% by default, 3% at most). Testnet only: the other Circle swap tokens exist only on mainnet and are not offered. Tests: `bun test tests/audit/circle-swap.test.ts`.
+Before anything is signed the customer sees a summary (tokens, amounts, networks, fees, estimated time, slippage, provider) and must confirm with their transaction PIN. Chains and tokens come only from the server's own lists, the output always goes to the customer's own address, the founder's per-trade limit applies, and each trade is recorded with every step so a bridge shows approve, burn, attestation and mint and can be resumed. The founder sets Testnet or Mainnet (with a confirmation) and the service fee (0 to 1%, paid by LI.FI and AchSwap in the same transaction) in the admin Onchain panel. LI.FI and AchSwap work on mainnet only, and a mainnet token needs a per-trade limit set by the founder.
 
-## Bridge
-
-The Bridge screen sends USDC between 16 test networks over Circle's cross-chain protocol (CCTP): Arbitrum Sepolia, Arc Testnet, Avalanche Fuji, Base Sepolia, Codex Testnet, Ethereum Sepolia, Edge Testnet, HyperEVM Testnet, Linea Sepolia, Monad Testnet, Optimism Sepolia, Plume Testnet, Polygon Amoy, Solana Devnet, Unichain Sepolia and Sonic Testnet. Pick any two in the From and To lists; every network is shown with its logo (a letter badge where a chain has no published logo), and the same logos appear on Send, Receive, Crypto tokens, History and the onchain swap screens. USDC always goes to your own address on the destination network. Sign with the app wallet (transaction PIN, every network including Solana Devnet) or a connected browser wallet (the EVM networks). Before a transfer starts the app checks your USDC balance on the source network and that you hold a little of the coin that pays network fees there (on Arc Testnet fees are paid in USDC). A small Circle forwarding fee is taken from the amount. A transfer that stops part-way can be resumed from the same screen. Testnet only.
+The Swap screen is now a single card (From token, Amount with your balance, flip, To token, a live "You receive") that always runs on Uniswap, with a quiet "Powered by" row of provider logos under it (Uniswap in full color, the others grayscale until mainnet, driven by `src/lib/providers.ts`). The older **Exchange balances** (swapping the Naira exchange's balances at founder rates) and a **Uniswap** tab for Uniswap v3 swaps on Ethereum Sepolia between USDC, EURC, WETH, LINK and UNI. Uniswap shows the best pool and fee tier, price impact (a warning above 1%, blocked above 5%), the minimum you receive and the network fee, with slippage never above 1% and a 20-minute deadline.
 
 History (Crypto tab) lists every deposit, send, Circle swap and bridge. A swap or bridge appears as two entries, what you paid and what you received (for example USDC and EURC), each with its transaction link, and balances refresh as soon as the transfer finishes. The background monitor that detects incoming USDC, EURC and other token deposits now reads the chain in larger chunks, so fast chains such as Arc stay up to date, and if it was ever stopped for a long time it resumes from the most recent 30,000 blocks instead of replaying everything. On Home, each onchain asset shows its network logo next to the network name. USDC you hold on a bridge network the wallet has no balance list for (HyperEVM, Monad, Linea, Unichain, Avalanche Fuji and the others) is listed under "USDC on other networks" on Home and in the Crypto tab, with a button that opens the Bridge on that network so you can move it back. Swaps, liquidity changes and bridges made before History recorded them are added automatically when the background worker starts.
 
@@ -135,3 +141,7 @@ History (Crypto tab) lists every deposit, send, Circle swap and bridge. A swap o
 Founders have a separate admin area at `/admin`, with its own sign-in, layout and navigation. It is closed to anyone who is not a founder. It monitors users, orders, the Naira wallets, ledger health, alerts and the audit log, the job queue and chain monitors, the AI transaction agent, and the exchange and bridge activity. Rates, limits, tokens and test credit are managed there too. The founder account is created from `FOUNDER_EMAIL` and `FOUNDER_PASSWORD`.
 
 - First-time payout hold: a payout of NGN 200,000 or more to a destination you have not used before (outside crypto address, bank account, bank transfer) waits 1 hour for tier 2 accounts and 24 hours otherwise. You can cancel it with your PIN; founders can release or cancel it in the admin Held payouts section. Thresholds and hours are adjustable in Limits, fees and vaults.
+
+## Browser security headers
+
+In production every page is served with a Content Security Policy (only this app's own scripts, styles and images plus Google Fonts, secure connections only, no plugins, no foreign frames), Strict-Transport-Security, no content-type guessing, a limited referrer, and a permissions policy that allows the camera only for the app's own QR scanner. Other sites cannot put the app in a frame, which prevents click-jacking. The development server skips the Content Security Policy because hot reload needs it.

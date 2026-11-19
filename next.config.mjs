@@ -10,6 +10,50 @@ const UNUSED_WALLET_SDKS = [
   '@x402/evm',
 ]
 
+const isProd = process.env.NODE_ENV === 'production'
+
+/**
+ * Who may show this app inside a frame. Everyone else is refused, which stops click-jacking (another site putting an invisible
+ * copy of the app over its own buttons). The Arc Studio preview is a frame, so *.arc.io is allowed; add your own hosts with
+ * FRAME_ANCESTORS (comma separated, for example https://app.example.com).
+ */
+const frameAncestors = ["'self'", 'https://*.arc.io', 'https://arc.io', ...(process.env.FRAME_ANCESTORS ?? '').split(',').map((h) => h.trim()).filter(Boolean)]
+
+/**
+ * Content Security Policy: the browser only runs scripts, styles, fonts and images from the places listed here, and only talks to
+ * HTTPS or secure WebSocket addresses. Next.js and the early light/dark script write small inline scripts, so inline scripts are
+ * allowed, but eval, plugins (object), other sites' frames and foreign form targets are not. Only sent in production: the
+ * development server needs eval for hot reload.
+ */
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' https: wss:",
+  "media-src 'self' blob:",
+  "worker-src 'self' blob:",
+  "frame-src 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  `frame-ancestors ${frameAncestors.join(' ')}`,
+].join('; ')
+
+const securityHeaders = [
+  ...(isProd ? [
+    { key: 'Content-Security-Policy', value: csp },
+    // Browsers only honour this over HTTPS: after the first visit they refuse to open the site over plain HTTP for a year.
+    { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+  ] : []),
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // The camera is needed only by this app's own QR scanner. Everything else the app never uses is switched off.
+  { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=(), interest-cohort=()' },
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+]
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -17,6 +61,9 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   experimental: { webpackMemoryOptimizations: true, optimizePackageImports: ['@web3icons/react', 'lucide-react', 'wagmi', 'viem', 'connectkit', 'framer-motion'] },
   poweredByHeader: false,
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }]
+  },
   // This project, not a lockfile found in a parent folder, is the root.
   outputFileTracingRoot: process.cwd(),
   // Dev only: hosts allowed to load the dev server's own assets (the Arc Studio preview is served from a generated host).

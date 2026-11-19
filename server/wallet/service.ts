@@ -11,7 +11,7 @@ import { all, alert, audit, get, notify, now, run, setting, uid } from '../db'
 import { fromUnits, toUnits } from '../money'
 import { scrub } from '../rpc'
 import { evmBroadcastUrl, evmChain, evmClient, readBalance } from './chains'
-import { findChain } from '../bridge/chains'
+import { tradeChains } from '../trade/chains'
 import { EXTRA_DECIMALS } from './history'
 import { ensureWallet, withEvmAccount, type WalletAddresses } from './keys'
 import { ASSETS, UNAVAILABLE, getAssetDef, getNetwork, verifiedTokens, type AssetDef, type NetworkDef } from './networks'
@@ -261,7 +261,7 @@ export function txView(t: Record<string, unknown>) {
   const def = t.asset_key ? getAssetDef(String(t.asset_key)) : undefined
   // Entries for tokens outside the wallet's asset list (cirBTC from a swap) carry their own decimals; everything else keeps the wallet's.
   const decimals = def?.decimals ?? EXTRA_DECIMALS[String(t.symbol).toUpperCase()] ?? 18
-  const bridgeNet = net ? undefined : findChain(t.network)
+  const bridgeNet = net ? undefined : [...tradeChains('testnet'), ...tradeChains('mainnet')].find((c) => c.id === t.network)
   const hash = String(t.tx_hash)
   const real = !hash.startsWith('sim:') && !hash.startsWith('pending:')
   return {

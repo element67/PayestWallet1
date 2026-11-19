@@ -11,7 +11,7 @@ import { useNav } from '@/lib/navigation'
 import { useSession } from '@/lib/session'
 import { ActionButton, HOME_ACTIONS } from '../home/Actions'
 import { Badge, Button, Card, Empty, Sandbox, cx } from '../ui'
-import { BridgedBalances } from './BridgedBalances'
+import { BridgedBalances } from '../trade/BridgedBalances'
 import { EmptyBalance } from './EmptyBalance'
 import { Tokens } from './Tokens'
 

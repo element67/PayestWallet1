@@ -1,22 +1,26 @@
-import { useState } from 'react'
-import { Segmented } from '../ui'
-import { CircleSwap } from './CircleSwap'
-import { OnchainSwap } from './OnchainSwap'
-import { Pools } from './Pools'
-import { SwapScreen } from './SwapScreen'
+import { useQuery } from '@tanstack/react-query'
+import { FlaskConical } from 'lucide-react'
+import { api } from '@/lib/api'
+import type { TradeConfig } from '@/lib/trade'
+import { Badge, Card } from '../ui'
+import { PoweredBy } from './PoweredBy'
+import { UniswapSwap } from './UniswapSwap'
 
-type Mode = 'balances' | 'onchain' | 'circle' | 'pools'
-
-/** One Swap screen with four modes: exchange balances (founder rates), onchain swaps, Circle swaps, and liquidity pools. */
+/** The Swap screen: one swap card and a quiet "Powered by" row. Swaps always run on Uniswap. */
 export function SwapHub({ onDone }: { onDone: () => void }) {
-  const [mode, setMode] = useState<Mode>('balances')
+  const { data: cfg } = useQuery({ queryKey: ['trade-config'], queryFn: () => api<TradeConfig>('/api/trade/config'), staleTime: 30_000 })
+  const testnet = cfg?.testnet ?? true
   return (
-    <div className="space-y-4">
-      <Segmented value={mode} onChange={setMode} options={[{ value: 'balances', label: 'Exchange balances' }, { value: 'onchain', label: 'Onchain swap' }, { value: 'circle', label: 'Circle swap' }, { value: 'pools', label: 'Pools' }]} />
-      {mode === 'balances' && <SwapScreen onDone={onDone} />}
-      {mode === 'onchain' && <OnchainSwap onDone={onDone} />}
-      {mode === 'circle' && <CircleSwap onDone={onDone} />}
-      {mode === 'pools' && <Pools onDone={onDone} />}
+    <div className="space-y-3">
+      {testnet && (
+        <div className="flex justify-end">
+          <Badge kind="info"><FlaskConical size={12} className="mr-1 inline" />Testnet · Sandbox rates</Badge>
+        </div>
+      )}
+      {cfg && !testnet
+        ? <Card className="p-5 text-sm">Swaps on mainnet are not switched on yet. Uniswap swaps run on the test network until they are.</Card>
+        : <UniswapSwap onDone={onDone} />}
+      <PoweredBy />
     </div>
   )
 }

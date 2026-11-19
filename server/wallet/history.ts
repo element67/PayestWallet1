@@ -4,10 +4,8 @@
  * received) and a bridge shows the burn and the mint. Each entry is written once: the table's unique key covers
  * (network, transaction hash, leg, user, type), so recording the same event twice does nothing.
  */
-import { all, audit, get, now, run, uid } from '../db'
-import { evmClient } from './chains'
-import { ensureWallet } from './keys'
-import { ASSETS, getAssetDef } from './networks'
+import { audit, get, now, run, uid } from '../db'
+import { getAssetDef } from './networks'
 
 export interface HistoryLeg {
   userId: string
@@ -48,56 +46,4 @@ export function unitsOf(amount: string, decimals: number): bigint {
   const [whole, frac = ''] = amount.trim().split('.')
   if (!/^\d+$/.test(whole) || !/^\d*$/.test(frac)) return 0n
   return BigInt(whole) * 10n ** BigInt(decimals) + BigInt(frac.slice(0, decimals).padEnd(decimals, '0') || '0')
-}
-
-const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-const KIND_WORDS = { swap: 'a swap', add: 'adding liquidity', remove: 'removing liquidity' } as const
-
-/**
- * Writes History entries for an onchain exchange operation (a NairaSwap swap or liquidity change) by reading its transaction
- * receipts: every transfer of a wallet token out of the user's wallet is a "Paid" entry and every transfer into it a "Received"
- * entry. Pool share tokens are not wallet assets, so they are left out. Safe to run again: each entry is written once.
- */
-export type ReceiptLike = { status: string; logs: { address: string; topics: readonly (string | null | undefined)[]; data: string; logIndex?: number | null }[] }
-
-export async function recordDexHistory(
-  userId: string, networkId: string, hashes: string[], kind: keyof typeof KIND_WORDS,
-  /** Where receipts come from. Tests pass their own; the app reads the chain. */
-  readReceipt: (hash: string) => Promise<ReceiptLike | null> = (h) => evmClient(networkId).getTransactionReceipt({ hash: h as `0x${string}` }).catch(() => null),
-): Promise<number> {
-  const me = (await ensureWallet(userId)).evm.toLowerCase()
-  let written = 0
-  for (const hash of hashes) {
-    const receipt = await readReceipt(hash)
-    if (!receipt || receipt.status !== 'success') continue
-    for (const log of receipt.logs) {
-      if (log.topics[0] !== TRANSFER_TOPIC || log.topics.length !== 3) continue
-      const from = `0x${log.topics[1]?.slice(26)}`.toLowerCase()
-      const to = `0x${log.topics[2]?.slice(26)}`.toLowerCase()
-      const def = ASSETS.find((a) => a.network === networkId && a.contract?.toLowerCase() === log.address.toLowerCase())
-      if (!def || from === to || (from !== me && to !== me)) continue
-      const paid = from === me
-      await recordHistoryLeg({
-        userId, networkId, symbol: def.symbol, type: 'swapped', amountRaw: BigInt(log.data), from, to, hash, leg: Number(log.logIndex ?? 0),
-        note: `${paid ? 'Paid in' : 'Received from'} ${KIND_WORDS[kind]}`,
-      })
-      written++
-    }
-  }
-  return written
-}
-
-/** Adds History entries for exchange operations made before History recorded them. Runs once at worker start and is safe to repeat. */
-export async function backfillDexHistory(): Promise<number> {
-  const ops = await all<{ user_id: string; network: string; kind: string; hashes: string }>("SELECT user_id, network, kind, hashes FROM dex_ops WHERE status='confirmed' AND hashes<>'[]' ORDER BY created_at DESC LIMIT 500")
-  let total = 0
-  for (const o of ops) {
-    const hashes = JSON.parse(o.hashes) as string[]
-    if (!hashes.length) continue
-    const kind = (o.kind === 'add' || o.kind === 'remove' ? o.kind : 'swap') as keyof typeof KIND_WORDS
-    try {
-      total += await recordDexHistory(o.user_id, o.network, hashes, kind)
-    } catch { /* an unreachable endpoint is retried the next time the worker starts */ }
-  }
-  return total
 }

@@ -52,7 +52,7 @@ export function NetworkLabel({ id, name, size = 18, className }: { id?: string |
 export interface PickerNetwork { id: string; name: string; note?: string }
 
 /** A network chooser that shows every network's logo (a native select cannot). Keyboard and screen reader friendly. */
-export function NetworkPicker({ label, value, options, onChange }: { label: string; value: string; options: PickerNetwork[]; onChange: (id: string) => void }) {
+export function NetworkPicker({ label, value, options, onChange, trailing }: { label: string; value: string; options: PickerNetwork[]; onChange: (id: string) => void; trailing?: Record<string, string> }) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const current = options.find((o) => o.id === value) ?? options[0]
@@ -94,6 +94,7 @@ export function NetworkPicker({ label, value, options, onChange }: { label: stri
               >
                 <NetworkIcon id={o.id} name={o.name} size={26} />
                 <span className="min-w-0 flex-1">{o.name}{o.note && <span className="block text-xs font-semibold text-subtle">{o.note}</span>}</span>
+                {trailing && <span className="num shrink-0 text-right text-base font-bold tabular-nums">{trailing[o.id] ?? '—'}</span>}
                 {o.id === value && <Check size={18} className="shrink-0" />}
               </button>
             </li>
