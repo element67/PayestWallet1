@@ -1,4 +1,4 @@
-# NairaBridge
+# Payest Wallet
 
 > Built with Arc Studio - money-powered apps in minutes
 

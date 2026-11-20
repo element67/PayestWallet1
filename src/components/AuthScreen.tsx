@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { ShieldCheck, Zap } from 'lucide-react'
 import { api, type PublicUser } from '@/lib/api'
 import { useSession } from '@/lib/session'
 import { Button, Card, Field, Segmented } from './ui'
@@ -20,22 +19,18 @@ export function AuthScreen() {
   })
 
   return (
-    <main className="mx-auto grid min-h-dvh max-w-5xl items-center gap-10 px-5 py-10 lg:grid-cols-2">
+    <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-5 px-5 py-8">
       <section>
-        <div className="display plate text-xl">NairaBridge</div>
-        <h1 className="display mt-6 text-balance text-5xl leading-[1.02] sm:text-6xl">
+        <div className="display plate text-xl">Payest Wallet</div>
+        <h1 className="display mt-5 text-balance text-5xl leading-[1.02] sm:text-6xl">
           <span className="plate !block !rounded-3xl !px-5 !py-3">Crypto to Naira, without the P2P wait.</span>
         </h1>
-        <p className="plate-sub mt-6 max-w-md !rounded-3xl !px-4 !py-3 text-pretty text-sm font-semibold">
-          A transaction agent watches the chain, verifies every token, and pays out as soon as the evidence checks out. Final settlement is always confirmed afterwards.
+        <p className="plate-sub mt-4 max-w-md !rounded-3xl !px-4 !py-3 text-pretty text-sm font-semibold">
+          Send money, swap Naira to crypto, and crypto to Naira, as easily as sending a text.
         </p>
-        <ul className="mt-6 flex flex-wrap gap-3 text-sm font-extrabold">
-          <li className="plate-sub flex items-center gap-2"><Zap size={18} /> Detects deposits seconds after broadcast</li>
-          <li className="plate-sub flex items-center gap-2"><ShieldCheck size={18} /> Fake tokens are rejected, never credited</li>
-        </ul>
       </section>
 
-      <div className="space-y-4">
+      <div>
         <Card className="p-5">
           <Segmented value={mode} onChange={setMode} options={[{ value: 'login', label: 'Sign in' }, { value: 'register', label: 'Create account' }]} />
           <form

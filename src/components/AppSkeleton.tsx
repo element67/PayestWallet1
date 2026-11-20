@@ -3,7 +3,7 @@ import { Skeleton } from './ui'
 /** Page-shaped placeholder shown while the app loads and while the session is checked, so nothing jumps when the real screen arrives. */
 export function AppSkeleton() {
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[250px_1fr]" role="status" aria-busy="true" aria-label="Loading NairaBridge">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[250px_1fr]" role="status" aria-busy="true" aria-label="Loading Payest Wallet">
       <aside className="sticky top-0 hidden h-dvh p-5 lg:block">
         <div className="glass flex h-full flex-col gap-3 rounded-3xl p-4">
           <Skeleton className="h-10 w-40 !rounded-xl" />

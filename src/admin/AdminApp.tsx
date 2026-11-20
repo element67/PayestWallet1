@@ -57,7 +57,7 @@ function AdminSignIn() {
   return (
     <main className="mx-auto grid min-h-dvh max-w-md items-center px-5 py-10">
       <Card className="space-y-4 p-6">
-        <div className="display plate !inline-block text-xl">NairaBridge Admin</div>
+        <div className="display plate !inline-block text-xl">Payest Wallet Admin</div>
         <p className="text-sm text-subtle">Founder access only. Sign in with your founder username or email.</p>
         <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); login.mutate() }}>
           <Field label="Email or username" type="text" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" autoCapitalize="none" required />

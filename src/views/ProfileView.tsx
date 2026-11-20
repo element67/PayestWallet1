@@ -91,7 +91,7 @@ export function ProfileView() {
   const verified = data.verificationStatus === 'verified'
   return (
     <>
-      <PageTitle title="Profile" sub="How you appear in NairaBridge." />
+      <PageTitle title="Profile" sub="How you appear in Payest Wallet." />
       <Card strong className="p-5">
         <div className="flex items-center gap-4">
           <Avatar name={data.fullName} url={data.avatarUrl} className="size-20 text-3xl" />

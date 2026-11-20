@@ -74,7 +74,7 @@ export function OrderTracker({ orderId, onBack }: { orderId: string; onBack: () 
           <div className="flex items-center gap-3">
             <TokenIcon symbol={o.asset} size={44} />
             <div>
-              <div className="display text-xl font-semibold">{o.side === 'sell' ? 'Sell' : 'Buy'} {crypto(decimals)} {o.asset}</div>
+              <div className="display text-xl font-semibold">{o.side === 'sell' ? 'Crypto to Naira' : 'Naira to crypto'}: {crypto(decimals)} {o.asset}</div>
               <div className="mono text-xs text-subtle">{o.id}</div>
             </div>
           </div>

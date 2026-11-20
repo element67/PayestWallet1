@@ -21,7 +21,7 @@ const httpsUrl = (v: string | undefined, hosts?: RegExp): string | null => {
 const emailAddr = (v: string | undefined): string | null => (v && /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]{2,}$/.test(v.trim()) ? v.trim() : null)
 
 export const FAQS: { q: string; a: string }[] = [
-  { q: 'Is this real money?', a: 'No. NairaBridge runs in sandbox mode: Naira payouts, vault releases and non-Arc chains are simulated. USDC on Arc Testnet is the one live chain.' },
+  { q: 'Is this real money?', a: 'No. Payest Wallet runs in sandbox mode: Naira payouts, vault releases and non-Arc chains are simulated. USDC on Arc Testnet is the one live chain.' },
   { q: 'How do I add funds to test?', a: 'Use the Get test USDC button in the Arc Studio sidebar, or ask the founder for a Test credit.' },
   { q: 'Where is my transaction PIN?', a: 'More, Settings, Security. You set it once and use it for Naira payments, transfers and buys.' },
   { q: 'How do I scan a payment QR code?', a: 'Tap the scan icon at the top of the screen and point the camera at a wallet address QR code. You land on Send with the address filled in, and you still review and confirm the payment yourself.' },

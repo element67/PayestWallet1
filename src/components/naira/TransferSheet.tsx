@@ -21,7 +21,7 @@ export function TransferSheet({ open, onClose, wallet }: { open: boolean; onClos
   return (
     <Sheet open={open} onClose={close} title="Transfer">
       <div className="space-y-4">
-        <Segmented value={tab} onChange={setTab} options={[{ value: 'bank', label: 'To bank' }, { value: 'user', label: 'To NairaBridge user' }]} />
+        <Segmented value={tab} onChange={setTab} options={[{ value: 'bank', label: 'To bank' }, { value: 'user', label: 'To Payest Wallet user' }]} />
         {tab === 'bank' ? <BankForm key={`b${round}`} wallet={wallet} onDone={close} /> : <UserForm key={`u${round}`} wallet={wallet} onDone={close} />}
       </div>
     </Sheet>
@@ -186,7 +186,7 @@ function UserForm({ wallet, onDone }: { wallet: NairaWallet; onDone: () => void 
       )}
       {rec && (
         <>
-          <Field label="Amount (₦)" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} hint="No fee between NairaBridge users." />
+          <Field label="Amount (₦)" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} hint="No fee between Payest Wallet users." />
           {amountErr && <p className="text-sm text-danger" role="alert">{amountErr}</p>}
           <Field label="Note (optional)" maxLength={100} value={note} onChange={(e) => setNote(e.target.value)} />
           <Button className={cx('w-full')} disabled={kobo <= 0 || kobo < minKobo || Boolean(amountErr)} onClick={() => setStep('review')}>Review transfer</Button>

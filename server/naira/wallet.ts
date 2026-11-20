@@ -22,7 +22,7 @@ export interface NairaWallet {
   created_at: number
 }
 
-export const BANK_NAME = 'NairaBridge Sandbox MFB'
+export const BANK_NAME = 'Payest Wallet Sandbox MFB'
 const MAX_PIN_ATTEMPTS = 5
 
 /** Sandbox virtual account identifier. Not a funding method: all funding is crypto-to-Naira. */

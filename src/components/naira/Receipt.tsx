@@ -23,7 +23,7 @@ function extras(t: Txn): { label: string; value: string }[] {
 
 export function receiptText(t: Txn): string {
   const lines = [
-    `NairaBridge receipt (sandbox)`, `${t.title}`, `Amount: ${ngn(t.amount)}`, ...(Number(t.fee) > 0 ? [`Fee: ${ngn(t.fee)}`] : []),
+    `Payest Wallet receipt (sandbox)`, `${t.title}`, `Amount: ${ngn(t.amount)}`, ...(Number(t.fee) > 0 ? [`Fee: ${ngn(t.fee)}`] : []),
     `Status: ${TXN_STATUS[t.status]?.label ?? t.status}`, `Reference: ${t.reference}`, `Date: ${when(t.createdAt)}`, ...(t.counterparty ? [`To/From: ${t.counterparty}`] : []),
     ...extras(t).map((e) => `${e.label}: ${e.value}`),
   ]
@@ -40,7 +40,7 @@ export function Receipt({ txn, onDone }: { txn: Txn; onDone?: () => void }) {
   const doShare = async () => {
     const text = receiptText(txn)
     try {
-      if (navigator.share) await navigator.share({ title: 'NairaBridge receipt', text })
+      if (navigator.share) await navigator.share({ title: 'Payest Wallet receipt', text })
       else {
         await navigator.clipboard.writeText(text)
         toast.success('Receipt copied')

@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAccount } from 'wagmi'
-import { RefreshCw, Timer } from 'lucide-react'
+import { Timer, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, type Order, type Quote } from '@/lib/api'
 import { useAssets, useBalances, useBanks } from '@/lib/queries'
 import { crypto, ngn } from '@/lib/format'
 import { useSession } from '@/lib/session'
+import { useNav } from '@/lib/navigation'
 import { OrderTracker } from '@/components/OrderTracker'
 import { ExchangeCredits } from '@/components/ExchangeCredits'
 import { PinPad } from '@/components/naira/PinPad'
 import { Sheet } from '@/components/naira/Sheet'
 import { TokenField } from '@/components/TokenPicker'
-import { Badge, Button, Card, Field, PageTitle, Row, Sandbox, Segmented } from '@/components/ui'
+import { Badge, Button, Card, Field, Row, Sandbox, Segmented } from '@/components/ui'
 
 export function Exchange({ focusOrder, clearFocus, initialSide = 'sell' }: { focusOrder: string | null; clearFocus: () => void; initialSide?: 'sell' | 'buy' }) {
   const [orderId, setOrderId] = useState<string | null>(focusOrder)
@@ -24,6 +25,7 @@ export function Exchange({ focusOrder, clearFocus, initialSide = 'sell' }: { foc
 
 function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => void; initialSide: 'sell' | 'buy' }) {
   const { config } = useSession()
+  const { go } = useNav()
   const { address, isConnected } = useAccount()
   const { data: assets } = useAssets()
   const { data: banks } = useBanks()
@@ -58,7 +60,7 @@ function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => v
   useEffect(() => {
     if (!amount || Number(amount) <= 0) return
     const t = setTimeout(() => {
-      api<Quote>('/api/quotes', { method: 'POST', body: { side, asset: symbol, amount } })
+      api<Quote>('/api/quotes', { method: 'POST', body: { side, asset: symbol, amount, unit: 'crypto' } })
         .then((q) => setRes({ key: quoteKey, quote: q }))
         .catch((e: Error) => setRes({ key: quoteKey, err: e.message }))
     }, 450)
@@ -71,6 +73,15 @@ function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => v
     const t = setTimeout(() => setTick((n) => n + 1), Math.max(0, quote.expiresAt - Date.now()))
     return () => clearTimeout(t)
   }, [quote])
+
+  /** The founder's limits are set in Naira; shown here in the token the user types, at the rate for this direction. */
+  const limits = useMemo(() => {
+    const rate = Number(side === 'sell' ? asset?.sellRate : asset?.buyRate)
+    if (!asset || !(rate > 0)) return null
+    const lo = Math.ceil((Number(asset.minNgn) / rate) * 100) / 100
+    const hi = Math.floor((Number(asset.maxNgn) / rate) * 100) / 100
+    return { lo, hi }
+  }, [asset, side])
 
   const secondsLeft = quote ? Math.max(0, Math.round((quote.expiresAt - now) / 1000)) : 0
 
@@ -107,55 +118,51 @@ function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => v
 
   return (
     <>
-      <PageTitle title="Payest P2P Exchange" sub="Swap crypto and Naira, fast and verified. You see the exact amount before you approve." />
-      <div className="mx-auto max-w-xl space-y-4">
-        <Card strong className="p-5">
+      <div className="mx-auto mb-3 flex max-w-xl items-center justify-between gap-3">
+        <h1 className="display text-3xl">Exchange</h1>
+        <button type="button" onClick={() => go('home')} aria-label="Close" className="grid size-11 shrink-0 place-items-center rounded-full border border-line-strong bg-card hover:bg-muted"><X size={20} /></button>
+      </div>
+      <div className="mx-auto max-w-xl space-y-3">
+        <Card strong className="space-y-3 p-4">
           <Segmented value={side} onChange={switchSide} options={[{ value: 'sell', label: 'Crypto to Naira' }, { value: 'buy', label: 'Naira to crypto' }]} />
 
-          <div className="mt-5">
-            <TokenField
-              label={side === 'sell' ? 'Crypto you send' : 'Crypto you receive'} value={symbol} onChange={setSymbol}
-              balanceMode={side === 'sell' ? 'onchain' : 'exchange'}
-              reasonFor={(t) => (assets?.find((x) => x.symbol === t.symbol)?.enabled ? null : t.tradable ? 'Not enabled yet' : 'No rate set yet')}
-            />
-          </div>
+          <TokenField
+            label="Crypto" value={symbol} onChange={setSymbol}
+            balanceMode={side === 'sell' ? 'onchain' : 'exchange'}
+            reasonFor={(t) => (assets?.find((x) => x.symbol === t.symbol)?.enabled ? null : t.tradable ? 'Not enabled yet' : 'No rate set yet')}
+          />
 
-          <div className="mt-5 rounded-3xl bg-muted p-4">
-            <div className="flex items-center justify-between">
-              <span className="eyebrow">{side === 'sell' ? `You send (${symbol})` : 'You pay (NGN)'}</span>
-              {side === 'buy' && <button className="text-xs font-semibold underline" onClick={() => setAmount(String(Math.floor(ngnBalance)))}>Wallet {ngn(ngnBalance)}</button>}
-            </div>
+          <div className="rounded-3xl bg-muted p-4">
+            <label className="eyebrow block" htmlFor="exchange-amount">Amount in {symbol}</label>
             <input
-              inputMode="decimal"
-              value={amount}
+              id="exchange-amount" inputMode="decimal" value={amount}
               onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
-              placeholder="0.00"
-              aria-label="Amount"
-              className="display num mt-1 w-full bg-transparent text-5xl font-semibold text-ink placeholder:text-subtle focus:outline-none"
+              placeholder="0.00" aria-label={`Amount in ${symbol}`}
+              className="display num mt-1 w-full bg-transparent text-4xl font-semibold text-ink placeholder:text-subtle focus:outline-none"
             />
+            {limits && <p className="mt-1 text-xs text-subtle">Limits: {crypto(String(limits.lo))} to {crypto(String(limits.hi))} {symbol}</p>}
           </div>
-
-          <div className="mt-3 rounded-3xl border border-line p-4">
-            <span className="eyebrow">{side === 'sell' ? 'You receive (NGN)' : `You receive (${symbol})`}</span>
-            <div className="display num mt-1 min-h-12 text-4xl font-semibold">
-              {quote ? (side === 'sell' ? ngn(quote.netNgn) : `${crypto(quote.cryptoAmount)} ${symbol}`) : <span className="text-subtle">{quoteErr ? '-' : '0.00'}</span>}
-            </div>
-            {quoteErr && <p className="mt-1 text-sm text-danger">{quoteErr}</p>}
-          </div>
-
-          {quote && (
-            <div className="mt-3 divide-y divide-line rounded-2xl px-1">
-              <Row label="Rate" value={`${ngn(quote.rate)} per ${symbol}`} />
-              <Row label={`Platform fee (${(quote.feeBps / 100).toFixed(2)}%)`} value={ngn(quote.platformFeeNgn)} />
-              <Row label="Network (gas) fee" value={ngn(quote.networkFeeNgn)} />
-              <Row label={side === 'sell' ? 'Gross Naira value' : 'Total you pay'} value={ngn(quote.grossNgn)} />
-              <Row label="Quote valid for" value={<span className="inline-flex items-center gap-1"><Timer size={14} />{secondsLeft}s</span>} />
-            </div>
-          )}
-          {quote?.rateSource === 'seed placeholder' && <p className="mt-2 text-xs text-warn">Rate is a placeholder until the founder sets live rates.</p>}
         </Card>
 
-        <Card className="space-y-4 p-5">
+        <Card className="p-4">
+          <div className="divide-y divide-line">
+            <Row label="Exchange rate" value={quote ? `${ngn(quote.rate)} per ${symbol}` : '-'} />
+            <Row label="Network fee" value={quote ? ngn(quote.networkFeeNgn) : '-'} />
+            <Row label={quote ? `Service fee (${(quote.feeBps / 100).toFixed(2)}%)` : 'Service fee'} value={quote ? ngn(quote.platformFeeNgn) : '-'} />
+            {side === 'buy' && <Row label="You pay" value={quote ? ngn(quote.grossNgn) : '-'} />}
+            {quote && <Row label="Quote valid for" value={<span className="inline-flex items-center gap-1"><Timer size={14} />{secondsLeft}s</span>} />}
+          </div>
+          <div className="mt-3 border-t border-line pt-3">
+            <span className="eyebrow">You receive</span>
+            <div className="display num mt-1 min-h-12 text-4xl font-semibold">
+              {quote ? (side === 'sell' ? ngn(quote.netNgn) : `${crypto(quote.cryptoAmount)} ${symbol}`) : <span className="text-subtle">0.00</span>}
+            </div>
+            {quoteErr && <p className="mt-1 text-sm text-danger" role="alert">{quoteErr}</p>}
+            {quote?.rateSource === 'seed placeholder' && <p className="mt-1 text-xs text-warn">Rate is a placeholder until the founder sets live rates.</p>}
+          </div>
+        </Card>
+
+        <Card className="space-y-3 p-4">
           {side === 'sell' ? (
             <>
               <div>
@@ -204,9 +211,9 @@ function ExchangeForm({ onCreated, initialSide }: { onCreated: (id: string) => v
             loading={create.isPending}
             onClick={() => (needsPin ? setAskPin(true) : create.mutate(undefined))}
           >
-            {cantPay ? 'Insufficient Naira balance' : 'Approve'}
+            {cantPay ? 'Insufficient Naira balance' : 'Approve and exchange'}
           </Button>
-          {quote && <p className="flex items-center justify-center gap-1.5 text-center text-xs text-subtle"><RefreshCw size={12} /> Quotes refresh automatically. {live ? <Badge kind="live">Live</Badge> : <Badge kind="sandbox">Sandbox</Badge>}</p>}
+          <p className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-subtle"><Badge kind="sandbox">Sandbox</Badge> Testnet assets have no real value.</p>
         </Card>
       </div>
       <ExchangeCredits />

@@ -85,8 +85,8 @@ route('GET', '/api/balances', 'user', async (c) => {
 })
 
 route('POST', '/api/quotes', 'user', async (c) => {
-  const b = body(c, z.object({ side: z.enum(['sell', 'buy']), asset: z.string().max(10), amount: amountStr }))
-  const p = await price(b.side, b.asset, b.amount)
+  const b = body(c, z.object({ side: z.enum(['sell', 'buy']), asset: z.string().max(10), amount: amountStr, unit: z.enum(['crypto', 'ngn']).optional() }))
+  const p = await price(b.side, b.asset, b.amount, b.side === 'buy' && b.unit === 'crypto')
   const q = await createQuote(c.user.id, p)
   return {
     id: q.id, expiresAt: q.expiresAt, side: p.side, asset: p.asset.symbol,

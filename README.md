@@ -1,4 +1,4 @@
-# NairaBridge
+# Payest Wallet
 
 A crypto-to-Naira and Naira-to-crypto exchange for Nigeria. Customers sell USDC, USDT, BTC or SOL for Naira, or buy them with Naira. A transaction agent watches the chain, checks every token and amount, and pays out as soon as the evidence is good. Founders manage rates, limits, liquidity and risk from a dashboard.
 
@@ -40,7 +40,7 @@ Tokens live in the database, not in the code: a `tokens` table (symbol, name, de
 
 ## Naira wallet (sandbox)
 
-A full Naira wallet with a unique sandbox virtual account number, a 4-digit transaction PIN, bank and NairaBridge-user transfers with name verification, and bill payments (airtime, data, electricity, cable TV, water, internet, education), flights and shopping. Funding is crypto-to-Naira only (USDC, USDT, BTC, SOL): the wallet is credited after the deposit is verified, never from a claim made by the app. Every movement is a balanced, immutable double-entry ledger record, payments are reserved and automatically reversed if a provider fails, and receipts can be shared. The founder panel (Naira wallets tab) shows wallets and ledgers, transactions, P2P deposits, bill orders, fees, limits, reviews, freezes and an audit trail, and can only correct money through audited ledger movements.
+A full Naira wallet with a unique sandbox virtual account number, a 4-digit transaction PIN, bank and Payest Wallet-user transfers with name verification, and bill payments (airtime, data, electricity, cable TV, water, internet, education), flights and shopping. Funding is crypto-to-Naira only (USDC, USDT, BTC, SOL): the wallet is credited after the deposit is verified, never from a claim made by the app. Every movement is a balanced, immutable double-entry ledger record, payments are reserved and automatically reversed if a provider fails, and receipts can be shared. The founder panel (Naira wallets tab) shows wallets and ledgers, transactions, P2P deposits, bill orders, fees, limits, reviews, freezes and an audit trail, and can only correct money through audited ledger movements.
 
 Everything runs in SANDBOX mode: bank, telecom, utility, airline and shop providers are clearly labelled simulations behind small adapter interfaces (`server/naira/providers.ts`), so a production provider can replace them later. USDC on Arc Testnet is watched live; USDT, BTC and SOL deposits use a labelled simulated network. Tests: `bun scripts/naira-test.ts` (about 6 minutes, it waits out rate-limit windows), `bun scripts/exchange-test.ts`, `bun scripts/wallet-test.ts`.
 

@@ -137,7 +137,7 @@ export function Wallet({ openTransfer = false }: { openTransfer?: boolean }) {
       <Card className="p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="eyebrow">Your NairaBridge account</div>
+            <div className="eyebrow">Your Payest Wallet account</div>
             <div className="mono num mt-0.5 text-2xl font-semibold tracking-wider">{w.account.number}</div>
             <div className="truncate text-xs text-subtle">{w.account.bank} · {w.account.name}</div>
           </div>

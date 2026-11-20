@@ -53,7 +53,7 @@ route('GET', '/api/balance/summary', 'user', async (c) => {
       unpricedSymbols: p.unpricedSymbols, syncing: p.syncing, syncedAt: p.syncedAt,
     },
     naira: { balance: fromUnits((await balancesFor(userId)).NGN ?? 0n, 2), currency: 'NGN', label: 'Sandbox funds' },
-    rate: { ngnPerUsd: fromUnits(rateKobo, 2), source: 'USDC rate set by NairaBridge', updatedAt },
+    rate: { ngnPerUsd: fromUnits(rateKobo, 2), source: 'USDC rate set by Payest Wallet', updatedAt },
     preference: { cryptoCurrency: c.user.display_currency === 'NGN' ? 'NGN' : 'USD' },
     asOf: Date.now(),
   }

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import '../index.css'
 
 export const metadata: Metadata = {
-  title: 'NairaBridge | Crypto to Naira, instantly',
+  title: 'Payest Wallet | Crypto to Naira, instantly',
   generator: 'Arc Studio by Circle (https://studio.arc.io)',
 }
 

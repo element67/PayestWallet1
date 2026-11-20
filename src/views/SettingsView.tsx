@@ -149,7 +149,7 @@ function LogoutRow() {
       <ListRow icon={<LogOut size={20} />} label="Logout" detail="Sign out of this device" onClick={() => setAsking(true)} />
       <Sheet open={asking} onClose={() => !busy && setAsking(false)} title="Log out?">
         <div className="space-y-4 pb-2">
-          <p className="text-sm font-medium text-ink-2">You will be signed out of NairaBridge on this device. Your balances and transactions stay safe in your account.</p>
+          <p className="text-sm font-medium text-ink-2">You will be signed out of Payest Wallet on this device. Your balances and transactions stay safe in your account.</p>
           <div className="grid grid-cols-2 gap-3">
             <Button variant="ghost" disabled={busy} onClick={() => setAsking(false)}>Stay signed in</Button>
             <Button variant="danger" loading={busy} onClick={() => void confirm()}>Log out</Button>

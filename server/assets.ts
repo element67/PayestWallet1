@@ -75,7 +75,11 @@ export async function gasFeeKobo(chain: string): Promise<bigint> {
   }
 }
 
-export async function price(side: 'sell' | 'buy', symbol: string, amount: string): Promise<Pricing> {
+/**
+ * `byCrypto` applies to the buy direction only: `amount` is then the crypto the user wants to receive and the Naira to pay is worked out
+ * (fee and gas included), rounded up so the quote never delivers less than the amount asked for.
+ */
+export async function price(side: 'sell' | 'buy', symbol: string, amount: string, byCrypto = false): Promise<Pricing> {
   const asset = await getAsset(symbol)
   if (!asset || !asset.enabled) throw new MoneyError('Asset is not available')
   if (await setting('platform_paused') === 'true') throw new MoneyError('Trading is temporarily paused')
@@ -91,10 +95,22 @@ export async function price(side: 'sell' | 'buy', symbol: string, amount: string
     netKobo = grossKobo - feeKobo
   } else {
     rateKobo = BigInt(asset.buy_rate_kobo)
-    grossKobo = toUnits(amount, 2)
-    feeKobo = ceilDiv(grossKobo * BigInt(feeBps), 10_000n) + gasKobo
-    netKobo = grossKobo - feeKobo
-    cryptoUnits = (netKobo * unit) / rateKobo
+    if (byCrypto) {
+      if (rateKobo <= 0n) throw new MoneyError('Rate not configured')
+      if (feeBps >= 10_000) throw new MoneyError('Fees are not configured correctly')
+      const target = toUnits(amount, asset.decimals)
+      const needNet = ceilDiv(target * rateKobo, unit)
+      grossKobo = ceilDiv((needNet + gasKobo) * 10_000n, 10_000n - BigInt(feeBps))
+      feeKobo = ceilDiv(grossKobo * BigInt(feeBps), 10_000n) + gasKobo
+      netKobo = grossKobo - feeKobo
+      while (netKobo < needNet) { grossKobo += 1n; feeKobo = ceilDiv(grossKobo * BigInt(feeBps), 10_000n) + gasKobo; netKobo = grossKobo - feeKobo }
+      cryptoUnits = (netKobo * unit) / rateKobo
+    } else {
+      grossKobo = toUnits(amount, 2)
+      feeKobo = ceilDiv(grossKobo * BigInt(feeBps), 10_000n) + gasKobo
+      netKobo = grossKobo - feeKobo
+      cryptoUnits = (netKobo * unit) / rateKobo
+    }
   }
   if (rateKobo <= 0n) throw new MoneyError('Rate not configured')
   if (cryptoUnits <= 0n || netKobo <= 0n) throw new MoneyError('Amount too small')

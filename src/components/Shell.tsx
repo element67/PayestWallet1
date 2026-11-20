@@ -53,7 +53,7 @@ export function Shell({ view, go, children }: { view: View; go: (v: View, i?: In
     <div className="min-h-dvh lg:grid lg:grid-cols-[250px_1fr]">
       <aside className="sticky top-0 hidden h-dvh flex-col p-5 lg:flex">
         <div className="glass flex h-full flex-col rounded-3xl p-4">
-          <div className="display plate !inline-block self-start text-xl">NairaBridge</div>
+          <div className="display plate !inline-block self-start text-xl">Payest Wallet</div>
           <nav className="mt-6 flex flex-1 flex-col gap-1.5 overflow-y-auto">
             {[...PRIMARY, ...items].map((n) => (
               <button

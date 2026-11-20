@@ -1,4 +1,4 @@
-/** Typed client for the NairaBridge backend. The session token lives in sessionStorage and is sent as a Bearer header. */
+/** Typed client for the Payest Wallet backend. The session token lives in sessionStorage and is sent as a Bearer header. */
 
 const KEY = 'nb_session'
 export const getToken = () => sessionStorage.getItem(KEY)

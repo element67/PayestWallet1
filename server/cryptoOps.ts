@@ -120,7 +120,7 @@ route('GET', '/api/home', 'user', async (c) => {
     crypto: { totalValueNgn: fromUnits(totals.onchain + totals.sandbox, 2), includesCredits: totals.sandbox > 0n, unpricedSymbols: p.unpricedSymbols, syncing: p.syncing, syncedAt: p.syncedAt },
     naira: { balance: fromUnits(naira, 2), accountNumber: wallet.account_number, status: wallet.status },
     assets: [
-      { id: 'NGN', symbol: 'NGN', name: 'Naira', kind: 'naira', chain: 'NairaBridge wallet (sandbox)', amount: fromUnits(naira, 2), valueNgn: fromUnits(naira, 2) },
+      { id: 'NGN', symbol: 'NGN', name: 'Naira', kind: 'naira', chain: 'Payest Wallet wallet (sandbox)', amount: fromUnits(naira, 2), valueNgn: fromUnits(naira, 2) },
       ...crypto,
     ],
   }

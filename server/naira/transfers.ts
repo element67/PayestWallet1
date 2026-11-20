@@ -1,4 +1,4 @@
-/** Transfers: to a bank account (sandbox bank network) and to another NairaBridge user (instant, atomic). */
+/** Transfers: to a bank account (sandbox bank network) and to another Payest Wallet user (instant, atomic). */
 import { HttpError, type User } from '../auth'
 import { all, audit, get, notify, now, run, setting, uid, tx } from '../db'
 import { SYS, move, InsufficientFunds } from '../ledger'
@@ -71,7 +71,7 @@ export async function deleteBeneficiary(userId: string, id: string) {
   await run('DELETE FROM beneficiaries WHERE id=? AND user_id=?', id, userId)
 }
 
-/* ---------------- NairaBridge users ---------------- */
+/* ---------------- Payest Wallet users ---------------- */
 
 const normalizePhone = (q: string) => {
   const d = q.replace(/[\s()-]/g, '')
@@ -88,7 +88,7 @@ export async function searchRecipient(user: User, q: string) {
   const r = await get<{ id: string; name: string; username: string | null; phone: string | null }>(
     "SELECT id, name, username, phone FROM users WHERE status='active' AND (lower(username)=? OR (?::text IS NOT NULL AND phone=?)) LIMIT 1", term, phone, phone,
   )
-  if (!r || r.id === user.id) throw new HttpError(404, 'No NairaBridge user found with that username or phone number')
+  if (!r || r.id === user.id) throw new HttpError(404, 'No Payest Wallet user found with that username or phone number')
   return { id: r.id, name: r.name, username: r.username, phoneMasked: r.phone ? `${r.phone.slice(0, 4)}•••${r.phone.slice(-3)}` : null }
 }
 
@@ -114,7 +114,7 @@ export async function internalTransfer(user: User, b: { recipientId: string; amo
       await patchTxn(t.id, { ledgerTxnId: ltx })
       const sender = await get<{ name: string; username: string | null }>('SELECT name, username FROM users WHERE id=?', user.id)
       await createTxn({
-        userId: rec.id, type: 'internal_credit', direction: 'credit', amount: b.amount, status: 'success', title: `Received from ${sender?.name ?? 'a NairaBridge user'}`,
+        userId: rec.id, type: 'internal_credit', direction: 'credit', amount: b.amount, status: 'success', title: `Received from ${sender?.name ?? 'a Payest Wallet user'}`,
         counterparty: sender?.username ? `${sender.name} (@${sender.username})` : sender?.name, note: b.note, idemKey: `in:${t.id}`, ledgerTxnId: ltx, meta: { senderId: user.id, reference: t.reference },
       })
       return t
@@ -123,7 +123,7 @@ export async function internalTransfer(user: User, b: { recipientId: string; amo
       const exists = await get("SELECT 1 FROM beneficiaries WHERE user_id=? AND kind='user' AND target_user_id=?", user.id, rec.id)
       if (!exists) await run("INSERT INTO beneficiaries(id,user_id,kind,label,account_name,target_user_id,created_at) VALUES (?,?, 'user', ?,?,?,?)", uid('ben'), user.id, rec.username ? `@${rec.username}` : rec.name, rec.name, rec.id, now())
     }
-    await notify(rec.id, 'payout', 'Money received', `You received NGN ${fromUnits(b.amount, 2)} from a NairaBridge user.`)
+    await notify(rec.id, 'payout', 'Money received', `You received NGN ${fromUnits(b.amount, 2)} from a Payest Wallet user.`)
     await audit(user.id, 'transfer.internal', out.reference, undefined, { to: rec.id, amount: b.amount.toString() })
     return { txn: txnView((await getTxn(out.id))!), replay: false }
   } catch (e) {
